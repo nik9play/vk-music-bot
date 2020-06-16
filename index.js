@@ -19,17 +19,6 @@ client.once('disconnect', () => {
   console.log('Disconnect.')
 })
 
-function msToTime(s) {
-  const ms = s % 1000
-  s = (s - ms) / 1000
-  const secs = s % 60
-  s = (s - secs) / 60
-  const mins = s % 60
-  const hrs = (s - mins) / 60
-
-  return hrs + ':' + mins + ':' + secs + '.' + ms
-}
-
 client.on('message', async message => {
   if (message.author.bot || !message.content.startsWith(prefix)) return
 
@@ -63,7 +52,7 @@ client.on('message', async message => {
     if (!serverQueue) return message.reply('очередь пуста.')
 
     let list = ""
-    let current = "Сейчас играет: "
+    let current = `Сейчас играет: `
 
     serverQueue.songs.forEach((e, i) => { 
       if (i == 0) current += `**${e.artist} — ${e.title}**`
@@ -78,7 +67,7 @@ client.on('message', async message => {
       fields: [
         {
           name: current,
-          value: Duration.fromMillis(serverQueue.connection.dispatcher.streamTime).toFormat("mm:ss")
+          value: `${serverQueue.connection.dispatcher.paused ? ":pause_button:" : ":arrow_forward:"} ${Duration.fromMillis(serverQueue.connection.dispatcher.streamTime).toFormat("mm:ss")}`
         },
       ]
     }
@@ -235,6 +224,7 @@ function shuffle(message, serverQueue) {
 
   serverQueue.songs = newArray
   play(message.guild, serverQueue.songs[0])
+  message.reply("перемешано.")
 }
 
 function help(message) {
