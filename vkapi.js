@@ -41,7 +41,7 @@ async function audioSearchOne(query) {
               title: IDjson.response[0].title,
               artist: IDjson.response[0].artist,
               url: IDjson.response[0].url,
-              duration: json.response[0].duration
+              duration: IDjson.response[0].duration
             }
           }
           else return {
