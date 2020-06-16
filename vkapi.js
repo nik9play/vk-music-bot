@@ -20,7 +20,8 @@ async function audioSearchOne(query) {
           songInfo: {
             title: json.response.items[0].title,
             artist: json.response.items[0].artist,
-            url: json.response.items[0].url
+            url: json.response.items[0].url,
+            duration: json.response.items[0].duration
           }
         }
       } else {
@@ -39,7 +40,8 @@ async function audioSearchOne(query) {
             songInfo: {
               title: IDjson.response[0].title,
               artist: IDjson.response[0].artist,
-              url: IDjson.response[0].url
+              url: IDjson.response[0].url,
+              duration: json.response[0].duration
             }
           }
           else return {
