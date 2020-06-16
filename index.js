@@ -2,6 +2,7 @@ import Discord from 'discord.js'
 import { prefix } from './config.json'
 import { audioSearchOne, audioGetPlaylist } from './vkapi.js'
 import { Duration } from 'luxon'
+import gachiList from './gachi.json'
 
 const client = new Discord.Client()
 const queue = new Map()
@@ -47,6 +48,9 @@ client.on('message', async message => {
     return
   } else if (command == "vh") {
     help(message)
+    return
+  } else if (command == "vgachi") {
+    gachi(message, serverQueue)
     return
   } else if (command == "vq") {
     if (!serverQueue) return message.reply('очередь пуста.')
@@ -227,22 +231,35 @@ function shuffle(message, serverQueue) {
   message.reply("перемешано.")
 }
 
-function help(message) {
-  message.reply(`**Команды:**
+function gachi(message, serverQueue) {
+  const id = gachiList[Math.floor(Math.random() * gachiList.length)]
+  execute(message, serverQueue, [id])
+  message.reply(`:male_sign:DUNGEON MASTER:male_sign: сделал выбор!`)
+}
 
-  \`-vp\` — включить музыку по названию или по ID.
-  \`-vs\` — выключить музыку и очистить очередь.
-  \`-vps\` — пауза и воспроизведение.
-  \`-vsh\` — перемешать очередь
-  \`-vn\` — пропустить музыку.
-  \`-vpl\` — добавить музыку в очередь из плейлиста. Принимает 3 аргумента:
-  \`-vpl <id>(обяз.) <count> <offset>\`. 
-    \`id\` – ID плейлиста из ссылки. Например __**44655282_7**__ из *vk.com/audiosXXXXXXXXXX?section=playlists&z=audio_playlist__**44655282_7**__*.
-    \`count\` – количество треков.
-    \`offset\` – отступ. Например, отступ **1** добавит треки с **1 до 10**, а отсуп **2** добавит треки с **11 до 20**.
-  \`-vq\` — просмотр очереди.
-  
-  > https://megaworld.space`)
+function help(message) {
+  const embed = {
+    title: "**Команды:**",
+    author: {
+      name: "megaworld",
+      url: "https://megaworld.space",
+      icon_url: "https://megaworld.space/favicon-32x32.png"
+    },
+    description: `\`-vp\` — включить музыку по названию или по ID.
+\`-vs\` — выключить музыку и очистить очередь.
+\`-vps\` — пауза и воспроизведение.
+\`-vsh\` — перемешать очередь
+\`-vn\` — пропустить музыку.
+\`-vpl\` — добавить музыку в очередь из плейлиста. Принимает 3 аргумента:
+\`-vpl <id>(обяз.) <count> <offset>\`. 
+=> \`id\` – ID плейлиста из ссылки. Например __**44655282_7**__ из *vk.com/audiosXXXXXXXXXX?section=playlists&z=audio_playlist__**44655282_7**__*.
+=> \`count\` – количество треков.
+=> \`offset\` – отступ. Например, отступ **1** добавит треки с **1 до 10**, а отсуп **2** добавит треки с **11 до 20**.
+\`-vq\` — просмотр очереди.
+\`-vgachi\` — включить трек на выбор :male_sign:DUNGEON MASTER:male_sign:`
+  }
+
+  message.channel.send({embed: embed})
 }
 
 function skip(message, serverQueue) {
