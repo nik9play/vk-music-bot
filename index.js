@@ -1,6 +1,7 @@
 import Discord from 'discord.js'
 import { prefix } from './config.json'
 import { audioSearchOne, audioGetPlaylist } from './vkapi.js'
+import { Duration } from 'luxon'
 
 const client = new Discord.Client()
 const queue = new Map()
@@ -51,19 +52,38 @@ client.on('message', async message => {
     return
   } else if (command == "vpl") {
     addPlaylist(message, serverQueue, args)
+    return 
+  } else if (command == "vsh") {
+    shuffle(message, serverQueue)
     return
   } else if (command == "vh") {
     help(message)
     return
   } else if (command == "vq") {
     if (!serverQueue) return message.reply('очередь пуста.')
-    let string = ">>> **Музыка в очереди:**\n"
-    serverQueue.songs.forEach((e, i) => { 
-      if (i == 0) string += `${i + 1}. **${e.artist} — ${e.title}**\n   ${msToTime(serverQueue.connection.dispatcher.streamTime)}\n`
 
-      else string += `${i + 1}. ${e.artist} — ${e.title}\n`
+    let list = ""
+    let current = "Сейчас играет: "
+
+    serverQueue.songs.forEach((e, i) => { 
+      if (i == 0) current += `**${e.artist} — ${e.title}**`
+
+      list += `${i + 1}. ${e.artist} — ${e.title}\n`
     })
-    message.channel.send(string)
+
+    const embed = {
+      color: 0x5181b8,
+      title: "**Музыка в очереди:**",
+      description: list,
+      fields: [
+        {
+          name: current,
+          value: Duration.fromMillis(serverQueue.connection.dispatcher.streamTime).toFormat("mm:ss")
+        },
+      ]
+    }
+
+    message.channel.send({embed: embed})
   }
 })
 
@@ -95,10 +115,21 @@ async function execute(message, serverQueue, args) {
     return message.reply("ошибка. ¯\\_(ツ)_/¯")
   }
 
-  const song = {
-    title: songInfo.songInfo.title,
-    artist: songInfo.songInfo.artist,
-    url: songInfo.songInfo.url
+  const song = songInfo.songInfo
+
+  const songEmbed = {
+    color: 0x5181b8,
+    title: song.title,
+    author: {
+      name: "Трек добавлен!"
+    },
+    description: song.artist,
+    fields: [
+      {
+        name: 'Длительность',
+        value: Duration.fromObject({seconds: song.duration}).toFormat("mm:ss")
+      },
+    ]
   }
 
   if (!serverQueue) {
@@ -107,6 +138,7 @@ async function execute(message, serverQueue, args) {
     queue.set(message.guild.id, queueContruct)
 
     queueContruct.songs.push(song)
+    message.channel.send({embed: songEmbed})
 
     try {
       var connection = await voiceChannel.join()
@@ -120,7 +152,7 @@ async function execute(message, serverQueue, args) {
   } else {
     serverQueue.songs.push(song)
     console.log(serverQueue.songs)
-    return message.channel.send(`**${song.artist} — ${song.title}** добавлено в очередь!`)
+    return message.channel.send({embed: songEmbed})
   }
 
 }
@@ -140,13 +172,21 @@ async function addPlaylist(message, serverQueue, args) {
   if (!id || !id.includes("_")) return message.reply("неверный ID")
   const count = args[1] ?? 10
   const offset = args[2] ?? 1
-
+  if (count > 100) return message.reply("слишком большой `count`.")
   if (id.length < 3) return message.reply("слишком короткий запрос.")
   const res = await audioGetPlaylist(id.split("_")[0], id.split("_")[1], count, offset)
   let newArray = res.newArray
   if (res.status == "error") {
     if (res.message == "empty-api") return message.reply("не могу найти плейлист.")
     return message.reply("ошибка. ¯\\_(ツ)_/¯")
+  }
+
+  const playlistEmbed = {
+    color: 0x5181b8,
+    title: `Добавлено треков: **${count}**.`,
+    author: {
+      name: "Плейлист добавлен!"
+    }
   }
 
   if (!serverQueue) {
@@ -160,6 +200,7 @@ async function addPlaylist(message, serverQueue, args) {
       var connection = await voiceChannel.join()
       queueContruct.connection = connection
       play(message.guild, queueContruct.songs[0])
+      return message.channel.send({embed: playlistEmbed})
     } catch (err) {
       console.log(err)
       queue.delete(message.guild.id)
@@ -167,15 +208,39 @@ async function addPlaylist(message, serverQueue, args) {
     }
   } else {
     serverQueue.songs = serverQueue.songs.concat(newArray)
-    console.log(serverQueue.songs)
-    return message.channel.send(`**Плейлист** с **${res.count}** треками добавлен в очередь!`)
+
+    return message.channel.send({embed: playlistEmbed})
   }
+}
+
+function shuffle(message, serverQueue) {
+  if (!serverQueue) return message.reply('нечего перемешивать.')
+  if (serverQueue.songs.length < 3) return message.reply('слишком маленькая очередь.')
+  function shuffleArray(array) {
+    let arrayCopy = array
+    let currentIndex = arrayCopy.length
+    let temporaryValue, randomIndex
+    while (0 !== currentIndex) {
+      randomIndex = Math.floor(Math.random() * currentIndex);
+      currentIndex -= 1;
+  
+      temporaryValue = arrayCopy[currentIndex]
+      arrayCopy[currentIndex] = arrayCopy[randomIndex]
+      arrayCopy[randomIndex] = temporaryValue
+    }
+    return arrayCopy
+  }
+
+  const newArray = shuffleArray(serverQueue.songs)
+
+  serverQueue.songs = newArray
+  play(message.guild, serverQueue.songs[0])
 }
 
 function help(message) {
   message.reply(`**Команды:**
 
-  \`-vp\` — включить музыку по названию.
+  \`-vp\` — включить музыку по названию или по ID.
   \`-vs\` — выключить музыку и очистить очередь.
   \`-vps\` — пауза и воспроизведение.
   \`-vn\` — пропустить музыку.
