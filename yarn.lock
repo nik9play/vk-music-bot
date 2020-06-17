@@ -789,16 +789,6 @@
     lodash "^4.17.13"
     to-fast-properties "^2.0.0"
 
-"@derhuerst/http-basic@^8.2.0":
-  version "8.2.0"
-  resolved "https://registry.yarnpkg.com/@derhuerst/http-basic/-/http-basic-8.2.0.tgz#d009a4a6820dea756061d21842e79d1dbf9a1e11"
-  integrity sha512-v1cqPUpFjU8DInW4YkC9caGKy8kUkqz0z10yCHawkxgpaJPId0F5xKi8fUY5rqC58F9Muz9T136jNReZQH9xIw==
-  dependencies:
-    caseless "^0.12.0"
-    concat-stream "^1.6.2"
-    http-response-object "^3.0.1"
-    parse-cache-control "^1.0.1"
-
 "@discordjs/collection@^0.1.5":
   version "0.1.5"
   resolved "https://registry.yarnpkg.com/@discordjs/collection/-/collection-0.1.5.tgz#1781c620b4c88d619bd0373a1548e5a6025e3d3a"
@@ -1457,9 +1447,9 @@ camelcase@^5.0.0:
   integrity sha512-L28STB170nwWS63UjtlEOE3dldQApaJXZkOI1uMFfzf3rRuPegHaHesyee+YxQ+W6SvRDQV6UrdOdRiR153wJg==
 
 caniuse-lite@^1.0.30001043:
-  version "1.0.30001083"
-  resolved "https://registry.yarnpkg.com/caniuse-lite/-/caniuse-lite-1.0.30001083.tgz#52410c20c6f029f604f0d45eca0439a82e712442"
-  integrity sha512-CnYJ27awX4h7yj5glfK7r1TOI13LBytpLzEgfj0s4mY75/F8pnQcYjL+oVpmS38FB59+vU0gscQ9D8tc+lIXvA==
+  version "1.0.30001084"
+  resolved "https://registry.yarnpkg.com/caniuse-lite/-/caniuse-lite-1.0.30001084.tgz#00e471931eaefbeef54f46aa2203914d3c165669"
+  integrity sha512-ftdc5oGmhEbLUuMZ/Qp3mOpzfZLCxPYKcvGv6v2dJJ+8EdqcvZRbAGOiLmkM/PV1QGta/uwBs8/nCl6sokDW6w==
 
 caseless@^0.12.0:
   version "0.12.0"
@@ -1929,9 +1919,9 @@ duplexify@^3.4.2, duplexify@^3.6.0:
     stream-shift "^1.0.0"
 
 electron-to-chromium@^1.3.413:
-  version "1.3.473"
-  resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.3.473.tgz#d0cd5fe391046fb70674ec98149f0f97609d29b8"
-  integrity sha512-smevlzzMNz3vMz6OLeeCq5HRWEj2AcgccNPYnAx4Usx0IOciq9DU36RJcICcS09hXoY7t7deRfVYKD14IrGb9A==
+  version "1.3.475"
+  resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.3.475.tgz#67688cc82c342f39594a412286e975eda45d8412"
+  integrity sha512-vcTeLpPm4+ccoYFXnepvkFt0KujdyrBU19KNEO40Pnkhta6mUi2K0Dn7NmpRcNz7BvysnSqeuIYScP003HWuYg==
 
 elliptic@^6.0.0, elliptic@^6.5.2:
   version "6.5.2"
@@ -1983,9 +1973,9 @@ enhanced-resolve@4.1.0:
     tapable "^1.0.0"
 
 enhanced-resolve@^4.1.0:
-  version "4.1.1"
-  resolved "https://registry.yarnpkg.com/enhanced-resolve/-/enhanced-resolve-4.1.1.tgz#2937e2b8066cd0fe7ce0990a98f0d71a35189f66"
-  integrity sha512-98p2zE+rL7/g/DzMHMTF4zZlCgeVdJ7yr6xzEpJRYwFYrGi9ANdn5DnJURg6RpBkyk60XYDnWIv51VfIhfNGuA==
+  version "4.2.0"
+  resolved "https://registry.yarnpkg.com/enhanced-resolve/-/enhanced-resolve-4.2.0.tgz#5d43bda4a0fd447cb0ebbe71bef8deff8805ad0d"
+  integrity sha512-S7eiFb/erugyd1rLb6mQ3Vuq+EXHv5cpCkNqqIkYkBgN2QdFnyCZzFBleqwGEx4lgNGYij81BWnCrFNK7vxvjQ==
   dependencies:
     graceful-fs "^4.1.2"
     memory-fs "^0.5.0"
@@ -2025,9 +2015,9 @@ eslint-scope@^5.1.0:
     estraverse "^4.1.1"
 
 eslint-utils@^2.0.0:
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/eslint-utils/-/eslint-utils-2.0.0.tgz#7be1cc70f27a72a76cd14aa698bcabed6890e1cd"
-  integrity sha512-0HCPuJv+7Wv1bACm8y5/ECVfYdfsAm9xmVb7saeFlxjPYALefjhbYoCkBjPdPzGH8wWyTpAez82Fh3VKYEZ8OA==
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/eslint-utils/-/eslint-utils-2.1.0.tgz#d2de5e03424e707dc10c74068ddedae708741b27"
+  integrity sha512-w94dQYoauyvlDc43XnGB8lU3Zt713vNChgt4EWwhXAP2XkBvndfxF0AgIqKOOasjPIPzj9JqgwkwbCYD0/V3Zg==
   dependencies:
     eslint-visitor-keys "^1.1.0"
 
@@ -2226,12 +2216,12 @@ fast-levenshtein@^2.0.6:
   integrity sha1-PYpcZog6FqMMqGQ+hR8Zuqd5eRc=
 
 ffmpeg-static@^4.2.3:
-  version "4.2.3"
-  resolved "https://registry.yarnpkg.com/ffmpeg-static/-/ffmpeg-static-4.2.3.tgz#762dc4da2122d0ea4f3cc1ac86f9c017eae1eca1"
-  integrity sha512-zL2YkWdRFsPZvtmEM6t1Dw7VMIE+9Moy+WlbdoLbqB+Y52BPwANJIGMJ+/kdyxWULPa4UxFPBNJW5SSxi/ex/A==
+  version "4.2.4"
+  resolved "https://registry.yarnpkg.com/ffmpeg-static/-/ffmpeg-static-4.2.4.tgz#31326d6eb781ca48264824ec40c6bc026fa321bf"
+  integrity sha512-uz5cYRuErUclST70fwN4wxni+CsrLWV5/Tbp4nysc50cjcayOm+x7wc/o8pFcl1p3ix+Tb+ZVOJwrYQoGA0bcw==
   dependencies:
-    "@derhuerst/http-basic" "^8.2.0"
     env-paths "^2.2.0"
+    http-basic "github:derhuerst/http-basic#8.2.0"
     https-proxy-agent "^5.0.0"
     progress "^2.0.3"
 
@@ -2595,6 +2585,15 @@ homedir-polyfill@^1.0.1:
   integrity sha512-eSmmWE5bZTK2Nou4g0AI3zZ9rswp7GRKoKXS1BLUkvPviOqs4YTN1djQIqrXy9k5gEtdLPy86JjRwsNM9tnDcA==
   dependencies:
     parse-passwd "^1.0.0"
+
+"http-basic@github:derhuerst/http-basic#8.2.0":
+  version "8.2.0"
+  resolved "https://codeload.github.com/derhuerst/http-basic/tar.gz/0abee462a1e04a1cdada369b1a4d5b2d4698e3bc"
+  dependencies:
+    caseless "^0.12.0"
+    concat-stream "^1.6.2"
+    http-response-object "^3.0.1"
+    parse-cache-control "^1.0.1"
 
 http-response-object@^3.0.1:
   version "3.0.2"
@@ -4472,9 +4471,9 @@ terser-webpack-plugin@^1.4.3:
     worker-farm "^1.7.0"
 
 terser@^4.1.2:
-  version "4.7.0"
-  resolved "https://registry.yarnpkg.com/terser/-/terser-4.7.0.tgz#15852cf1a08e3256a80428e865a2fa893ffba006"
-  integrity sha512-Lfb0RiZcjRDXCC3OSHJpEkxJ9Qeqs6mp2v4jf2MHfy8vGERmVDuvjXdd/EnP5Deme5F2yBRBymKmKHCBg2echw==
+  version "4.8.0"
+  resolved "https://registry.yarnpkg.com/terser/-/terser-4.8.0.tgz#63056343d7c70bb29f3af665865a46fe03a0df17"
+  integrity sha512-EAPipTNeWsb/3wLPeup1tVPaXfIaU68xMnVdPafIL1TV05OhASArYyIfFvnvJCNrR2NIOvDVNNTFRa+Re2MWyw==
   dependencies:
     commander "^2.20.0"
     source-map "~0.6.1"
