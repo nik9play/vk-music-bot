@@ -53,6 +53,7 @@ client.on('message', async message => {
     gachi(message, serverQueue)
     return
   } else if (command == "vq") {
+    console.log(serverQueue)
     if (!serverQueue) return message.reply('очередь пуста.')
 
     let list = ""
@@ -262,26 +263,43 @@ function help(message) {
   message.channel.send({embed: embed})
 }
 
-function skip(message, serverQueue) {
+async function skip(message, serverQueue) {
   const voiceChannel = message.member.voice.channel
   if (!voiceChannel) return message.reply('вы должны быть в голосовом канале чтобы пропустить музыку.')
   if (!serverQueue) return message.reply('некуда пропускать.')
+  await serverQueue.connection.dispatcher.resume()
   serverQueue.connection.dispatcher.end()
+  message.react('👍')
 }
 
-function stop(message, serverQueue) {
+async function stop(message, serverQueue) {
   const voiceChannel = message.member.voice.channel
   if (!voiceChannel) return message.reply('вы должны быть в голосовом канале чтобы остановить музыку.')
+  if (!serverQueue) return message.reply('нечего останавливать.')
+  await serverQueue.connection.dispatcher.resume()
   serverQueue.songs = []
   serverQueue.connection.dispatcher.end()
+  message.react('👍')
 }
 
 function pause(message, serverQueue) {
   const voiceChannel = message.member.voice.channel
   if (!voiceChannel) return message.reply('вы должны быть в голосовом канале чтобы поставить музыку на паузу.')
   if (!serverQueue) return
-  if (!serverQueue.connection.dispatcher.paused) serverQueue.connection.dispatcher.pause() 
-  else serverQueue.connection.dispatcher.resume()
+  if (!serverQueue.connection.dispatcher.paused) {
+    serverQueue.connection.dispatcher.pause()
+    const id = message.guild.id
+    serverQueue.exitTimer = setTimeout(async () => {
+      const serverQueueNew = queue.get(id)
+      if (!serverQueueNew) return
+      await serverQueueNew.connection.dispatcher.resume()
+      serverQueueNew.songs = []
+      serverQueueNew.connection.dispatcher.end()
+    }, 1800000)
+  } else {
+    serverQueue.connection.dispatcher.resume()
+    if (serverQueue.exitTimer) clearTimeout(serverQueue.exitTimer)
+  }
 }
 
 function play(guild, song) {
