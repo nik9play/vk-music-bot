@@ -26,7 +26,11 @@ client.on('message', async message => {
   const args = message.content.slice(prefix.length).split(/ +/)
 	const command = args.shift().toLowerCase()
 
-  const serverQueue = queue.get(message.guild.id)
+  let serverQueue = queue.get(message.guild.id)
+
+  if (checkForVoiceLeave(message, serverQueue)) {
+    serverQueue = queue.get(message.guild.id)
+  }
 
   if (command == "vp") {
     execute(message, serverQueue, args)
@@ -56,7 +60,6 @@ client.on('message', async message => {
     gachi(message, serverQueue)
     return
   } else if (command == "vq") {
-    console.log(serverQueue)
     if (!serverQueue) return message.reply('очередь пуста.')
 
     let list = ""
@@ -93,6 +96,17 @@ function getQueueContructTemplate(message, voiceChannel) {
     volume: 5,
     playing: true,
   }
+}
+
+function checkForVoiceLeave(message, serverQueue) {
+  console.log(serverQueue)
+  if (serverQueue)
+    if (serverQueue.connection)
+      if (!serverQueue.connection.dispatcher && serverQueue.songs.length > 0) {
+        serverQueue.songs = []
+        queue.delete(message.guild.id)
+        return true
+      }
 }
 
 async function execute(message, serverQueue, args) {
