@@ -49,6 +49,9 @@ client.on('message', async message => {
   } else if (command == "vh") {
     help(message)
     return
+  } else if (command == "vdsc") {
+    serverCount(message)
+    return
   } else if (command == "vgachi") {
     gachi(message, serverQueue)
     return
@@ -280,6 +283,10 @@ async function stop(message, serverQueue) {
   serverQueue.songs = []
   serverQueue.connection.dispatcher.end()
   message.react('👍')
+}
+
+function serverCount(message) {
+  message.reply(client.guilds.cache.size)
 }
 
 function pause(message, serverQueue) {
