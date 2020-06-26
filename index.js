@@ -7,6 +7,8 @@ import gachiList from './gachi.json'
 const client = new Discord.Client()
 const queue = new Map()
 
+const captchas = new Map()
+
 client.once('ready', () => {
   console.log('Ready!')
   client.user.setPresence({activity: {name: "-vh", type: 2}})
@@ -27,6 +29,17 @@ client.on('message', async message => {
 	const command = args.shift().toLowerCase()
 
   let serverQueue = queue.get(message.guild.id)
+
+  if (command == "vcaptcha") {
+    sendCaptcha(message, serverQueue, args[0])
+    return
+  }
+
+  if (captchas.get(message.member.id)) {
+    const captcha = captchas.get(message.member.id)
+    message.reply(`Прежде чем выполнить данный запрос, вы должны ввести капчу! Введите \`-vcaptcha <текст_с_картинки>\`. ${captcha.url}`)
+    return
+  }
 
   if (checkForVoiceLeave(message, serverQueue)) {
     serverQueue = queue.get(message.guild.id)
@@ -58,7 +71,7 @@ client.on('message', async message => {
     return
   } else if (command == "vgachi") {
     gachi(message, serverQueue)
-    return
+    return 
   } else if (command == "vq") {
     if (!serverQueue) return message.reply('очередь пуста.')
 
@@ -87,6 +100,19 @@ client.on('message', async message => {
   }
 })
 
+function sendCaptcha(message, serverQueue, key) {
+  if (captchas.get(message.member.id)) {
+    let captcha = captchas.get(message.member.id)
+    captcha.key = key
+    if (captcha.type == "execute") {
+      execute(message, serverQueue, captcha.args, captcha)
+    } else if (captcha.type == "addPlaylist") {
+      addPlaylist(message, serverQueue, captcha.args, captcha)
+    }
+    captchas.delete(message.member.id)
+  }
+}
+
 function getQueueContructTemplate(message, voiceChannel) {
   return {
     textChannel: message.channel,
@@ -109,7 +135,7 @@ function checkForVoiceLeave(message, serverQueue) {
       }
 }
 
-async function execute(message, serverQueue, args) {
+async function execute(message, serverQueue, args, captcha) {
   const voiceChannel = message.member.voice.channel
   if (!voiceChannel) return message.reply('вы должны быть в голосовом канале чтобы включить музыку.')
 
@@ -120,10 +146,22 @@ async function execute(message, serverQueue, args) {
 
   const query = args.join(" ").trim()
   if (query.length < 3) return message.reply("слишком короткий запрос.")
-  const songInfo = await audioSearchOne(query)
+  const songInfo = await audioSearchOne(query, captcha)
   if (songInfo.status == "error") {
+    console.log(songInfo)
+
     if (songInfo.message == "empty-api") return message.reply("не могу найти трек.")
-    return message.reply("ошибка. ¯\\_(ツ)_/¯")
+
+    if (songInfo.details.error_code == 14) {
+      captchas.set(message.member.id, {
+        type: "execute",
+        args: args,
+        url: songInfo.details.captcha_img,
+        sid: songInfo.details.captcha_sid
+      })
+      const captcha = captchas.get(message.member.id)
+      return message.reply(`Прежде чем выполнить данный запрос, вы должны ввести капчу! Введите \`-vcaptcha <текст_с_картинки>\`. ${captcha.url}`)
+    }
   }
 
   const song = songInfo.songInfo
@@ -168,7 +206,7 @@ async function execute(message, serverQueue, args) {
 
 }
 
-async function addPlaylist(message, serverQueue, args) {
+async function addPlaylist(message, serverQueue, args, captcha) {
   const voiceChannel = message.member.voice.channel
   if (!voiceChannel) return message.reply('вы должны быть в голосовом канале чтобы включить музыку.')
 
@@ -185,10 +223,22 @@ async function addPlaylist(message, serverQueue, args) {
   const offset = args[2] ?? 1
   if (count > 100) return message.reply("слишком большой `count`.")
   if (id.length < 3) return message.reply("слишком короткий запрос.")
-  const res = await audioGetPlaylist(id.split("_")[0], id.split("_")[1], count, offset)
+  const res = await audioGetPlaylist(id.split("_")[0], id.split("_")[1], count, offset, captcha)
   let newArray = res.newArray
   if (res.status == "error") {
     if (res.message == "empty-api") return message.reply("не могу найти плейлист.")
+
+    if (res.details.error_code == 14) {
+      captchas.set(message.member.id, {
+        type: "addPlaylist",
+        args: args,
+        url: res.details.captcha_img,
+        sid: res.details.captcha_sid
+      })
+      const captcha = captchas.get(message.member.id)
+      return message.reply(`Прежде чем выполнить данный запрос, вы должны ввести капчу! Введите \`-vcaptcha <текст_с_картинки>\`. ${captcha.url}`)
+    }
+
     return message.reply("ошибка. ¯\\_(ツ)_/¯")
   }
 

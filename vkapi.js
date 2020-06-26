@@ -3,8 +3,9 @@ import fetch from 'node-fetch'
 const vkApiLink = "https://api.vk.com/method/audio."
 const connectString = `?access_token=${process.env.VK_TOKEN}&v=5.95`
 
-async function audioSearchOne(query) {
-  const res = await fetch(encodeURI(`${vkApiLink}search${connectString}&q=${query}&count=1`), {
+async function audioSearchOne(query, captcha) {
+  console.log(encodeURI(`${vkApiLink}search${connectString}&q=${query}&count=1${captcha ? `&captcha_sid=${captcha.sid}&captcha_key=${captcha.key}` : ``}`))
+  const res = await fetch(encodeURI(`${vkApiLink}search${connectString}&q=${query}&count=1${captcha ? `&captcha_sid=${captcha.sid}&captcha_key=${captcha.key}` : ``}`), {
     headers: {
       "User-Agent": "KateMobileAndroid/56 lite-460 (Android 4.4.2; SDK 19; x86; unknown Android SDK built for x86; en)"
     }
@@ -70,8 +71,8 @@ async function audioSearchOne(query) {
   }
 }
 
-async function audioGetPlaylist(owner_id, album_id, count, offset) {
-  const res = await fetch(encodeURI(`${vkApiLink}get${connectString}&count=10&offset=${offset - 1}&owner_id=${owner_id}&album_id=${album_id}&count=${count}`), {
+async function audioGetPlaylist(owner_id, album_id, count, offset, captcha) {
+  const res = await fetch(encodeURI(`${vkApiLink}get${connectString}&count=10&offset=${offset - 1}&owner_id=${owner_id}&album_id=${album_id}&count=${count}${captcha ? `&captcha_sid=${captcha.sid}&captcha_key=${captcha.key}` : ``}`), {
     headers: {
       "User-Agent": "KateMobileAndroid/56 lite-460 (Android 4.4.2; SDK 19; x86; unknown Android SDK built for x86; en)"
     }
