@@ -118,4 +118,51 @@ async function audioGetPlaylist(owner_id, album_id, count, offset, captcha) {
   }
 }
 
-export { audioSearchOne, audioGetPlaylist }
+async function audioGetUser(owner_id, count, offset, captcha) {
+  const res = await fetch(encodeURI(`${vkApiLink}get${connectString}&count=10&offset=${offset - 1}&owner_id=${owner_id}&count=${count}${captcha ? `&captcha_sid=${captcha.sid}&captcha_key=${captcha.key}` : ``}`), {
+    headers: {
+      "User-Agent": "KateMobileAndroid/56 lite-460 (Android 4.4.2; SDK 19; x86; unknown Android SDK built for x86; en)"
+    }
+  })
+
+  if (res.ok) {
+    const json = await res.json()
+    
+    if (!json.error) {
+      if (json.response.count != 0) {
+        let newArray = []
+        json.response.items.forEach(e => {
+          newArray.push({
+            title: e.title,
+            artist: e.artist,
+            url: e.url
+          })
+        })
+  
+        return {
+          status: "success",
+          count: json.response.count,
+          newArray: newArray
+        }
+      } else {
+        return {
+          status: "error",
+          message: "empty-api"
+        }
+      }
+    } else {
+      return {
+        status: "error",
+        message: "fail-api",
+        details: json.error
+      }
+    }
+  } else {
+    return {
+      status: "error",
+      message: "fail-fetch"
+    }
+  }
+}
+
+export { audioSearchOne, audioGetPlaylist, audioGetUser }

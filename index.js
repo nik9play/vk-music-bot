@@ -1,8 +1,16 @@
 import Discord from 'discord.js'
 import { prefix } from './config.json'
-import { audioSearchOne, audioGetPlaylist } from './vkapi.js'
 import { Duration } from 'luxon'
 import gachiList from './gachi.json'
+
+// Commands
+import execute from './commands/vp'
+import skip from './commands/vn'
+import stop from './commands/vs'
+import addPlaylist from './commands/vpl'
+import shuffle from './commands/vsh'
+import pause from './commands/vps'
+import addUser from './commands/vu'
 
 const client = new Discord.Client()
 const queue = new Map()
@@ -46,7 +54,7 @@ client.on('message', async message => {
   }
 
   if (command == "vp") {
-    execute(message, serverQueue, args)
+    execute(message, serverQueue, args, null, captchas, queue)
     return
   } else if (command == "vn") {
     skip(message, serverQueue)
@@ -55,10 +63,10 @@ client.on('message', async message => {
     stop(message, serverQueue)
     return
   } else if (command == "vps") {
-    pause(message, serverQueue)
+    pause(message, serverQueue, queue)
     return
   } else if (command == "vpl") {
-    addPlaylist(message, serverQueue, args)
+    addPlaylist(message, serverQueue, args, null, captchas, queue)
     return 
   } else if (command == "vsh") {
     shuffle(message, serverQueue)
@@ -66,6 +74,8 @@ client.on('message', async message => {
   } else if (command == "vh") {
     help(message)
     return
+  } else if (command == "vu") {
+    addUser(message, serverQueue, args, null, captchas, queue)
   } else if (command == "vdsc") {
     serverCount(message)
     return
@@ -105,22 +115,13 @@ function sendCaptcha(message, serverQueue, key) {
     let captcha = captchas.get(message.member.id)
     captcha.key = key
     if (captcha.type == "execute") {
-      execute(message, serverQueue, captcha.args, captcha)
+      execute(message, serverQueue, captcha.args, captcha, captchas, queue)
     } else if (captcha.type == "addPlaylist") {
-      addPlaylist(message, serverQueue, captcha.args, captcha)
+      addPlaylist(message, serverQueue, captcha.args, captcha, captchas, queue)
+    } else if (captcha.type == "addUser") {
+      addUser(message, serverQueue, captcha.args, captcha, captchas, queue)
     }
     captchas.delete(message.member.id)
-  }
-}
-
-function getQueueContructTemplate(message, voiceChannel) {
-  return {
-    textChannel: message.channel,
-    voiceChannel: voiceChannel,
-    connection: null,
-    songs: [],
-    volume: 5,
-    playing: true,
   }
 }
 
@@ -135,173 +136,9 @@ function checkForVoiceLeave(message, serverQueue) {
       }
 }
 
-async function execute(message, serverQueue, args, captcha) {
-  const voiceChannel = message.member.voice.channel
-  if (!voiceChannel) return message.reply('вы должны быть в голосовом канале чтобы включить музыку.')
-
-  const permissions = voiceChannel.permissionsFor(message.client.user)
-  if (!permissions.has('CONNECT') || !permissions.has('SPEAK')) {
-    return message.reply('мне нужны права чтобы играть музыку!')
-  }
-
-  const query = args.join(" ").trim()
-  if (query.length < 3) return message.reply("слишком короткий запрос.")
-  const songInfo = await audioSearchOne(query, captcha)
-  if (songInfo.status == "error") {
-    console.log(songInfo)
-
-    if (songInfo.message == "empty-api") return message.reply("не могу найти трек.")
-
-    if (songInfo.details.error_code == 14) {
-      captchas.set(message.member.id, {
-        type: "execute",
-        args: args,
-        url: songInfo.details.captcha_img,
-        sid: songInfo.details.captcha_sid
-      })
-      const captcha = captchas.get(message.member.id)
-      return message.reply(`Прежде чем выполнить данный запрос, вы должны ввести капчу! Введите \`-vcaptcha <текст_с_картинки>\`. ${captcha.url}`)
-    }
-  }
-
-  const song = songInfo.songInfo
-
-  const songEmbed = {
-    color: 0x5181b8,
-    title: song.title,
-    author: {
-      name: "Трек добавлен!"
-    },
-    description: song.artist,
-    fields: [
-      {
-        name: 'Длительность',
-        value: Duration.fromObject({seconds: song.duration}).toFormat("mm:ss")
-      },
-    ]
-  }
-
-  if (!serverQueue) {
-    const queueContruct = getQueueContructTemplate(message, voiceChannel)
-
-    queue.set(message.guild.id, queueContruct)
-
-    queueContruct.songs.push(song)
-    message.channel.send({embed: songEmbed})
-
-    try {
-      var connection = await voiceChannel.join()
-      queueContruct.connection = connection
-      play(message.guild, queueContruct.songs[0])
-    } catch (err) {
-      console.log(err)
-      queue.delete(message.guild.id)
-      return message.channel.send(err)
-    }
-  } else {
-    serverQueue.songs.push(song)
-    console.log(serverQueue.songs)
-    return message.channel.send({embed: songEmbed})
-  }
-
-}
-
-async function addPlaylist(message, serverQueue, args, captcha) {
-  const voiceChannel = message.member.voice.channel
-  if (!voiceChannel) return message.reply('вы должны быть в голосовом канале чтобы включить музыку.')
-
-  if (serverQueue) if (serverQueue.connection.dispatcher.paused) return serverQueue.connection.dispatcher.resume()
-
-  const permissions = voiceChannel.permissionsFor(message.client.user)
-  if (!permissions.has('CONNECT') || !permissions.has('SPEAK')) {
-    return message.reply('мне нужны права чтобы играть музыку!')
-  }
-
-  const id = args[0]
-  if (!id || !id.includes("_")) return message.reply("неверный ID")
-  const count = args[1] ?? 10
-  const offset = args[2] ?? 1
-  if (count > 100) return message.reply("слишком большой `count`.")
-  if (id.length < 3) return message.reply("слишком короткий запрос.")
-  const res = await audioGetPlaylist(id.split("_")[0], id.split("_")[1], count, offset, captcha)
-  let newArray = res.newArray
-  if (res.status == "error") {
-    if (res.message == "empty-api") return message.reply("не могу найти плейлист.")
-
-    if (res.details.error_code == 14) {
-      captchas.set(message.member.id, {
-        type: "addPlaylist",
-        args: args,
-        url: res.details.captcha_img,
-        sid: res.details.captcha_sid
-      })
-      const captcha = captchas.get(message.member.id)
-      return message.reply(`Прежде чем выполнить данный запрос, вы должны ввести капчу! Введите \`-vcaptcha <текст_с_картинки>\`. ${captcha.url}`)
-    }
-
-    return message.reply("ошибка. ¯\\_(ツ)_/¯")
-  }
-
-  const playlistEmbed = {
-    color: 0x5181b8,
-    title: `Добавлено треков: **${count}**.`,
-    author: {
-      name: "Плейлист добавлен!"
-    }
-  }
-
-  if (!serverQueue) {
-    const queueContruct = getQueueContructTemplate(message, voiceChannel)
-
-    queue.set(message.guild.id, queueContruct)
-
-    queueContruct.songs = queueContruct.songs.concat(newArray)
-
-    try {
-      var connection = await voiceChannel.join()
-      queueContruct.connection = connection
-      play(message.guild, queueContruct.songs[0])
-      return message.channel.send({embed: playlistEmbed})
-    } catch (err) {
-      console.log(err)
-      queue.delete(message.guild.id)
-      return message.channel.send(err)
-    }
-  } else {
-    serverQueue.songs = serverQueue.songs.concat(newArray)
-
-    return message.channel.send({embed: playlistEmbed})
-  }
-}
-
-function shuffle(message, serverQueue) {
-  if (!serverQueue) return message.reply('нечего перемешивать.')
-  if (serverQueue.songs.length < 3) return message.reply('слишком маленькая очередь.')
-  function shuffleArray(array) {
-    let arrayCopy = array
-    let currentIndex = arrayCopy.length
-    let temporaryValue, randomIndex
-    while (0 !== currentIndex) {
-      randomIndex = Math.floor(Math.random() * currentIndex);
-      currentIndex -= 1;
-  
-      temporaryValue = arrayCopy[currentIndex]
-      arrayCopy[currentIndex] = arrayCopy[randomIndex]
-      arrayCopy[randomIndex] = temporaryValue
-    }
-    return arrayCopy
-  }
-
-  const newArray = shuffleArray(serverQueue.songs)
-
-  serverQueue.songs = newArray
-  play(message.guild, serverQueue.songs[0])
-  message.reply("перемешано.")
-}
-
 function gachi(message, serverQueue) {
   const id = gachiList[Math.floor(Math.random() * gachiList.length)]
-  execute(message, serverQueue, [id])
+  execute(message, serverQueue, [id], null, captchas, queue)
   message.reply(`:male_sign:DUNGEON MASTER:male_sign: сделал выбор!`)
 }
 
@@ -330,68 +167,8 @@ function help(message) {
   message.channel.send({embed: embed})
 }
 
-async function skip(message, serverQueue) {
-  const voiceChannel = message.member.voice.channel
-  if (!voiceChannel) return message.reply('вы должны быть в голосовом канале чтобы пропустить музыку.')
-  if (!serverQueue) return message.reply('некуда пропускать.')
-  await serverQueue.connection.dispatcher.resume()
-  serverQueue.connection.dispatcher.end()
-  message.react('👍')
-}
-
-async function stop(message, serverQueue) {
-  const voiceChannel = message.member.voice.channel
-  if (!voiceChannel) return message.reply('вы должны быть в голосовом канале чтобы остановить музыку.')
-  if (!serverQueue) return message.reply('нечего останавливать.')
-  await serverQueue.connection.dispatcher.resume()
-  serverQueue.songs = []
-  serverQueue.connection.dispatcher.end()
-  message.react('👍')
-}
-
 function serverCount(message) {
   message.reply(client.guilds.cache.size)
-}
-
-function pause(message, serverQueue) {
-  const voiceChannel = message.member.voice.channel
-  if (!voiceChannel) return message.reply('вы должны быть в голосовом канале чтобы поставить музыку на паузу.')
-  if (!serverQueue) return
-  if (!serverQueue.connection.dispatcher.paused) {
-    serverQueue.connection.dispatcher.pause()
-    const id = message.guild.id
-    serverQueue.exitTimer = setTimeout(async () => {
-      const serverQueueNew = queue.get(id)
-      if (!serverQueueNew) return
-      await serverQueueNew.connection.dispatcher.resume()
-      serverQueueNew.songs = []
-      serverQueueNew.connection.dispatcher.end()
-    }, 1800000)
-  } else {
-    serverQueue.connection.dispatcher.resume()
-    if (serverQueue.exitTimer) clearTimeout(serverQueue.exitTimer)
-  }
-}
-
-function play(guild, song) {
-  const serverQueue = queue.get(guild.id)
-
-  if (!song) {
-    serverQueue.voiceChannel.leave()
-    queue.delete(guild.id)
-    return
-  }
-
-  const dispatcher = serverQueue.connection.play(song.url)
-    .on('finish', () => {
-      console.log('Music ended!')
-      serverQueue.songs.shift()
-      play(guild, serverQueue.songs[0])
-    })
-    .on('error', error => {
-      console.error(error)
-    })
-  dispatcher.setVolumeLogarithmic(serverQueue.volume / 5)
 }
 
 client.login(process.env.DISCORD_TOKEN)
