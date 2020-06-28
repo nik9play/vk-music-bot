@@ -6,8 +6,6 @@ export default async function addPlaylist(message, serverQueue, args, captcha, c
   const voiceChannel = message.member.voice.channel
   if (!voiceChannel) return message.reply('вы должны быть в голосовом канале чтобы включить музыку.')
 
-  if (serverQueue) if (serverQueue.connection.dispatcher.paused) return serverQueue.connection.dispatcher.resume()
-
   const permissions = voiceChannel.permissionsFor(message.client.user)
   if (!permissions.has('CONNECT') || !permissions.has('SPEAK')) {
     return message.reply('мне нужны права чтобы играть музыку!')
@@ -56,7 +54,7 @@ export default async function addPlaylist(message, serverQueue, args, captcha, c
     try {
       var connection = await voiceChannel.join()
       queueContruct.connection = connection
-      play(message.guild, queueContruct.songs[0])
+      play(message.guild, queueContruct.songs[0], queue)
       return message.channel.send({embed: playlistEmbed})
     } catch (err) {
       console.log(err)

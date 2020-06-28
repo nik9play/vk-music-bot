@@ -60,7 +60,7 @@ export default async function execute(message, serverQueue, args, captcha, captc
     try {
       var connection = await voiceChannel.join()
       queueContruct.connection = connection
-      play(message.guild, queueContruct.songs[0])
+      play(message.guild, queueContruct.songs[0], queue)
     } catch (err) {
       console.log(err)
       queue.delete(message.guild.id)
@@ -68,7 +68,7 @@ export default async function execute(message, serverQueue, args, captcha, captc
     }
   } else {
     serverQueue.songs.push(song)
-    console.log(serverQueue.songs)
+    
     return message.channel.send({embed: songEmbed})
   }
 
