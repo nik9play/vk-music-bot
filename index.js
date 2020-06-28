@@ -21,10 +21,28 @@ const queue = new Map()
 
 const captchas = new Map()
 
+function serversStringByDigit(digit) {
+  switch(digit) {
+    case 1:
+      return "сервер"
+    case 2:
+    case 3:
+    case 4:
+      return "сервера"
+    default:
+      return "серверов"
+  }
+}
+
 client.once('ready', () => {
   console.log('Ready!')
   SDCClient.setAutoPost(client)
-  client.user.setPresence({activity: {name: "-vh", type: 2}})
+  const size = client.guilds.cache.size
+  client.user.setPresence({activity: {name: `-vh | ${size} ${serversStringByDigit(size % 10)}`, type: 2}})
+  setInterval(() => {
+    const size = client.guilds.cache.size
+    client.user.setPresence({activity: {name: `-vh | ${size} ${serversStringByDigit(size % 10)}`, type: 2}}) 
+  }, 600000)
 })
 
 client.once('reconnecting', () => {
