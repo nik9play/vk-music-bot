@@ -23,6 +23,7 @@ const captchas = new Map()
 
 client.once('ready', () => {
   console.log('Ready!')
+  SDCClient.setAutoPost(client)
   client.user.setPresence({activity: {name: "-vh", type: 2}})
 })
 
@@ -178,4 +179,3 @@ function serverCount(message) {
 }
 
 client.login(process.env.DISCORD_TOKEN)
-SDCClient.setAutoPost(client)
