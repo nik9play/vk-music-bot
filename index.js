@@ -2,6 +2,10 @@ import Discord from 'discord.js'
 import { prefix } from './config.json'
 import { Duration } from 'luxon'
 import gachiList from './gachi.json'
+import SDC from '@megavasiliy007/sdc-api'
+
+// стата для bots.discord-servers.com
+const SDCClient = new SDC(process.env.SDC_TOKEN)
 
 // Commands
 import execute from './commands/vp'
@@ -174,3 +178,4 @@ function serverCount(message) {
 }
 
 client.login(process.env.DISCORD_TOKEN)
+SDCClient.setAutoPost(client)

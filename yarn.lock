@@ -827,6 +827,10 @@
     "@discordjs/node-pre-gyp" "^0.1.0"
     node-addon-api "^2.0.0"
 
+"@megavasiliy007/sdc-api@github:MegaVasiliy007/sdc-api":
+  version "1.1.5"
+  resolved "https://codeload.github.com/MegaVasiliy007/sdc-api/tar.gz/0eb1da3d783cd97c3b3847b38312bf101a9e7148"
+
 "@types/color-name@^1.1.1":
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/@types/color-name/-/color-name-1.1.1.tgz#1c1261bbeaa10a8055bbc5d8ab84b7b2afc846a0"
