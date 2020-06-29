@@ -108,14 +108,24 @@ client.on('message', async message => {
   } else if (command == "vq") {
     if (!serverQueue) return message.reply('очередь пуста.')
 
+    if (isNaN(args[0]) && args[0]) return message.reply("неверный `offset`")
+    const songs = serverQueue.songs
+    let offset = args[0] ? (args[0] * 10) - 10 + 1 : 1
+    let count = offset + 9
+    
+    if (songs.length - (offset - 1) < 10) count = offset + songs.length - (offset - 1) - 1
+
+    if (offset > count) return message.reply("больше ничего нет.")
+    
     let list = ""
-    let current = `Сейчас играет: `
+    let current = `Сейчас играет: **${songs[0].artist} — ${songs[0].title}**`
 
-    serverQueue.songs.forEach((e, i) => { 
-      if (i == 0) current += `**${e.artist} — ${e.title}**`
-
+    for (let i = offset - 1; i <= count - 1; i++) {
+      const e = songs[i]
       list += `${i + 1}. ${e.artist} — ${e.title}\n`
-    })
+    }
+
+    if (count < songs.length) list += `\nЧтобы просмотреть список дальше, введите \`-vq ${parseInt(args[0] ?? 1) + 1}\``
 
     const embed = {
       color: 0x5181b8,
@@ -149,7 +159,6 @@ function sendCaptcha(message, serverQueue, key) {
 }
 
 function checkForVoiceLeave(message, serverQueue) {
-  console.log(serverQueue)
   if (serverQueue)
     if (serverQueue.connection)
       if (!serverQueue.connection.dispatcher && serverQueue.songs.length > 0) {
