@@ -15,9 +15,10 @@ export default async function addPlaylist(message, serverQueue, args, captcha, c
   if (!id || !id.includes("_")) return message.reply("неверный ID")
   const count = args[1] ?? 10
   const offset = args[2] ?? 1
+  const access_key = args[3]
   if (count > 100) return message.reply("слишком большой `count`.")
   if (id.length < 3) return message.reply("слишком короткий запрос.")
-  const res = await audioGetPlaylist(id.split("_")[0], id.split("_")[1], count, offset, captcha)
+  const res = await audioGetPlaylist(id.split("_")[0], id.split("_")[1], count, offset, access_key, captcha)
   let newArray = res.newArray
   if (res.status == "error") {
     if (res.message == "empty-api") return message.reply("не могу найти плейлист.")

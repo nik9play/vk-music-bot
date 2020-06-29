@@ -71,8 +71,8 @@ async function audioSearchOne(query, captcha) {
   }
 }
 
-async function audioGetPlaylist(owner_id, album_id, count, offset, captcha) {
-  const res = await fetch(encodeURI(`${vkApiLink}get${connectString}&count=10&offset=${offset - 1}&owner_id=${owner_id}&album_id=${album_id}&count=${count}${captcha ? `&captcha_sid=${captcha.sid}&captcha_key=${captcha.key}` : ``}`), {
+async function audioGetPlaylist(owner_id, album_id, count, offset, access_key, captcha) {
+  const res = await fetch(encodeURI(`${vkApiLink}get${connectString}&count=10&offset=${offset - 1}&owner_id=${owner_id}&album_id=${album_id}&count=${count}${captcha ? `&captcha_sid=${captcha.sid}&captcha_key=${captcha.key}` : ``}${access_key ? `&access_key=${access_key}` : ``}`), {
     headers: {
       "User-Agent": "KateMobileAndroid/56 lite-460 (Android 4.4.2; SDK 19; x86; unknown Android SDK built for x86; en)"
     }
