@@ -125,8 +125,6 @@ client.on('message', async message => {
       list += `${i + 1}. ${e.artist} — ${e.title}\n`
     }
 
-    if (count < songs.length) list += `\nЧтобы просмотреть список дальше, введите \`-vq ${parseInt(args[0] ?? 1) + 1}\``
-
     const embed = {
       color: 0x5181b8,
       title: "**Музыка в очереди:**",
@@ -136,6 +134,10 @@ client.on('message', async message => {
           name: current,
           value: `${serverQueue.connection.dispatcher.paused ? ":pause_button:" : ":arrow_forward:"} ${Duration.fromMillis(serverQueue.connection.dispatcher.streamTime).toFormat("mm:ss")}`
         },
+        {
+          name: `${args[0] ?? 1} / ${Math.ceil(songs.length / 10)}`,
+          value: (count < songs.length) ? `\nЧтобы просмотреть список дальше, введите \`-vq ${parseInt(args[0] ?? 1) + 1}\`` : "Конец."
+        }
       ]
     }
 
