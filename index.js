@@ -92,7 +92,7 @@ client.on('message', async message => {
     addPlaylist(message, serverQueue, args, null, captchas, queue)
     return 
   } else if (command == "vsh") {
-    shuffle(message, serverQueue)
+    shuffle(message, serverQueue, queue)
     return
   } else if (command == "vh") {
     help(message)

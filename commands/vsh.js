@@ -1,6 +1,6 @@
 import play from './play'
 
-export default async function shuffle(message, serverQueue) {
+export default async function shuffle(message, serverQueue, queue) {
   if (!serverQueue) return message.reply('нечего перемешивать.')
   if (serverQueue.songs.length < 3) return message.reply('слишком маленькая очередь.')
   function shuffleArray(array) {
@@ -21,6 +21,6 @@ export default async function shuffle(message, serverQueue) {
   const newArray = shuffleArray(serverQueue.songs)
 
   serverQueue.songs = newArray
-  play(message.guild, serverQueue.songs[0])
+  play(message.guild, serverQueue.songs[0], queue)
   message.reply("перемешано.")
 }
