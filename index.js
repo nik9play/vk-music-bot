@@ -132,7 +132,7 @@ client.on('message', async message => {
       fields: [
         {
           name: current,
-          value: `${serverQueue.connection.dispatcher.paused ? ":pause_button:" : ":arrow_forward:"} ${Duration.fromMillis(serverQueue.connection.dispatcher.streamTime).toFormat("mm:ss")}`
+          value: `${serverQueue.connection.dispatcher.paused ? ":pause_button:" : ":arrow_forward:"} ${Duration.fromMillis(serverQueue.connection.dispatcher.streamTime).toFormat("mm:ss")} / ${Duration.fromObject({seconds: songs[0].duration}).toFormat("mm:ss")}`
         },
         {
           name: `${args[0] ?? 1} / ${Math.ceil(songs.length / 10)}`,
@@ -191,7 +191,7 @@ function help(message) {
 \`-vsh\` — перемешать очередь
 \`-vn\` — пропустить музыку.
 \`-vu\` — добавить музыку пользователя в очередь. Принимает 3 аргумента:
-\`-vг <id>(обяз.) <count> <offset>\`. 
+\`-vu <id>(обяз.) <count> <offset>\`. 
 \`-vpl\` — добавить музыку в очередь из плейлиста. Принимает те же 3 аргумента и дополнительно еще один:
 \`-vpl <id>(обяз.) <count> <offset> <access_key>\`. 
 => \`id\` – ID плейлиста (или пользователя) из ссылки. Например __**44655282_7**__ из *vk.com/audiosXXXXXXXXXX?section=playlists&z=audio_playlist__**44655282_7**__*.

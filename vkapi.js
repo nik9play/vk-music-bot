@@ -88,7 +88,8 @@ async function audioGetPlaylist(owner_id, album_id, count, offset, access_key, c
           newArray.push({
             title: e.title,
             artist: e.artist,
-            url: e.url
+            url: e.url,
+            duration: e.duration
           })
         })
   
@@ -135,7 +136,8 @@ async function audioGetUser(owner_id, count, offset, captcha) {
           newArray.push({
             title: e.title,
             artist: e.artist,
-            url: e.url
+            url: e.url,
+            duration: e.duration
           })
         })
   
