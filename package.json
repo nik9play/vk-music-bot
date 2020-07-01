@@ -13,7 +13,8 @@
     "discord.js": "^12.2.0",
     "ffmpeg-static": "^4.2.3",
     "luxon": "^1.24.1",
-    "node-fetch": "^2.6.0"
+    "node-fetch": "^2.6.0",
+    "sodium": "^3.0.2"
   },
   "devDependencies": {
     "@babel/core": "^7.10.2",
