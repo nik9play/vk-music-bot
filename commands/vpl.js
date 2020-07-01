@@ -39,7 +39,7 @@ export default async function addPlaylist(message, serverQueue, args, captcha, c
 
   const playlistEmbed = {
     color: 0x5181b8,
-    title: `Добавлено треков: **${res.count}**.`,
+    title: `Добавлено треков: **${newArray.length}**.`,
     author: {
       name: "Плейлист добавлен!"
     }
