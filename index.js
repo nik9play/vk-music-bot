@@ -21,8 +21,12 @@ const queue = new Map()
 
 const captchas = new Map()
 
-function serversStringByDigit(digit) {
-  switch(digit) {
+function serversStringByDigit(digits) {
+  if (digits >= 10 && digits <= 20) {
+    return "серверов"
+  }
+
+  switch(digits % 10) {
     case 1:
       return "сервер"
     case 2:
@@ -38,10 +42,10 @@ client.once('ready', () => {
   console.log('Ready!')
   SDCClient.setAutoPost(client)
   const size = client.guilds.cache.size
-  client.user.setPresence({activity: {name: `-vh | ${size} ${serversStringByDigit(size % 10)}`, type: 2}})
+  client.user.setPresence({activity: {name: `-vh | ${size} ${serversStringByDigit(size % 100)}`, type: 2}})
   setInterval(() => {
     const size = client.guilds.cache.size
-    client.user.setPresence({activity: {name: `-vh | ${size} ${serversStringByDigit(size % 10)}`, type: 2}}) 
+    client.user.setPresence({activity: {name: `-vh | ${size} ${serversStringByDigit(size % 100)}`, type: 2}}) 
   }, 600000)
 })
 
