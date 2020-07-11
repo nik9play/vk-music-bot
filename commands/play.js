@@ -7,7 +7,7 @@ export default async function play(guild, song, queue) {
     return
   }
 
-  const dispatcher = serverQueue.connection.play(song.url)
+  serverQueue.connection.play(song.url, { volume: false })
     .on('finish', () => {
       console.log('Music ended!')
       serverQueue.songs.shift()
@@ -16,5 +16,4 @@ export default async function play(guild, song, queue) {
     .on('error', error => {
       console.error(error)
     })
-  dispatcher.setVolumeLogarithmic(serverQueue.volume / 5)
 }

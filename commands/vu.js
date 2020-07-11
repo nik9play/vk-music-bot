@@ -38,7 +38,7 @@ export default async function addUserAudio(message, serverQueue, args, captcha, 
 
   const playlistEmbed = {
     color: 0x5181b8,
-    title: `Добавлено треков: **${count}**.`,
+    title: `Добавлено треков: **${newArray.length}**.`,
     author: {
       name: "Музыка пользователя добавлена!"
     }
