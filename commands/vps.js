@@ -12,8 +12,10 @@ export default async function pause(message, serverQueue, queue) {
       serverQueueNew.songs = []
       serverQueueNew.connection.dispatcher.end()
     }, 1800000)
+    message.react('⏸️')
   } else {
     serverQueue.connection.dispatcher.resume()
+    message.react('▶️')
     if (serverQueue.exitTimer) clearTimeout(serverQueue.exitTimer)
   }
 }
