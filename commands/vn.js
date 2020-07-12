@@ -4,5 +4,5 @@ export default async function skip(message, serverQueue) {
   if (!serverQueue) return message.reply('некуда пропускать.')
   await serverQueue.connection.dispatcher.resume()
   serverQueue.connection.dispatcher.end()
-  message.react('👍')
+  message.react('⏭️')
 }

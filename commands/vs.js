@@ -5,5 +5,5 @@ export default async function stop(message, serverQueue) {
   await serverQueue.connection.dispatcher.resume()
   serverQueue.songs = []
   serverQueue.connection.dispatcher.end()
-  message.react('👍')
+  message.react('⏹️')
 }
