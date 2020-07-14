@@ -105,11 +105,11 @@ function sendCaptcha(message, args, options) {
     captcha.key = args[0]
     options.captcha = captcha
     if (captcha.type == "vp") {
-      client.commands.get("vp").execute(message, args, options)
+      client.commands.get("vp").execute(message, captcha.args, options)
     } else if (captcha.type == "addPlaylist") {
-      client.commands.get("vpl").execute(message, args, options)
+      client.commands.get("vpl").execute(message, captcha.args, options)
     } else if (captcha.type == "addUser") {
-      client.commands.get("vu").execute(message, args, options)
+      client.commands.get("vu").execute(message, captcha.args, options)
     }
     captchas.delete(message.member.id)
   }
