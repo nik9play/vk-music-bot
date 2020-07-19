@@ -53,10 +53,10 @@ export default {
   
       options.queue.set(message.guild.id, queueContruct)
   
-      queueContruct.songs = queueContruct.songs.concat(newArray)
+      queueContruct.songs = [...queueContruct.songs, ...newArray]
   
       try {
-        var connection = await voiceChannel.join()
+        let connection = await voiceChannel.join()
         queueContruct.connection = connection
         play(message.guild, queueContruct.songs[0], options)
         return message.channel.send({embed: playlistEmbed})
