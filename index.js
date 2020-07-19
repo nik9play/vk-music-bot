@@ -60,7 +60,7 @@ client.on('message', async message => {
 
   let args = message.content.slice(prefix.length).split(/ +/)
   const command = args.shift().toLowerCase()
-  message.channel.startTyping()
+
   if (command == "vh") {
     args = client.commands
   }

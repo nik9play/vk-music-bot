@@ -6,6 +6,7 @@ export default {
   name: "vpl",
   description: "Добавить музыку в очередь из плейлиста. Принимает 4 аргумента: `-vpl <id>(обяз.) <count> <offset> <access_key>`.",
   execute: async function(message, args, options) {
+    message.channel.startTyping()
     const voiceChannel = message.member.voice.channel
     if (!voiceChannel) return message.reply('вы должны быть в голосовом канале чтобы включить музыку.')
   
