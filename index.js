@@ -60,7 +60,7 @@ client.on('message', async message => {
 
   let args = message.content.slice(prefix.length).split(/ +/)
   const command = args.shift().toLowerCase()
-  
+  message.channel.startTyping()
   if (command == "vh") {
     args = client.commands
   }
@@ -77,7 +77,7 @@ client.on('message', async message => {
 
   if (command == "vcaptcha") {
     sendCaptcha(message, args, options)
-    return
+    return message.channel.stopTyping()
   }
 
   if (!client.commands.has(command)) return
@@ -85,7 +85,7 @@ client.on('message', async message => {
   if (captchas.get(message.member.id)) {
     const captcha = captchas.get(message.member.id)
     message.reply(`Прежде чем выполнить данный запрос, вы должны ввести капчу! Введите \`-vcaptcha <текст_с_картинки>\`. ${captcha.url}`)
-    return
+    return message.channel.stopTyping()
   }
 
   if (checkForVoiceLeave(message, serverQueue)) {
@@ -96,6 +96,8 @@ client.on('message', async message => {
     client.commands.get(command).execute(message, args, options)
   } catch (error) {
     console.error(error)
+  } finally {
+    message.channel.stopTyping()
   }
 })
 
