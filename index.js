@@ -3,10 +3,9 @@ import { prefix } from './config.json'
 import SDC from '@megavasiliy007/sdc-api'
 import fs from 'fs'
 
-// стата для bots.discord-servers.com
 const SDCClient = new SDC(process.env.SDC_TOKEN)
-
 const client = new Discord.Client()
+
 const queue = new Map()
 const captchas = new Map()
 const enable247List = new Set()
@@ -15,8 +14,9 @@ client.commands = new Discord.Collection()
 const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
 
 for (const file of commandFiles) {
-  const command = require(`./commands/${file}`)
-	client.commands.set(command.default.name, command.default)
+  import(`./commands/${file}`).then(command => {
+    client.commands.set(command.default.name, command.default)
+  })
 }
 
 function serversStringByDigit(digits) {
