@@ -1,10 +1,11 @@
 import getQueueContructTemplate from '../tools/getQueueConstructTemplate'
 import { audioGetPlaylist } from '../vkapi'
 import play from '../tools/play'
+import parsePlaylistURL from '../tools/parsePlaylistURL'
 
 export default {
   name: "vpl",
-  description: "Добавить музыку в очередь из плейлиста. Принимает 4 аргумента: `-vpl <id>(обяз.) <count> <offset> <access_key>`.",
+  description: "Добавить музыку в очередь из плейлиста. Принимает 4 аргумента: `-vpl <ссылка на плейлист или альбом>(обяз.) <count> <offset>`.",
   execute: async function(message, args, options) {
     message.channel.startTyping()
     const voiceChannel = message.member.voice.channel
@@ -15,13 +16,20 @@ export default {
       return message.reply('мне нужны права чтобы играть музыку!')
     }
   
-    const id = args[0]
-    if (!id || !id.includes("_")) return message.reply("неверный ID")
+    const url = args[0]
+    if (!url) return message.reply("неверная ссылка.")
+    const urlObj = parsePlaylistURL(url)
+    
+    const id = urlObj.id
+    const access_key = urlObj.access_key
+
+    if (!id) return message.reply("неверная ссылка.")
+
     const count = args[1] ?? 10
     const offset = args[2] ?? 1
-    const access_key = args[3]
+    
     if (count > 100) return message.reply("слишком большой `count`.")
-    if (id.length < 3) return message.reply("слишком короткий запрос.")
+
     const res = await audioGetPlaylist(id.split("_")[0], id.split("_")[1], count, offset, access_key, options.captcha)
     let newArray = res.newArray
     if (res.status == "error") {
