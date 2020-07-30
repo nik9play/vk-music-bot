@@ -4,7 +4,10 @@ import SDC from '@megavasiliy007/sdc-api'
 import fs from 'fs'
 
 const SDCClient = new SDC(process.env.SDC_TOKEN)
-const client = new Discord.Client()
+const client = new Discord.Client({
+  messageCacheLifetime: 60,
+  messageSweepInterval: 10
+})
 
 const queue = new Map()
 const captchas = new Map()
