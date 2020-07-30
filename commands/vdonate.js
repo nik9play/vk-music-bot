@@ -7,14 +7,14 @@ redisClient.on("error", function(error) {
 
 export default {
   name: "vdonate",
-  description: "Информация о донатах боту и статус Премиума сервера.",
+  description: "Информация о донатах и Премиум статусе сервера.",
   execute: async function(message) {
     redisClient.sismember("premium-server-list", message.guild.id.toString(), (err, reply) => {
       const info = 
 `Статус **Премиума**:  ${reply ? ":white_check_mark:" : ":x:"}
-${reply ? "**Спасибо за поддержку бота!**\n" : "\n"}
+${reply ? "**Спасибо за поддержку бота!**\n" : ""}
 Вы можете приобрести **Премиум**, задонатив 15₽ или больше по этой ссылке: https://vk.com/vkmusicbotds?w=app6887721_-197274096
-В комментарий к переводу укажите данный ID: \`${message.guild.id}\`.
+**В комментарий к переводу укажите данный ID**: \`${message.guild.id}\`.
 
 Премиум дает Вам следующие возможности:
 - Режим 24/7
