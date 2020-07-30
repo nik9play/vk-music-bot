@@ -7,7 +7,7 @@ export default {
     args.forEach(e => {
       description += `\`-${e.name}\` — ${e.description.charAt(0).toLowerCase() + e.description.slice(1)}\n`
     })
-
+    
     const embed = {
       color: 0x5181b8,
       title: "**Команды:**",
@@ -16,7 +16,13 @@ export default {
         url: "https://vkmusicbot.megaworld.space/",
         icon_url: "https://vkmusicbot.megaworld.space/favicon-32x32.23c475bc.png"
       },
-      description
+      description,
+      fields: [
+        {
+          name: 'Группа VK',
+          value: 'https://vk.com/vkmusicbotds'
+        }
+      ]
     }
   
     message.channel.send({embed: embed})
