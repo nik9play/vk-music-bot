@@ -4,7 +4,6 @@ export default async function(options, message, voiceChannel, newArray) {
   if (!options.serverQueue) {
     const queueContruct = {
       textChannel: message.channel,
-      voiceChannel: voiceChannel,
       connection: null,
       songs: [],
       volume: 5,
