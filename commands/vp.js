@@ -1,6 +1,5 @@
 import { audioSearchOne } from '../vkapi'
 import { Duration } from 'luxon'
-import getQueueConstructTemplate from  '../tools/getQueueConstructTemplate'
 import play from '../tools/play'
 
 export default {
@@ -53,7 +52,13 @@ export default {
     }
   
     if (!options.serverQueue) {
-      const queueContruct = getQueueConstructTemplate(message, voiceChannel)
+      const queueContruct = {
+        textChannel: message.channel,
+        connection: null,
+        songs: [],
+        volume: 5,
+        playing: true,
+      }
   
       options.queue.set(message.guild.id, queueContruct)
   
