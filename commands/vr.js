@@ -1,6 +1,6 @@
 export default {
   name: "vr",
-  description: "Удалить трек/треки из очереди. Например: `-vr 3-8`",
+  description: "Удалить трек/треки из очереди. Например: `-vr 3-8` или `-vr 3 5 6-8`",
   execute: async function(message, args, options) {
     if (!options.serverQueue) return
     const oldLength = options.serverQueue.songs.length
