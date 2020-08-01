@@ -21,6 +21,10 @@ export default {
         {
           name: 'Группа VK',
           value: 'https://vk.com/vkmusicbotds'
+        },
+        {
+          name: 'Подробное руководство по командам',
+          value: 'https://vkmusicbot.megaworld.space/#faq'
         }
       ]
     }
