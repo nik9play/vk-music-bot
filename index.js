@@ -78,6 +78,8 @@ client.on('message', async message => {
     captcha: undefined
   }
 
+  console.log(options.serverQueue)
+
   if (command == "vcaptcha") {
     sendCaptcha(message, args, options)
     return message.channel.stopTyping()
@@ -89,10 +91,6 @@ client.on('message', async message => {
     const captcha = captchas.get(message.member.id)
     message.reply(`Прежде чем выполнить данный запрос, вы должны ввести капчу! Введите \`-vcaptcha <текст_с_картинки>\`. ${captcha.url}`)
     return message.channel.stopTyping()
-  }
-
-  if (checkForVoiceLeave(message, serverQueue)) {
-    serverQueue = queue.get(message.guild.id)
   }
 
   try {
@@ -118,16 +116,6 @@ function sendCaptcha(message, args, options) {
     }
     captchas.delete(message.member.id)
   }
-}
-
-function checkForVoiceLeave(message, serverQueue) {
-  if (serverQueue)
-    if (serverQueue.connection)
-      if (!serverQueue.connection.dispatcher && serverQueue.songs.length > 0) {
-        serverQueue.songs = []
-        queue.delete(message.guild.id)
-        return true
-      }
 }
 
 client.login(process.env.DISCORD_TOKEN)

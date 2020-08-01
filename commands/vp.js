@@ -61,7 +61,12 @@ export default {
       message.channel.send({embed: songEmbed})
   
       try {
-        var connection = await voiceChannel.join()
+        let connection = await voiceChannel.join()
+
+        connection.on("disconnect", () => {
+          options.queue.delete(message.guild.id)
+        })
+
         queueContruct.connection = connection
         play(message.guild, queueContruct.songs[0], options)
       } catch (err) {

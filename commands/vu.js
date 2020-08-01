@@ -1,6 +1,5 @@
-import getQueueContructTemplate from '../tools/getQueueConstructTemplate'
 import { audioGetUser } from '../vkapi'
-import play from '../tools/play'
+import addToQueue from '../tools/addToQueue'
 
 export default {
   name: "vu",
@@ -48,27 +47,7 @@ export default {
       }
     }
   
-    if (!options.serverQueue) {
-      const queueContruct = getQueueContructTemplate(message, voiceChannel)
-  
-      options.queue.set(message.guild.id, queueContruct)
-  
-      queueContruct.songs = [...queueContruct.songs, ...newArray]
-  
-      try {
-        let connection = await voiceChannel.join()
-        queueContruct.connection = connection
-        play(message.guild, queueContruct.songs[0], options)
-        return message.channel.send({embed: playlistEmbed})
-      } catch (err) {
-        console.log(err)
-        options.queue.delete(message.guild.id)
-        return message.channel.send(err)
-      }
-    } else {
-      options.serverQueue.songs = options.serverQueue.songs.concat(newArray)
-  
-      return message.channel.send({embed: playlistEmbed})
-    }
+    await addToQueue(options, message, voiceChannel, newArray)
+    return message.channel.send({embed: playlistEmbed})
   }
 } 
