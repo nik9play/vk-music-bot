@@ -41,7 +41,7 @@ function serversStringByDigit(digits) {
 
 client.once('ready', () => {
   console.log('Ready!')
-  SDCClient.setAutoPost(client)
+  if (process.env.NODE_ENV == "production") SDCClient.setAutoPost(client)
   const size = client.guilds.cache.size
   client.user.setPresence({activity: {name: `-vh | ${size} ${serversStringByDigit(size % 100)}`, type: 2}})
   setInterval(() => {
@@ -78,7 +78,7 @@ client.on('message', async message => {
     captcha: undefined
   }
 
-  console.log(options.serverQueue)
+  console.log(client.voice.connections.get(message.guild.id))
 
   if (command == "vcaptcha") {
     sendCaptcha(message, args, options)
