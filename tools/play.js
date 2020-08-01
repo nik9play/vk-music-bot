@@ -2,8 +2,6 @@ export default async function play(guild, song, options) {
   const serverQueue = options.queue.get(guild.id)
   const voiceConnection = guild.client.voice.connections.get(guild.id)
 
-  voiceConnection.voice.setDeaf(true)
-
   if (!song) {
     if (!options.enable247List.has(guild.id) && voiceConnection) 
       voiceConnection.channel.leave()
@@ -11,6 +9,8 @@ export default async function play(guild, song, options) {
     options.queue.delete(guild.id)
     return
   }
+
+  voiceConnection.voice.setDeaf(true)
 
   serverQueue.connection.play(song.url, { volume: false, highWaterMark: 50 })
     .on('finish', () => {
