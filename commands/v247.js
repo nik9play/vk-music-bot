@@ -16,8 +16,10 @@ export default {
             return voiceConnection.channel.leave()
 
           if (voiceConnection.dispatcher)
-            if (voiceConnection.dispatcher.paused)
+            if (voiceConnection.dispatcher.paused) {
+              clearTimeout(options.serverQueue.exitTimer)
               return voiceConnection.channel.leave()
+            } 
         }
       } else {
         options.enable247List.add(message.guild.id)

@@ -7,6 +7,8 @@ export default {
     if (!voiceConnection) return message.reply('бот не в голосовом канале.')
     if (!options.serverQueue) return message.reply('нечего останавливать.')
 
+    clearTimeout(options.serverQueue.exitTimer)
+
     await voiceConnection.dispatcher.resume()
     options.serverQueue.songs = []
     voiceConnection.dispatcher.end()
