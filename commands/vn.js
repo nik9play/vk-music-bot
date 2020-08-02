@@ -2,11 +2,13 @@ export default {
   name: "vn",
   description: "Пропустить трек",
   execute: async function skip(message, _args, options) {
-    const voiceChannel = message.member.voice.channel
-    if (!voiceChannel) return message.reply('вы должны быть в голосовом канале чтобы пропустить музыку.')
+    const voiceConnection = message.client.voice.connections.get(message.guild.id)
+    
+    if (!voiceConnection) return message.reply('бот не в голосовом канале.')
     if (!options.serverQueue) return message.reply('некуда пропускать.')
-    await options.serverQueue.connection.dispatcher.resume()
-    options.serverQueue.connection.dispatcher.end()
+
+    await voiceConnection.dispatcher.resume()
+    voiceConnection.dispatcher.end()
     message.react('⏭️')
   }
 } 
