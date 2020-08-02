@@ -10,14 +10,6 @@ export default {
       if (options.enable247List.has(message.guild.id)) {
         options.enable247List.delete(message.guild.id)
         message.reply("режим 24/7 выключен.")
-        
-        // if (options.serverQueue) {
-        //   if (options.serverQueue.connection.dispatcher.paused) {
-        //     options.serverQueue.connection.dispatcher.resume()
-        //     if (options.serverQueue.exitTimer) 
-        //       clearTimeout(options.serverQueue.exitTimer)
-        //   }
-        // }
 
         if (voiceConnection) {
           if (!options.serverQueue)
