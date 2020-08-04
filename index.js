@@ -92,7 +92,7 @@ client.on('message', async message => {
 
   if (captchas.get(message.member.id)) {
     const captcha = captchas.get(message.member.id)
-    message.reply(`Прежде чем выполнить данный запрос, вы должны ввести капчу! Введите \`-vcaptcha <текст_с_картинки>\`. ${captcha.url}`)
+    message.reply(`прежде чем выполнить данный запрос, вы должны ввести капчу! Введите \`-vcaptcha <текст_с_картинки>\`. ${captcha.url}`)
     return message.channel.stopTyping()
   }
 
@@ -118,6 +118,8 @@ function sendCaptcha(message, args, options) {
       client.commands.get("vu").execute(message, captcha.args, options)
     }
     captchas.delete(message.member.id)
+  } else {
+    message.reply("капчу вводить не надо.")
   }
 }
 
