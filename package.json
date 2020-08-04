@@ -11,6 +11,8 @@
   "dependencies": {
     "@discordjs/opus": "^0.3.2",
     "@megavasiliy007/sdc-api": "github:MegaVasiliy007/sdc-api",
+    "axios": "^0.19.2",
+    "axios-rate-limit": "^1.2.1",
     "discord.js": "^12.2.0",
     "ffmpeg-static": "^4.2.3",
     "luxon": "^1.24.1",

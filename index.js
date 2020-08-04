@@ -2,6 +2,10 @@ import Discord from 'discord.js'
 import { prefix } from './config.json'
 import SDC from '@megavasiliy007/sdc-api'
 import fs from 'fs'
+import rateLimit from 'axios-rate-limit'
+import axios from 'axios'
+
+const http = rateLimit(axios.create(), { maxRPS: 3 })
 
 const SDCClient = new SDC(process.env.SDC_TOKEN)
 const client = new Discord.Client({
@@ -75,10 +79,9 @@ client.on('message', async message => {
     captchas,
     queue,
     enable247List,
-    captcha: undefined
+    captcha: undefined,
+    http
   }
-
-  console.log(client.voice.connections.get(message.guild.id))
 
   if (command == "vcaptcha") {
     sendCaptcha(message, args, options)

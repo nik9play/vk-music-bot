@@ -29,12 +29,13 @@ export default {
     
     if (count > 100) return message.reply("слишком большой `count`.")
 
-    const res = await audioGetPlaylist(id.split("_")[0], id.split("_")[1], count, offset, access_key, options.captcha)
+    const res = await audioGetPlaylist(id.split("_")[0], id.split("_")[1], count, offset, access_key, options.captcha, options.http)
     let newArray = res.newArray
     if (res.status == "error") {
-      if (res.message == "empty-api") return message.reply("не могу найти плейлист.")
+      console.log(res)
+      if (res.type == "empty") return message.reply("не могу найти плейлист.")
   
-      if (res.details.error_code == 14) {
+      if (res.type == "captcha") {
         options.captchas.set(message.member.id, {
           type: "addPlaylist",
           args: args,
@@ -42,7 +43,7 @@ export default {
           sid: res.details.captcha_sid
         })
         const captcha = options.captchas.get(message.member.id)
-        return message.reply(`Прежде чем выполнить данный запрос, вы должны ввести капчу! Введите \`-vcaptcha <текст_с_картинки>\`. ${captcha.url}`)
+        return message.reply(`прежде чем выполнить данный запрос, вы должны ввести капчу! Введите \`-vcaptcha <текст_с_картинки>\`. ${captcha.url}`)
       }
   
       return message.reply("ошибка. ¯\\_(ツ)_/¯")

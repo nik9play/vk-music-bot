@@ -1,4 +1,4 @@
-import { audioSearchOne } from '../vkapi'
+import { audioGetOne } from '../vkapi'
 import { Duration } from 'luxon'
 import play from '../tools/play'
 
@@ -16,25 +16,27 @@ export default {
   
     const query = args.join(" ").trim()
     if (query.length < 3) return message.reply("слишком короткий запрос.")
-    const songInfo = await audioSearchOne(query, options.captcha)
-    if (songInfo.status == "error") {
-      console.log(songInfo)
+
+    const res = await audioGetOne(query, options.captcha, options.http)
+    
+    if (res.status == "error") {
+      if (res.type == "empty") return message.reply("не могу найти трек.")
   
-      if (songInfo.message == "empty-api") return message.reply("не могу найти трек.")
-  
-      if (songInfo.details.error_code == 14) {
+      if (res.type == "captcha") {
         options.captchas.set(message.member.id, {
           type: "vp",
           args: args,
-          url: songInfo.details.captcha_img,
-          sid: songInfo.details.captcha_sid
+          url: res.data.captcha_img,
+          sid: res.data.captcha_sid
         })
         const captcha = options.captchas.get(message.member.id)
-        return message.reply(`Прежде чем выполнить данный запрос, вы должны ввести капчу! Введите \`-vcaptcha <текст_с_картинки>\`. ${captcha.url}`)
+        return message.reply(`прежде чем выполнить данный запрос, вы должны ввести капчу! Введите \`-vcaptcha <текст_с_картинки>\`. ${captcha.url}`)
       }
+
+      return message.reply("ошибка.")
     }
   
-    const song = songInfo.songInfo
+    const song = res.songInfo
   
     const songEmbed = {
       color: 0x5181b8,

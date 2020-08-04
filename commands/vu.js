@@ -20,20 +20,22 @@ export default {
     const offset = args[2] ?? 1
     if (count > 100) return message.reply("слишком большой `count`.")
     if (id.length < 3) return message.reply("слишком короткий запрос.")
-    const res = await audioGetUser(id, count, offset, options.captcha)
+
+    const res = await audioGetUser(id, count, offset, options.captcha, options.http)
+
     let newArray = res.newArray
     if (res.status == "error") {
-      if (res.message == "empty-api") return message.reply("не могу найти аудио у этого пользователя.")
+      if (res.type == "empty") return message.reply("не могу найти аудио у этого пользователя.")
   
-      if (res.details.error_code == 14) {
+      if (res.type == "captcha") {
         options.captchas.set(message.member.id, {
           type: "addUser",
           args: args,
-          url: res.details.captcha_img,
-          sid: res.details.captcha_sid
+          url: res.data.captcha_img,
+          sid: res.data.captcha_sid
         })
         const captcha = options.captchas.get(message.member.id)
-        return message.reply(`Прежде чем выполнить данный запрос, вы должны ввести капчу! Введите \`-vcaptcha <текст_с_картинки>\`. ${captcha.url}`)
+        return message.reply(`прежде чем выполнить данный запрос, вы должны ввести капчу! Введите \`-vcaptcha <текст_с_картинки>\`. ${captcha.url}`)
       }
   
       return message.reply("ошибка. ¯\\_(ツ)_/¯")
