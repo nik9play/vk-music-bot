@@ -1,6 +1,7 @@
 export default {
   name: "vh",
   description: "Показать справку",
+  cooldown: 1,
   execute: async function(message, args) {
     let description = ""
 

@@ -3,6 +3,7 @@ import { Duration } from 'luxon'
 export default {
   name: "vq",
   description: "Показать очередь",
+  cooldown: 3,
   execute: async function(message, args, options) {
     const serverQueue = options.serverQueue
 

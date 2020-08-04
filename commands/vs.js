@@ -1,6 +1,7 @@
 export default {
   name: "vs",
   description: "Выключить музыку и очистить очередь",
+  cooldown: 5,
   execute: async function(message, _args, options) {
     const voiceConnection = message.client.voice.connections.get(message.guild.id)
 

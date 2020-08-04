@@ -1,6 +1,7 @@
 export default {
   name: "vn",
   description: "Пропустить трек",
+  cooldown: 3,
   execute: async function skip(message, _args, options) {
     const voiceConnection = message.client.voice.connections.get(message.guild.id)
     

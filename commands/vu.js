@@ -4,6 +4,7 @@ import addToQueue from '../tools/addToQueue'
 export default {
   name: "vu",
   description: "Добавить музыку пользователя в очередь. Принимает 3 аргумента: `-vu <id>(обяз.) <count> <offset>`",
+  cooldown: 5,
   execute: async function(message, args, options) {
     message.channel.startTyping()
     const voiceChannel = message.member.voice.channel

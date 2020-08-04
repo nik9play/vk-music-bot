@@ -5,6 +5,7 @@ import addToQueue from '../tools/addToQueue'
 export default {
   name: "vpl",
   description: "Добавить музыку в очередь из плейлиста. Принимает 4 аргумента: `-vpl <ссылка на плейлист или альбом>(обяз.) <count> <offset>`.",
+  cooldown: 5,
   execute: async function(message, args, options) {
     message.channel.startTyping()
     const voiceChannel = message.member.voice.channel

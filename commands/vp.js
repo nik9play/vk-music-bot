@@ -5,6 +5,7 @@ import play from '../tools/play'
 export default {
   name: "vp",
   description: "Включить музыку по названию или по ID",
+  cooldown: 4,
   execute: async function(message, args, options) {
     const voiceChannel = message.member.voice.channel
     if (!voiceChannel) return message.reply('вы должны быть в голосовом канале чтобы включить музыку.')
