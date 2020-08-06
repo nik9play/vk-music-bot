@@ -94,7 +94,7 @@ client.on('message', async message => {
 
   if (!client.commands.has(command)) return
 
-  if (captchas.get(message.member.id)) {
+  if (captchas.has(message.member.id)) {
     const captcha = captchas.get(message.member.id)
     message.reply(`прежде чем выполнить данный запрос, вы должны ввести капчу! Введите \`-vcaptcha <текст_с_картинки>\`. ${captcha.url}`)
     return message.channel.stopTyping()

@@ -11,7 +11,7 @@ export default function(message, callback) {
       console.error(err)
 
     if (reply == 0)
-      return message.reply("Ваш сервер не имеет **Премиума**. Подробности: `-vdonate`")
+      return message.reply("ваш сервер не имеет **Премиума**. Подробности: `-vdonate`")
     else
       return callback()
   })
