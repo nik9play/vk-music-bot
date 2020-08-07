@@ -14,7 +14,7 @@ export default {
               const voiceConnection = message.client.voice.connections.get(message.guild.id)
               voiceConnection.channel.leave()
             }
-          }, 10000)
+          }, 1800000)
           message.react('⏸️')
         } else {
           voiceConnection.dispatcher.resume()
