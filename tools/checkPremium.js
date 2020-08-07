@@ -5,14 +5,16 @@ redisClient.on("error", function(error) {
   console.error(error)
 })
 
-export default function(message, callback) {
+export default async function(message, replyMessage = "ваш сервер не имеет **Премиума**. Подробности: `-vdonate`") {
   redisClient.sismember("premium-server-list", message.guild.id.toString(), (err, reply) => {
     if (err)
       console.error(err)
 
-    if (reply == 0)
-      return message.reply("ваш сервер не имеет **Премиума**. Подробности: `-vdonate`")
-    else
-      return callback()
+    if (reply == 0) {
+      message.reply(replyMessage)
+      return false
+    } else {
+      return true
+    }
   })
 }

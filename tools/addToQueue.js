@@ -1,7 +1,16 @@
 import play from '../tools/play'
+import checkPremium from '../tools/checkPremium'
 
 export default async function(options, message, voiceChannel, newArray) {
   if (!options.serverQueue) {
+    if (newArray.length > 200) {
+      const premium = await checkPremium(message, "ваш сервер не имеет **Премиума**, поэтому очередь сокращена до 200. Подробности: `-vdonate`")
+
+      if (!premium) {
+        newArray.length = 200
+      }
+    }
+
     const queueContruct = {
       textChannel: message.channel,
       connection: null,
@@ -28,6 +37,15 @@ export default async function(options, message, voiceChannel, newArray) {
       options.queue.delete(message.guild.id)
     }
   } else {
-    options.serverQueue.songs = [...options.serverQueue.songs, ...newArray]
+    let arr = [...options.serverQueue.songs, ...newArray]
+    if (arr.length > 200) {
+      const premium = await checkPremium(message, "ваш сервер не имеет **Премиума**, поэтому очередь сокращена до 200. Подробности: `-vdonate`")
+
+      if (!premium) {
+        arr.length = 200
+      }
+    }
+
+    options.serverQueue.songs = arr
   }
 }

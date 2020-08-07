@@ -1,12 +1,13 @@
 import { audioGetOne } from '../vkapi'
 import { Duration } from 'luxon'
-import play from '../tools/play'
+import addToQueue from '../tools/addToQueue'
 
 export default {
   name: "vp",
   description: "Включить музыку по названию или по ID",
   cooldown: 4,
   execute: async function(message, args, options) {
+    message.channel.startTyping()
     const voiceChannel = message.member.voice.channel
     if (!voiceChannel) return message.reply('вы должны быть в голосовом канале чтобы включить музыку.')
   
@@ -54,38 +55,7 @@ export default {
       ]
     }
   
-    if (!options.serverQueue) {
-      const queueContruct = {
-        textChannel: message.channel,
-        connection: null,
-        songs: [],
-        volume: 5,
-        playing: true,
-      }
-  
-      options.queue.set(message.guild.id, queueContruct)
-  
-      queueContruct.songs.push(song)
-      message.channel.send({embed: songEmbed})
-  
-      try {
-        let connection = await voiceChannel.join()
-
-        connection.on("disconnect", () => {
-          options.queue.delete(message.guild.id)
-        })
-
-        queueContruct.connection = connection
-        play(message.guild, queueContruct.songs[0], options)
-      } catch (err) {
-        console.log(err)
-        options.queue.delete(message.guild.id)
-        return message.channel.send(err)
-      }
-    } else {
-      options.serverQueue.songs.push(song)
-      return message.channel.send({embed: songEmbed})
-    }
-  
+    await addToQueue(options, message, voiceChannel, [song])
+    return message.channel.send({embed: songEmbed})
   }
 }
