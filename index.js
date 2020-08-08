@@ -68,6 +68,7 @@ client.once('disconnect', () => {
 
 client.on('message', async message => {
   if (message.author.bot || !message.content.startsWith(prefix) || message.channel.type != "text") return
+  if (!message.channel.permissionsFor(message.client.user).has("SEND_MESSAGES")) return
 
   let args = message.content.slice(prefix.length).split(/ +/)
   const command = args.shift().toLowerCase()
@@ -86,21 +87,20 @@ client.on('message', async message => {
     captcha: undefined,
     http
   }
-
-  if (command == "vcaptcha") {
-    sendCaptcha(message, args, options)
-    return message.channel.stopTyping()
-  }
-
-  if (!client.commands.has(command)) return
-
-  if (captchas.has(message.member.id)) {
-    const captcha = captchas.get(message.member.id)
-    message.reply(`прежде чем выполнить данный запрос, вы должны ввести капчу! Введите \`-vcaptcha <текст_с_картинки>\`. ${captcha.url}`)
-    return message.channel.stopTyping()
-  }
-
   try {
+    if (command == "vcaptcha") {
+      sendCaptcha(message, args, options)
+      return message.channel.stopTyping()
+    }
+
+    if (!client.commands.has(command)) return
+
+    if (captchas.has(message.member.id)) {
+      const captcha = captchas.get(message.member.id)
+      message.reply(`прежде чем выполнить данный запрос, вы должны ввести капчу! Введите \`-vcaptcha <текст_с_картинки>\`. ${captcha.url}`)
+      return message.channel.stopTyping()
+    }
+
     if (client.commands.has(command)) {
       const commandHandler = client.commands.get(command)
 
