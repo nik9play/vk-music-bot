@@ -6,15 +6,17 @@ redisClient.on("error", function(error) {
 })
 
 export default async function(message, replyMessage = "ваш сервер не имеет **Премиума**. Подробности: `-vdonate`") {
-  redisClient.sismember("premium-server-list", message.guild.id.toString(), (err, reply) => {
-    if (err)
+  return new Promise((resolve) => {
+    return redisClient.sismember("premium-server-list", message.guild.id.toString(), (err, reply) => {
+      if (err)
       console.error(err)
 
-    if (reply == 0) {
-      message.reply(replyMessage)
-      return false
-    } else {
-      return true
-    }
+      if (reply == 0) {
+        message.reply(replyMessage)
+        resolve(false)
+      } else {
+        resolve(true)
+      }
+    })
   })
 }

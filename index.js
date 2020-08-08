@@ -128,12 +128,12 @@ client.on('message', async message => {
       }
 
       if (commandHandler.premium) {
-        return checkPremium(message).then(reply => {
-          if (reply) commandHandler.execute(message, args, options)
+        return checkPremium(message).then(premium => {
+          if (premium) commandHandler.execute(message, args, options)
         })
+      } else {
+        commandHandler.execute(message, args, options)
       }
-
-      commandHandler.execute(message, args, options)
     }
   } catch (error) {
     console.error(error)
