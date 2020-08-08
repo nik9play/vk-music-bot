@@ -12,7 +12,7 @@ export default {
     if (!voiceChannel) return message.reply('вы должны быть в голосовом канале чтобы включить музыку.')
   
     const permissions = voiceChannel.permissionsFor(message.client.user)
-    if (!permissions.has('CONNECT') || !permissions.has('SPEAK')) {
+    if (!permissions.has('CONNECT') || !permissions.has('SPEAK') || !permissions.has('VIEW_CHANNEL')) {
       return message.reply('мне нужны права чтобы играть музыку!')
     }
   
