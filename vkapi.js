@@ -253,7 +253,6 @@ async function audioGetUser(owner_id, count, offset, captcha, http) {
 // }
 
 function handleError(data) {
-  console.log(data)
   if (data.code == 14) {
     return {
       status: "error",
