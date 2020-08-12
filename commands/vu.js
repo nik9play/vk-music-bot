@@ -18,7 +18,7 @@ export default {
     const id = args[0]
     if (!id) return message.reply("неверный ID")
     const count = args[1] ?? 10
-    let offset = args[2] ?? 0
+    let offset = args[2] ?? 1
     offset = (offset - 1) * count
     
     if (count > 100) return message.reply("слишком большой `count`.")

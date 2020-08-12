@@ -19,14 +19,14 @@ export default {
     const url = args[0]
     if (!url) return message.reply("неверная ссылка.")
     const urlObj = parsePlaylistURL(url)
-    
+    console.log(urlObj)
     const id = urlObj.id
     const access_key = urlObj.access_key
 
     if (!id) return message.reply("неверная ссылка.")
 
     const count = args[1] ?? 10
-    let offset = args[2] ?? 0
+    let offset = args[2] ?? 1
     offset = (offset - 1) * count
 
     if (count > 100) return message.reply("слишком большой `count`.")
