@@ -18,7 +18,9 @@ export default {
     const id = args[0]
     if (!id) return message.reply("неверный ID")
     const count = args[1] ?? 10
-    const offset = args[2] ?? 1
+    let offset = args[2] ?? 0
+    offset = (offset - 1) * count
+    
     if (count > 100) return message.reply("слишком большой `count`.")
     if (id.length < 3) return message.reply("слишком короткий запрос.")
 
@@ -26,7 +28,7 @@ export default {
 
     let newArray = res.newArray
     if (res.status == "error") {
-      if (res.type == "empty") return message.reply("не могу найти аудио у этого пользователя.")
+      if (res.type == "empty") return message.reply("не могу найти музыку этого пользователя или команда неверна.")
   
       if (res.type == "captcha") {
         options.captchas.set(message.member.id, {

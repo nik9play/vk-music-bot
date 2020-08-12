@@ -26,15 +26,16 @@ export default {
     if (!id) return message.reply("неверная ссылка.")
 
     const count = args[1] ?? 10
-    const offset = args[2] ?? 1
-    
+    let offset = args[2] ?? 0
+    offset = (offset - 1) * count
+
     if (count > 100) return message.reply("слишком большой `count`.")
 
     const res = await audioGetPlaylist(id.split("_")[0], id.split("_")[1], count, offset, access_key, options.captcha, options.http)
     let newArray = res.newArray
     if (res.status == "error") {
       console.log(res)
-      if (res.type == "empty") return message.reply("не могу найти плейлист.")
+      if (res.type == "empty") return message.reply("не могу найти плейлист или команда неверна.")
   
       if (res.type == "captcha") {
         options.captchas.set(message.member.id, {
