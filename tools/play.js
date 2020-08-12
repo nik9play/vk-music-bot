@@ -13,7 +13,7 @@ export default async function play(guild, song, options) {
   if (voiceConnection) {
     const permissions = voiceConnection.channel.permissionsFor(guild.client.user)
     if (!permissions.has('CONNECT') || !permissions.has('SPEAK') || !permissions.has('VIEW_CHANNEL')) {
-      serverQueue.textChannel.send('кажется, вы переместили бота в канал, в котором ему не хватает прав. Выдадите ему право "Администратор", чтобы больше не возникало подобных проблем.')
+      serverQueue.textChannel.send('Кажется, вы переместили бота в канал, в котором ему не хватает прав. Выдадите ему право "Администратор", чтобы больше не возникало подобных проблем.')
       voiceConnection.channel.leave()
     
       options.queue.delete(guild.id)
