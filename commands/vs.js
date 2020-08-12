@@ -10,9 +10,18 @@ export default {
 
     clearTimeout(options.serverQueue.exitTimer)
 
-    await voiceConnection.dispatcher.resume()
+    try {
+      await voiceConnection.dispatcher.resume()
+    } catch {
+      console.log("empty dispatcher err")
+    }
+
     options.serverQueue.songs = []
-    voiceConnection.dispatcher.end()
+    try {
+      await voiceConnection.dispatcher.end()
+    } catch {
+      options.queue.delete(message.guild.id)
+    }
     message.react('⏹️')
   }
 }

@@ -12,6 +12,11 @@ export default async function play(guild, song, options) {
 
   if (voiceConnection) {
     const permissions = voiceConnection.channel.permissionsFor(guild.client.user)
+
+    
+    if (permissions.has("DEAFEN_MEMBERS"))
+      voiceConnection.voice.setDeaf(true)
+
     if (!permissions.has('CONNECT') || !permissions.has('SPEAK') || !permissions.has('VIEW_CHANNEL')) {
       serverQueue.textChannel.send('Кажется, вы переместили бота в канал, в котором ему не хватает прав. Выдадите ему право "Администратор", чтобы больше не возникало подобных проблем.')
       voiceConnection.channel.leave()
@@ -20,8 +25,6 @@ export default async function play(guild, song, options) {
       return
     }
   }
-
-  voiceConnection.voice.setDeaf(true)
 
   serverQueue.connection.play(song.url, { volume: false, highWaterMark: 50 })
     .on('finish', () => {
