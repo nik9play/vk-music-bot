@@ -3,11 +3,12 @@ export default async function play(guild, song, options) {
   const voiceConnection = guild.client.voice.connections.get(guild.id)
 
   if (!song) {
-    if (!options.enable247List.has(guild.id) && voiceConnection) 
+    if (!options.enable247List.has(guild.id) && voiceConnection)
+    if (voiceConnection.channel)
       voiceConnection.channel.leave()
     
     options.queue.delete(guild.id)
-    return
+    return console.log(`${guild.id} закончил воспроизводить треки`)
   }
 
   if (voiceConnection) {

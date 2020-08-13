@@ -73,6 +73,8 @@ client.on('message', async message => {
   let args = message.content.slice(prefix.length).split(/ +/)
   const command = args.shift().toLowerCase()
 
+  console.log(`${message.guild.id} выполнил ${command} с аргументами ${args}`)
+
   if (command == "vh") {
     args = client.commands
   }

@@ -19,7 +19,7 @@ export default {
     const url = args[0]
     if (!url) return message.reply("неверная ссылка.")
     const urlObj = parsePlaylistURL(url)
-    console.log(urlObj)
+
     const id = urlObj.id
     const access_key = urlObj.access_key
 
@@ -34,7 +34,6 @@ export default {
     const res = await audioGetPlaylist(id.split("_")[0], id.split("_")[1], count, offset, access_key, options.captcha, options.http)
     let newArray = res.newArray
     if (res.status == "error") {
-      console.log(res)
       if (res.type == "empty") return message.reply("не могу найти плейлист или команда неверна.")
   
       if (res.type == "captcha") {
