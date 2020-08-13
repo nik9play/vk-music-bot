@@ -6,7 +6,7 @@ export default {
     let description = ""
 
     args.forEach(e => {
-      description += `\`-${e.name}\` — ${e.description.charAt(0).toLowerCase() + e.description.slice(1)}\n`
+      if (e.description) description += `\`-${e.name}\` — ${e.description.charAt(0).toLowerCase() + e.description.slice(1)}\n`
     })
     
     const embed = {
