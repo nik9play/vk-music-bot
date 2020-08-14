@@ -15,6 +15,8 @@ export default {
     if (!permissions.has('CONNECT') || !permissions.has('SPEAK') || !permissions.has('VIEW_CHANNEL')) {
       return message.reply('мне нужны права чтобы играть музыку!')
     }
+
+    if (voiceChannel.full) return message.reply("голосовой канал полон!")
   
     const query = args.join(" ").trim()
     if (query.length < 3) return message.reply("слишком короткий запрос.")

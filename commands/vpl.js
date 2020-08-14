@@ -16,6 +16,8 @@ export default {
       return message.reply('мне нужны права чтобы играть музыку!')
     }
   
+    if (voiceChannel.full) return message.reply("голосовой канал полон!")
+
     const url = args[0]
     if (!url) return message.reply("неверная ссылка.")
     const urlObj = parsePlaylistURL(url)

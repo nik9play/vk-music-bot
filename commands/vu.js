@@ -15,6 +15,8 @@ export default {
       return message.reply('мне нужны права чтобы играть музыку!')
     }
   
+    if (voiceChannel.full) return message.reply("голосовой канал полон!")
+
     const id = args[0]
     if (!id) return message.reply("неверный ID")
     const count = args[1] ?? 10
