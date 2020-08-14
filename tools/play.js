@@ -16,7 +16,7 @@ export default async function play(guild, song, options) {
 
     
     if (permissions.has("DEAFEN_MEMBERS"))
-      voiceConnection.voice.setDeaf(true)
+      voiceConnection.voice.setSelfDeaf(true)
 
     if (!permissions.has('CONNECT') || !permissions.has('SPEAK') || !permissions.has('VIEW_CHANNEL')) {
       serverQueue.textChannel.send('Кажется, вы переместили бота в канал, в котором ему не хватает прав. Выдадите ему право "Администратор", чтобы больше не возникало подобных проблем.')
