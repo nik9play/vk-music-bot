@@ -12,8 +12,10 @@ export default {
           options.serverQueue.exitTimer = setTimeout(async () => {
             if (!options.enable247List.has(message.guild.id)) {
               const voiceConnection = message.client.voice.connections.get(message.guild.id)
-              if (voiceConnection.channel)
-                voiceConnection.channel.leave()
+              
+              if (voiceConnection)
+                if (voiceConnection.channel)
+                  voiceConnection.channel.leave()
             }
           }, 1800000)
           message.react('⏸️')
