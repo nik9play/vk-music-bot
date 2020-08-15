@@ -6,14 +6,12 @@ export default {
     options.queue.delete(message.guild.id)
     const voiceConnection = message.guild.client.voice.connections.get(message.guild.id)
 
-    voiceConnection.channel.leave().catch(error => {
-      console.log(`${error}: fff`)
-    })
-
-    try {
-      voiceConnection.channel.leave()
-    } catch {
-      console.error(`${message.guild.id}: FIX channel leave error`)
+    if (voiceConnection) {
+      if (voiceConnection.channel) {
+        voiceConnection.channel.leave().catch(error => {
+          console.log(error)
+        })
+      }
     }
 
     message.reply("мы сделали, что могли.")
