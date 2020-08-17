@@ -8,9 +8,11 @@ export default {
 
     if (voiceConnection) {
       if (voiceConnection.channel) {
-        voiceConnection.channel.leave().catch(error => {
-          console.log(error)
-        })
+        try {
+          voiceConnection.channel.leave()
+        } catch {
+          console.log("ERROR: FIX CHANNEL LEAVE")
+        }
       }
     }
 
