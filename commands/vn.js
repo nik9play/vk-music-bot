@@ -13,6 +13,8 @@ export default {
       voiceConnection.dispatcher.end()
     }
     
-    message.react('⏭️')
+    const textPermissions = message.channel.permissionsFor(message.client.user)
+    if (textPermissions.has("ADD_REACTIONS"))
+      message.react('⏭️')
   }
 } 

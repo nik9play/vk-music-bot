@@ -18,10 +18,17 @@ export default {
                   voiceConnection.channel.leave()
             }
           }, 1800000)
-          message.react('⏸️')
+          
+          const textPermissions = message.channel.permissionsFor(message.client.user)
+          if (textPermissions.has("ADD_REACTIONS"))
+            message.react('⏸️')
         } else {
           voiceConnection.dispatcher.resume()
-          message.react('▶️')
+
+          const textPermissions = message.channel.permissionsFor(message.client.user)
+          if (textPermissions.has("ADD_REACTIONS"))
+            message.react('▶️')
+
           if (options.serverQueue.exitTimer) clearTimeout(options.serverQueue.exitTimer)
         }
   }

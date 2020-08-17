@@ -22,6 +22,9 @@ export default {
     } catch {
       options.queue.delete(message.guild.id)
     }
-    message.react('⏹️')
+
+    const textPermissions = message.channel.permissionsFor(message.client.user)
+    if (textPermissions.has("ADD_REACTIONS"))
+      message.react('⏹️')
   }
 }
