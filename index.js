@@ -155,6 +155,8 @@ function sendCaptcha(message, args, options) {
       client.commands.get("vpl").execute(message, captcha.args, options)
     } else if (captcha.type == "addUser") {
       client.commands.get("vu").execute(message, captcha.args, options)
+    } else if (captcha.type == "search") {
+      client.commands.get("vsearch").execute(message, captcha.args, options)
     }
     captchas.delete(message.member.id)
   } else {
