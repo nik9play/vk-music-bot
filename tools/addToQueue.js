@@ -28,6 +28,7 @@ export default async function(options, message, voiceChannel, newArray) {
 
       connection.on("disconnect", () => {
         options.queue.delete(message.guild.id)
+        console.log(`${message.guild.id} бот отключился от канала`)
       })
 
       queueContruct.connection = connection
