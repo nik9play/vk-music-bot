@@ -34,7 +34,7 @@ export default {
   
       if (res.type == "captcha") {
         options.captchas.set(message.member.id, {
-          type: "addUser",
+          type: "vu",
           args: args,
           url: res.data.captcha_img,
           sid: res.data.captcha_sid

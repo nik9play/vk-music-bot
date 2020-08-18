@@ -149,15 +149,9 @@ function sendCaptcha(message, args, options) {
     let captcha = captchas.get(message.member.id)
     captcha.key = args[0]
     options.captcha = captcha
-    if (captcha.type == "vp") {
-      client.commands.get("vp").execute(message, captcha.args, options)
-    } else if (captcha.type == "addPlaylist") {
-      client.commands.get("vpl").execute(message, captcha.args, options)
-    } else if (captcha.type == "addUser") {
-      client.commands.get("vu").execute(message, captcha.args, options)
-    } else if (captcha.type == "search") {
-      client.commands.get("vsearch").execute(message, captcha.args, options)
-    }
+
+    client.commands.get(captcha.type).execute(message, captcha.args, options)
+    
     captchas.delete(message.member.id)
   } else {
     message.reply("капчу вводить не надо.")

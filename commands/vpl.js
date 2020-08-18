@@ -40,7 +40,7 @@ export default {
   
       if (res.type == "captcha") {
         options.captchas.set(message.member.id, {
-          type: "addPlaylist",
+          type: "vpl",
           args: args,
           url: res.details.captcha_img,
           sid: res.details.captcha_sid
