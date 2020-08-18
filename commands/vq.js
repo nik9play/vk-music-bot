@@ -42,6 +42,37 @@ export default {
       ]
     }
 
-    message.channel.send({embed: embed})
+    const textPermissions = message.channel.permissionsFor(message.client.user)
+
+    const filter = (reaction, user) => {
+      return ['➡️', '⬅️'].includes(reaction.emoji.name) && user.id === message.author.id
+    }
+
+    const msg = await message.channel.send({embed: embed})
+
+    if (args[0] > 1) {
+      if (textPermissions.has("ADD_REACTIONS"))
+        msg.react("⬅️")
+    }
+
+    if (count < songs.length) {
+      if (textPermissions.has("ADD_REACTIONS"))
+        msg.react("➡️")
+    }
+
+    msg.awaitReactions(filter, { max: 1, time: 30000, errors: ["time"]})
+      .then(collected => {
+        msg.delete()
+        const reaction = collected.first()
+
+        if (reaction.emoji.name === "➡️" && count < songs.length) {
+          this.execute(message, [(args[0] ?? 1) + 1], options)
+        } else if (reaction.emoji.name === "⬅️" && args[0] > 1) {
+          this.execute(message, [args[0] - 1], options)
+        }
+      })
+      .catch(() => {
+        msg.delete()
+      })
   }
 }
