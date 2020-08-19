@@ -4,6 +4,7 @@ import SDC from '@megavasiliy007/sdc-api'
 import fs from 'fs'
 import rateLimit from 'axios-rate-limit'
 import axios from 'axios'
+import { Shoukaku } from 'shoukaku'
 
 import checkPremium from './tools/checkPremium'
 import getRightClockEmoji from './tools/getRightClockEmoji'
@@ -21,6 +22,11 @@ const captchas = new Map()
 const enable247List = new Set()
 const cooldowns = new Discord.Collection()
 client.commands = new Discord.Collection()
+
+const LavalinkServer = [{ name: 'vk-music-bot-1', host: 'localhost', port: 2333, auth: 'youshallnotpass' }];
+const ShoukakuOptions = { moveOnDisconnect: false, resumable: false, resumableTimeout: 30, reconnectTries: 2, restTimeout: 10000 };
+
+const shoukaku = new Shoukaku(client, LavalinkServer, ShoukakuOptions)
 
 const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
 
@@ -87,7 +93,8 @@ client.on('message', async message => {
     queue,
     enable247List,
     captcha: undefined,
-    http
+    http,
+    shoukaku
   }
   try {
     if (command == "vcaptcha") {

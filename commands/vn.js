@@ -3,18 +3,13 @@ export default {
   description: "Пропустить трек",
   cooldown: 3,
   execute: async function skip(message, _args, options) {
-    const voiceConnection = message.client.voice.connections.get(message.guild.id)
+    const player = options.shoukaku.getPlayer(message.guild.id)
+    if (player) {
+      player.stopTrack()
     
-    if (!voiceConnection) return message.reply('бот не в голосовом канале.')
-    if (!options.serverQueue) return message.reply('некуда пропускать.')
-
-    if (voiceConnection.dispatcher) {
-      await voiceConnection.dispatcher.resume()
-      voiceConnection.dispatcher.end()
+      const textPermissions = message.channel.permissionsFor(message.client.user)
+      if (textPermissions.has("ADD_REACTIONS"))
+        message.react('⏭️')
     }
-    
-    const textPermissions = message.channel.permissionsFor(message.client.user)
-    if (textPermissions.has("ADD_REACTIONS"))
-      message.react('⏭️')
   }
 } 

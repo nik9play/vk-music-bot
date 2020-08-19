@@ -13,10 +13,7 @@ export default async function(options, message, voiceChannel, newArray) {
 
     const queueContruct = {
       textChannel: message.channel,
-      connection: null,
-      songs: [],
-      volume: 5,
-      playing: true,
+      songs: []
     }
 
     options.queue.set(message.guild.id, queueContruct)
@@ -24,14 +21,26 @@ export default async function(options, message, voiceChannel, newArray) {
     queueContruct.songs = [...queueContruct.songs, ...newArray]
 
     try {
-      let connection = await voiceChannel.join()
+      const node = options.shoukaku.getNode()
+      let player = options.shoukaku.getPlayer(message.guild.id)
 
-      connection.on("disconnect", () => {
+      if (!options.shoukaku.getPlayer(message.guild.id)) {
+        player = await node.joinVoiceChannel({
+          guildID: message.guild.id,
+          voiceChannelID: voiceChannel.id
+        })
+      }
+
+      player.on("closed", () => {
         options.queue.delete(message.guild.id)
         console.log(`${message.guild.id} бот отключился от канала`)
       })
 
-      queueContruct.connection = connection
+      player.on("error", () => {
+        options.queue.delete(message.guild.id)
+        console.log(`${message.guild.id} ошибка плеера`)
+      })
+
       play(message.guild, queueContruct.songs[0], options)
     } catch (err) {
       console.log(err)
