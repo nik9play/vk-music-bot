@@ -4051,6 +4051,15 @@ shebang-regex@^3.0.0:
   resolved "https://registry.yarnpkg.com/shebang-regex/-/shebang-regex-3.0.0.tgz#ae16f1644d873ecad843b0307b143362d4c42172"
   integrity sha512-7++dFhtcx3353uBaq8DDR4NuxBetBzC7ZQOhmTQInHEd6bSrXdiEyzCvG07Z44UYdLShWUyXt5M/yhz8ekcb1A==
 
+shoukaku@^1.4.2:
+  version "1.4.2"
+  resolved "https://registry.yarnpkg.com/shoukaku/-/shoukaku-1.4.2.tgz#4eb629b3b3465e44a21c1d8feac71cc88f6ce28c"
+  integrity sha512-kDE/b+rk33XveeLmvOzW4qLbL1ID42AGczlIgxnBRlG96hJtEHlZE0vu3d21C/swBVkGcSU/sii5SoYBh5x0Ug==
+  dependencies:
+    abort-controller "^3.0.0"
+    node-fetch "^2.6.0"
+    ws "^7.3.0"
+
 signal-exit@^3.0.0:
   version "3.0.3"
   resolved "https://registry.yarnpkg.com/signal-exit/-/signal-exit-3.0.3.tgz#a1410c2edd8f077b08b4e253c8eacfcaf057461c"
@@ -4694,7 +4703,7 @@ write@1.0.3:
   dependencies:
     mkdirp "^0.5.1"
 
-ws@^7.3.1:
+ws@^7.3.0, ws@^7.3.1:
   version "7.3.1"
   resolved "https://registry.yarnpkg.com/ws/-/ws-7.3.1.tgz#d0547bf67f7ce4f12a72dfe31262c68d7dc551c8"
   integrity sha512-D3RuNkynyHmEJIpD2qrgVkc9DQ23OrN/moAwZX4L8DfvszsJxpjQuUq3LMx6HoYji9fbIOBY18XWBsAux1ZZUA==
