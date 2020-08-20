@@ -4,21 +4,22 @@ export default {
   premium: true,
   cooldown: 2,
   execute: async function(message, _args, options) {
-    const voiceConnection = message.client.voice.connections.get(message.guild.id)
+    const player = options.shoukaku.getPlayer(message.guild.id)
+    const serverQueue = options.queue.get(message.guild.id)
 
     if (options.enable247List.has(message.guild.id)) {
       options.enable247List.delete(message.guild.id)
       message.reply("режим 24/7 выключен.")
 
-      if (voiceConnection) {
-        if (!options.serverQueue)
-          return voiceConnection.channel.leave()
+      if (player) {
 
-        if (voiceConnection.dispatcher)
-          if (voiceConnection.dispatcher.paused) {
-            clearTimeout(options.serverQueue.exitTimer)
-            return voiceConnection.channel.leave()
-          } 
+        if (!serverQueue)
+          return player.disconnect()
+
+        if (serverQueue)
+          if (serverQueue.exitTimer)
+            clearTimeout(serverQueue.exitTimer)
+
       }
     } else {
       options.enable247List.add(message.guild.id)

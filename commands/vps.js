@@ -3,33 +3,36 @@ export default {
   description: "Пауза и воспроизведение",
   cooldown: 2,
   execute: async function(message, _args, options) {
-    const voiceConnection = message.client.voice.connections.get(message.guild.id)
+    const player = options.shoukaku.getPlayer(message.guild.id)
+    const serverQueue = options.queue.get(message.guild.id)
 
-    if (voiceConnection)
-      if (voiceConnection.dispatcher)
-        if (!voiceConnection.dispatcher.paused) {
-          voiceConnection.dispatcher.pause()
-          options.serverQueue.exitTimer = setTimeout(async () => {
-            if (!options.enable247List.has(message.guild.id)) {
-              const voiceConnection = message.client.voice.connections.get(message.guild.id)
-              
-              if (voiceConnection)
-                if (voiceConnection.channel)
-                  voiceConnection.channel.leave()
-            }
-          }, 1800000)
-          
-          const textPermissions = message.channel.permissionsFor(message.client.user)
-          if (textPermissions.has("ADD_REACTIONS"))
-            message.react('⏸️')
-        } else {
-          voiceConnection.dispatcher.resume()
+    if (player && serverQueue) {
+      if (player.paused) {
+        player.setPaused(false)
 
-          const textPermissions = message.channel.permissionsFor(message.client.user)
-          if (textPermissions.has("ADD_REACTIONS"))
-            message.react('▶️')
-
-          if (options.serverQueue.exitTimer) clearTimeout(options.serverQueue.exitTimer)
+        if (serverQueue.pauseTimer) {
+          clearTimeout(serverQueue.pauseTimer)
         }
+
+        const textPermissions = message.channel.permissionsFor(message.client.user)
+        if (textPermissions.has("ADD_REACTIONS"))
+          message.react('▶️')
+      } else {
+        player.setPaused(true)
+
+        serverQueue.pauseTimer = setTimeout(() => {
+          if (!serverQueue.enable247List.has(message.guild.id)) {
+            options.queue.delete(message.guild.id)
+
+            if (player)
+              player.disconnect()
+          }
+        }, 1800000)
+
+        const textPermissions = message.channel.permissionsFor(message.client.user)
+        if (textPermissions.has("ADD_REACTIONS"))
+          message.react('⏸️')
+      }
+    }
   }
 } 

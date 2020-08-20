@@ -5,7 +5,7 @@ export default {
   description: "Показать очередь",
   cooldown: 3,
   execute: async function(message, args, options) {
-    const serverQueue = options.serverQueue
+    const serverQueue = options.queue.get(message.guild.id)
 
     if (!serverQueue) return message.reply('очередь пуста.')
 
@@ -26,6 +26,14 @@ export default {
       list += `${i + 1}. ${e.artist} — ${e.title}\n`
     }
 
+    const player = options.shoukaku.getPlayer(message.guild.id)
+
+    function getCurrentPosition() {
+      if (player) {
+        return `${player.paused ? ":pause_button:" : ":arrow_forward:"} ${Duration.fromMillis(player.position).toFormat("mm:ss")} / ${Duration.fromObject({seconds: songs[0].duration}).toFormat("mm:ss")}`
+      }
+    }
+
     const embed = {
       color: 0x5181b8,
       title: "**Музыка в очереди:**",
@@ -33,7 +41,7 @@ export default {
       fields: [
         {
           name: current,
-          value: `${serverQueue.connection.dispatcher.paused ? ":pause_button:" : ":arrow_forward:"} ${Duration.fromMillis(serverQueue.connection.dispatcher.streamTime).toFormat("mm:ss")} / ${Duration.fromObject({seconds: songs[0].duration}).toFormat("mm:ss")}`
+          value: getCurrentPosition()
         },
         {
           name: `${args[0] ?? 1} / ${Math.ceil(songs.length / 10)}`,

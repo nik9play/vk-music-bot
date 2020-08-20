@@ -2,7 +2,9 @@ import play from '../tools/play'
 import checkPremium from '../tools/checkPremium'
 
 export default async function(options, message, voiceChannel, newArray) {
-  if (!options.serverQueue) {
+  const serverQueue = options.queue.get(message.guild.id)
+
+  if (!serverQueue) {
     if (newArray.length > 200) {
       const premium = await checkPremium(message, "ваш сервер не имеет **Премиума**, поэтому очередь сокращена до 200. Подробности: `-vdonate`")
 
@@ -33,12 +35,23 @@ export default async function(options, message, voiceChannel, newArray) {
 
       player.on("closed", () => {
         options.queue.delete(message.guild.id)
+        player.disconnect()
         console.log(`${message.guild.id} бот отключился от канала`)
       })
 
       player.on("error", () => {
         options.queue.delete(message.guild.id)
+        player.disconnect()
         console.log(`${message.guild.id} ошибка плеера`)
+      })
+
+      player.on("end", () => {
+        console.log(`${message.guild.id} трек закончился`)
+        const serverQueue = options.queue.get(message.guild.id)
+        console.log(serverQueue)
+        serverQueue.songs.shift()
+        console.log(serverQueue.songs[0])
+        play(message.guild, serverQueue.songs[0], options)
       })
 
       play(message.guild, queueContruct.songs[0], options)
@@ -47,7 +60,7 @@ export default async function(options, message, voiceChannel, newArray) {
       options.queue.delete(message.guild.id)
     }
   } else {
-    let arr = [...options.serverQueue.songs, ...newArray]
+    let arr = [...serverQueue.songs, ...newArray]
     if (arr.length > 200) {
       const premium = await checkPremium(message, "ваш сервер не имеет **Премиума**, поэтому очередь сокращена до 200. Подробности: `-vdonate`")
 
@@ -56,6 +69,6 @@ export default async function(options, message, voiceChannel, newArray) {
       }
     }
 
-    options.serverQueue.songs = arr
+    serverQueue.songs = arr
   }
 }

@@ -1,5 +1,4 @@
 export default async function play(guild, song, options) {
-  const serverQueue = options.queue.get(guild.id)
   const player = options.shoukaku.getPlayer(guild.id)
 
   if (!song) {
@@ -31,10 +30,5 @@ export default async function play(guild, song, options) {
 
   rest.resolve(song.url).then(songResolved => {
     player.playTrack(songResolved.tracks[0].track)
-    
-    player.on("end", () => {
-      options.serverQueue.songs.shift()
-      play(guild, serverQueue.songs[0], options)
-    })
   })
 }
