@@ -28,6 +28,13 @@ const ShoukakuOptions = { moveOnDisconnect: false, resumable: false, resumableTi
 
 const shoukaku = new Shoukaku(client, LavalinkServer, ShoukakuOptions)
 
+shoukaku.on("ready", name => {
+  console.log(`Lavalink ${name} ready!`)
+})
+shoukaku.on("error", (name, err) => {
+  console.log(`Lavalink ${name} error: ${err}`)
+})
+
 const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
 
 for (const file of commandFiles) {
@@ -85,10 +92,7 @@ client.on('message', async message => {
     args = client.commands
   }
 
-  let serverQueue = queue.get(message.guild.id)
-
   const options = {
-    serverQueue,
     captchas,
     queue,
     enable247List,
