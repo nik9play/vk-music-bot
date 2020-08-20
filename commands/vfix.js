@@ -4,16 +4,9 @@ export default {
   cooldown: 20,
   execute: async function(message, _args, options) {
     options.queue.delete(message.guild.id)
-    const voiceConnection = message.guild.client.voice.connections.get(message.guild.id)
-
-    if (voiceConnection) {
-      if (voiceConnection.channel) {
-        try {
-          voiceConnection.channel.leave()
-        } catch {
-          console.log("ERROR: FIX CHANNEL LEAVE")
-        }
-      }
+    const player = options.shoukaku.getPlayer(message.guild.id)
+    if (player) {
+      player.disconnect()
     }
 
     message.reply("мы сделали, что могли.")
