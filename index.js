@@ -11,7 +11,8 @@ import getRightClockEmoji from './tools/getRightClockEmoji'
 
 const http = rateLimit(axios.create(), { maxRPS: 3 })
 
-const SDCClient = new SDC(process.env.SDC_TOKEN)
+let SDCClient
+if (process.env.NODE_ENV == "production") SDCClient = new SDC(process.env.SDC_TOKEN)
 const client = new Discord.Client({
   messageCacheLifetime: 60,
   messageSweepInterval: 10
@@ -20,6 +21,7 @@ const client = new Discord.Client({
 const queue = new Map()
 const captchas = new Map()
 const enable247List = new Set()
+
 const cooldowns = new Discord.Collection()
 client.commands = new Discord.Collection()
 
@@ -66,9 +68,17 @@ client.once('ready', () => {
   const size = client.guilds.cache.size
   client.user.setPresence({activity: {name: `-vh | ${size} ${serversStringByDigit(size % 100)}`, type: 2}})
   setInterval(() => {
-    const size = client.guilds.cache.size
-    client.user.setPresence({activity: {name: `-vh | ${size} ${serversStringByDigit(size % 100)}`, type: 2}}) 
-  }, 600000)
+    const serverSize = client.guilds.cache.size
+    const membersSize = client.users.cache.size
+
+    client.user.setPresence({activity: {name: `-vh | ${serverSize} ${serversStringByDigit(serverSize % 100)}`, type: 2}})
+    axios.post(`https://vkmusicbotapi.megaworld.space/stats/send`, JSON.stringify({
+      key: process.env.STATS_KEY,
+      servers: size,
+      members: membersSize,
+      
+    }))
+  }, 1800000)
 })
 
 client.once('reconnecting', () => {
