@@ -21,11 +21,13 @@ export default {
       fields: [
         {
           name: 'Группа VK',
-          value: 'https://vk.com/vkmusicbotds'
+          value: 'https://vk.com/vkmusicbotds',
+          inline: true
         },
         {
           name: 'Подробное руководство по командам',
-          value: 'https://vkmusicbot.megaworld.space/#faq'
+          value: 'https://vkmusicbot.megaworld.space/#faq',
+          inline: true
         }
       ]
     }
