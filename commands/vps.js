@@ -21,13 +21,13 @@ export default {
         player.setPaused(true)
 
         serverQueue.pauseTimer = setTimeout(() => {
-          if (!serverQueue.enable247List.has(message.guild.id)) {
+          if (!options.enable247List.has(message.guild.id)) {
             options.queue.delete(message.guild.id)
 
             if (player)
               player.disconnect()
           }
-        }, 1800000)
+        }, 10000)
 
         const textPermissions = message.channel.permissionsFor(message.client.user)
         if (textPermissions.has("ADD_REACTIONS"))
