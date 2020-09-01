@@ -17,8 +17,8 @@ export default {
           return player.disconnect()
 
         if (serverQueue)
-          if (serverQueue.exitTimer)
-            clearTimeout(serverQueue.exitTimer)
+          if (serverQueue.pauseTimer)
+            clearTimeout(serverQueue.pauseTimer)
 
       }
     } else {
