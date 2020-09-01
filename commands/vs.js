@@ -7,12 +7,18 @@ export default {
 
     if (player) {
       const serverQueue = options.queue.get(message.guild.id)
-      serverQueue.songs.length = 0
-      player.stopTrack()
-    
-      const textPermissions = message.channel.permissionsFor(message.client.user)
-      if (textPermissions.has("ADD_REACTIONS"))
-        message.react('⏹️')
+
+      if (serverQueue) {
+        if (serverQueue.pauseTimer)
+          clearTimeout(serverQueue.pauseTimer)
+
+        serverQueue.songs = []
+        player.stopTrack()
+      
+        const textPermissions = message.channel.permissionsFor(message.client.user)
+        if (textPermissions.has("ADD_REACTIONS"))
+          message.react('⏹️') 
+      }
     }
   }
 }
