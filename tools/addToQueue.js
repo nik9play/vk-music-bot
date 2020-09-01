@@ -15,6 +15,8 @@ export default async function(options, message, voiceChannel, newArray) {
 
     const queueContruct = {
       textChannel: message.channel,
+      loopType: 0,
+      loopSongs: [],
       songs: []
     }
 
@@ -36,6 +38,10 @@ export default async function(options, message, voiceChannel, newArray) {
       player.on("closed", () => {
         options.queue.delete(message.guild.id)
         player.disconnect()
+        if (serverQueue)
+          if (serverQueue.pauseTimer)
+            clearTimeout(serverQueue.pauseTimer)
+
         console.log(`${message.guild.id} бот отключился от канала`)
       })
 
@@ -48,15 +54,14 @@ export default async function(options, message, voiceChannel, newArray) {
       player.on("end", () => {
         console.log(`${message.guild.id} трек закончился`)
         const serverQueue = options.queue.get(message.guild.id)
-        console.log(serverQueue)
         serverQueue.songs.shift()
-        console.log(serverQueue.songs[0])
         play(message.guild, serverQueue.songs[0], options)
       })
 
       play(message.guild, queueContruct.songs[0], options)
     } catch (err) {
       console.log(err)
+      message.reply("ошибка. Попробуйте сменить регион сервера.")
       options.queue.delete(message.guild.id)
     }
   } else {
