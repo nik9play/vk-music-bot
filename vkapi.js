@@ -105,13 +105,34 @@ async function audioGetPlaylist(owner_id, album_id, count, offset, access_key, c
     urlSearch.append("access_key", access_key)
   }
 
-  urlSearch.append("owner_id", owner_id)
-  urlSearch.append("album_id", album_id)
-  urlSearch.append("offset", offset)
-  urlSearch.append("count", count)
+  const execString = `var playlistInfoAPI = API.audio.getPlaylistById({
+  owner_id: ${owner_id},
+  playlist_id: ${album_id},
+  ${access_key ? `access_key: '${access_key}',` : ""}
+});
+
+var playlistListAPI = API.audio.get({
+  owner_id: ${owner_id},
+  playlist_id: ${album_id},
+  ${access_key ? `access_key: '${access_key}',` : ""}
+  ${offset ? `offset: ${offset},` : ""}
+  ${count ? `count: ${count},` : ""}
+});
+
+var data = {
+  'info': playlistInfoAPI,
+  'list': playlistListAPI
+};
+return data;`
+
+  // urlSearch.append("owner_id", owner_id)
+  // urlSearch.append("album_id", album_id)
+  // urlSearch.append("offset", offset)
+  // urlSearch.append("count", count)
+  urlSearch.append("code", execString)
 
   try {
-    const req = await http.get(`${vkApiLink}get`, {
+    const req = await http.get(`https://api.vk.com/method/execute`, {
       params: urlSearch,
       headers: axiosHeaders
     })
@@ -120,25 +141,40 @@ async function audioGetPlaylist(owner_id, album_id, count, offset, access_key, c
       return handleError(req.data.error)
     }
 
-    if (req.data.response.items.length == 0) {
+    const info = req.data.response.info
+    const list = req.data.response.list
+
+    if (list.items.length == 0) {
       return {
         status: "error",
         type: "empty"
       }
     }
 
-    let newArray = []
-    req.data.response.items.forEach(e => {
-      newArray.push({
+    const newArray = list.items.map(e => {
+      return {
         title: e.title,
         artist: e.artist,
         url: e.url,
         duration: e.duration
-      })
+      }
     })
+
+    let imgUrl
+    if (info.photo) {
+      imgUrl = info.photo.photo_300
+    } else if (info.thumbs) {
+      imgUrl = info.thumbs[0].photo_300
+    }
 
     return {
       status: "success",
+      info: {
+        title: info.title,
+        description: info.description,
+        count: list.count,
+        imgUrl
+      },
       newArray
     }
   } catch(err) {
@@ -253,7 +289,7 @@ async function audioSearch(query, captcha, http) {
 }
 
 function handleError(data) {
-  console.log(`ERROR: ${data}`)
+  console.log('ERROR', data)
   if (data.error_code == 14) {
     return {
       status: "error",

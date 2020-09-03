@@ -51,13 +51,29 @@ export default {
   
       return message.reply("ошибка. ¯\\_(ツ)_/¯")
     }
-  
+
     const playlistEmbed = {
+      title: res.info.title,
+      description: res.info.description,
       color: 0x5181b8,
-      title: `Добавлено треков: **${newArray.length}**.`,
+      thumbnail: {
+        url: res.info.imgUrl
+      },
       author: {
-        name: "Плейлист добавлен!"
-      }
+        name: "Добавлены треки из следующего плейлиста"
+      },
+      fields: [
+        {
+          name: "Добавлено треков",
+          value: newArray.length,
+          inline: true
+        },
+        {
+          name: "Всего треков",
+          value: res.info.count,
+          inline: true
+        }
+      ]
     }
   
     await addToQueue(options, message, voiceChannel, newArray)
