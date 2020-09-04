@@ -1,4 +1,4 @@
-import { audioGetUser } from '../vkapi'
+import { audioGetUser } from '../vkApi'
 import addToQueue from '../tools/addToQueue'
 
 export default {

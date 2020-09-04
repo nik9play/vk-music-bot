@@ -1,4 +1,4 @@
-import { audioSearch } from "../vkapi"
+import { audioSearch } from "../vkApi"
 import addToQueue from "../tools/addToQueue"
 import { Duration } from "luxon"
 

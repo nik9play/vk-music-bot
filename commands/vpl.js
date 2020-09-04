@@ -1,4 +1,4 @@
-import { audioGetPlaylist } from '../vkapi'
+import { audioGetPlaylist } from '../vkApi'
 import parsePlaylistURL from '../tools/parsePlaylistURL'
 import addToQueue from '../tools/addToQueue'
 

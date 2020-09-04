@@ -1,4 +1,4 @@
-import { audioGetOne } from '../vkapi'
+import { audioGetOne } from '../vkApi'
 import { Duration } from 'luxon'
 import addToQueue from '../tools/addToQueue'
 
