@@ -49,7 +49,7 @@ export default {
         return message.reply(`прежде чем выполнить данный запрос, вы должны ввести капчу! Введите \`-vcaptcha <текст_с_картинки>\`. ${captcha.url}`)
       }
   
-      return message.reply("ошибка. ¯\\_(ツ)_/¯")
+      return message.reply("ошибка. Возможно, не хватает прав для воспроизведения плейлиста (нет ключа доступа в ссылке).")
     }
 
     const playlistEmbed = {

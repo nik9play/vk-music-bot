@@ -42,6 +42,11 @@ return data;`
 
     if (req.data.error) {
       return handleError(req.data.error)
+    } else if (req.data.execute_errors) {
+      return {
+        status: "error",
+        type: "api-error"
+      }
     }
 
     const info = req.data.response.info
