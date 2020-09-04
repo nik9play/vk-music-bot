@@ -69,15 +69,15 @@ client.once('ready', () => {
   client.user.setPresence({activity: {name: `-vh | ${size} ${serversStringByDigit(size % 100)}`, type: 2}})
   setInterval(() => {
     const serverSize = client.guilds.cache.size
-    const membersSize = client.users.cache.size
+    // const membersSize = client.users.cache.size
 
     client.user.setPresence({activity: {name: `-vh | ${serverSize} ${serversStringByDigit(serverSize % 100)}`, type: 2}})
-    axios.post(`https://vkmusicbotapi.megaworld.space/stats/send`, JSON.stringify({
-      key: process.env.STATS_KEY,
-      servers: size,
-      members: membersSize,
+    // axios.post(``, JSON.stringify({
+    //   key: process.env.STATS_KEY,
+    //   servers: size,
+    //   members: membersSize,
       
-    }))
+    // }))
   }, 1800000)
 })
 
