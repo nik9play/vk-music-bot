@@ -31,7 +31,8 @@ export default async function(options, message, voiceChannel, newArray) {
       if (!options.shoukaku.getPlayer(message.guild.id)) {
         player = await node.joinVoiceChannel({
           guildID: message.guild.id,
-          voiceChannelID: voiceChannel.id
+          voiceChannelID: voiceChannel.id,
+          deaf: true
         })
       }
 
