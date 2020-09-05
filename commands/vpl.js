@@ -31,7 +31,7 @@ export default {
     let offset = args[2] ?? 1
     offset = (offset - 1) * count
 
-    if (count > 100) return message.reply("слишком большой `count`.")
+    if (count > 1000) return message.reply("слишком большой `count`.")
 
     const res = await audioGetPlaylist(id.split("_")[0], id.split("_")[1], count, offset, access_key, options.captcha, options.http)
     let newArray = res.newArray
