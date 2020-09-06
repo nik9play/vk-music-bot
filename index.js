@@ -25,10 +25,21 @@ const enable247List = new Set()
 const cooldowns = new Discord.Collection()
 client.commands = new Discord.Collection()
 
-const LavalinkServer = [{ name: 'vk-music-bot-1', host: 'localhost', port: 2333, auth: 'youshallnotpass' }];
-const ShoukakuOptions = { moveOnDisconnect: false, resumable: false, resumableTimeout: 30, reconnectTries: 2, restTimeout: 10000 };
+const LavalinkServersString = process.env.LAVALINK_NODES
+const LavalinkServers = LavalinkServersString.split(";").map(val => {
+  const arr = val.split(",")
+  return {
+    name: arr[0],
+    host: arr[1],
+    port: arr[2],
+    auth: arr[3]
+  }
+})
 
-const shoukaku = new Shoukaku(client, LavalinkServer, ShoukakuOptions)
+//const LavalinkServer = [{ name: 'vk-music-bot-1', host: 'localhost', port: 2333, auth: 'youshallnotpass' }]
+const ShoukakuOptions = { moveOnDisconnect: false, resumable: false, resumableTimeout: 30, reconnectTries: 2, restTimeout: 10000 }
+
+const shoukaku = new Shoukaku(client, LavalinkServers, ShoukakuOptions)
 
 shoukaku.on("ready", name => {
   console.log(`Lavalink ${name} ready!`)

@@ -4,9 +4,9 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "start": "node dist/main.js",
+    "start": "node shardStart.js",
     "build": "webpack --mode production",
-    "dev": "webpack --mode development && NODE_ENV=development node --inspect dist/main.js"
+    "dev": "webpack --mode development && NODE_ENV=development node --inspect shardStart.js"
   },
   "dependencies": {
     "@discordjs/opus": "^0.3.2",
