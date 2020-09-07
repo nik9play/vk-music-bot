@@ -34,7 +34,7 @@ export default {
       }
     }
 
-    const embed = {
+    let embed = {
       color: 0x5181b8,
       title: "**Музыка в очереди:**",
       description: list,
@@ -52,13 +52,13 @@ export default {
 
     if (serverQueue.loopType) {
       if (serverQueue.loopType == 1) {
-        embed.fields.push({
-          name: "Включено зацикливание очереди",
-          value: `1. ${serverQueue.loopSongs[0].title} ... ${serverQueue.loopSongs.length}. ${serverQueue.loopSongs[serverQueue.loopSongs.length-1].title}`
+        embed.fields.splice(1, 0, {
+          name: ":repeat: Включено зацикливание очереди",
+          value: `1. **${serverQueue.loopSongs[0].title}** ... ${serverQueue.loopSongs.length}. **${serverQueue.loopSongs[serverQueue.loopSongs.length-1].title}**`
         }) 
       } else if (serverQueue.loopType == 2) {
-        embed.fields.push({
-          name: "Включено зацикливание трека",
+        embed.fields.splice(1, 0, {
+          name: ":repeat_one: Включено зацикливание трека",
           value: `${songs[0].artist} — ${songs[0].title}`
         })
       }
