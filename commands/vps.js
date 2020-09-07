@@ -27,7 +27,7 @@ export default {
             if (player)
               player.disconnect()
           }
-        }, 10000)
+        }, 36000000)
 
         const textPermissions = message.channel.permissionsFor(message.client.user)
         if (textPermissions.has("ADD_REACTIONS"))
