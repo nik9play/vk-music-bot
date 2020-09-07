@@ -16,6 +16,7 @@ export default {
       if (!serverQueue) return message.reply("нечего зацикливать")
 
       serverQueue.loopType = 2
+      serverQueue.loopSongs = []
       serverQueue.loopSongs[0] = serverQueue.songs[0]
 
       message.reply("включено зацикливание текущего трека")
