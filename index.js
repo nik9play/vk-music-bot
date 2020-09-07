@@ -76,19 +76,19 @@ function serversStringByDigit(digits) {
 client.once('ready', () => {
   console.log('Ready!')
   if (process.env.NODE_ENV == "production") SDCClient.setAutoPost(client)
-  const size = client.guilds.cache.size
-  client.user.setPresence({activity: {name: `-vh | ${size} ${serversStringByDigit(size % 100)}`, type: 2}})
-  setInterval(() => {
-    const serverSize = client.guilds.cache.size
-    // const membersSize = client.users.cache.size
 
-    client.user.setPresence({activity: {name: `-vh | ${serverSize} ${serversStringByDigit(serverSize % 100)}`, type: 2}})
-    // axios.post(``, JSON.stringify({
-    //   key: process.env.STATS_KEY,
-    //   servers: size,
-    //   members: membersSize,
-      
-    // }))
+  client.shard.fetchClientValues('guilds.cache.size')
+    .then(results => {
+      const serverSize = results.reduce((acc, guildCount) => acc + guildCount, 0)
+      client.user.setPresence({activity: {name: `-vh | ${serverSize} ${serversStringByDigit(serverSize % 100)}`, type: 2}})
+    })
+  
+  setInterval(() => {
+    client.shard.fetchClientValues('guilds.cache.size')
+			.then(results => {
+        const serverSize = results.reduce((acc, guildCount) => acc + guildCount, 0)
+        client.user.setPresence({activity: {name: `-vh | ${serverSize} ${serversStringByDigit(serverSize % 100)}`, type: 2}})
+			})
   }, 1800000)
 })
 
