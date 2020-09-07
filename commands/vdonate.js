@@ -13,7 +13,7 @@ export default {
     redisClient.sismember("premium-server-list", message.guild.id.toString(), (err, reply) => {
       const info = 
 `${reply ? "**Спасибо за поддержку бота!**\n" : ""}
-Вы можете приобрести **Премиум**, задонатив 15₽ или больше по этой ссылке: https://vk.com/vkmusicbotds?w=app6887721_-197274096
+Вы можете приобрести **Премиум**, задонатив 15₽ или больше [здесь](https://vk.com/app6887721_-197274096)
 **В комментарий к переводу укажите данный ID**: \`${message.guild.id}\`.
 
 Премиум дает Вам следующие возможности:
