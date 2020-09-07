@@ -11,7 +11,7 @@ export default async function play(guild, song, options) {
     if (serverQueue.loopType == 1) {
       serverQueue.songs = [...serverQueue.loopSongs]
       song = serverQueue.songs[0]
-      console.log(serverQueue, song)
+      //console.log(serverQueue, song)
     } else {
       if (!options.enable247List.has(guild.id) && player)
       player.disconnect()
