@@ -50,6 +50,20 @@ export default {
       ]
     }
 
+    if (serverQueue.loopType) {
+      if (serverQueue.loopType == 1) {
+        embed.fields.push({
+          name: "Включено зацикливание очереди",
+          value: `1. ${serverQueue.loopSongs[0].title} ... ${serverQueue.loopSongs.length}. ${serverQueue.loopSongs[serverQueue.loopSongs.length-1].title}`
+        }) 
+      } else if (serverQueue.loopType == 2) {
+        embed.fields.push({
+          name: "Включено зацикливание трека",
+          value: `${songs[0].artist} — ${songs[0].title}`
+        })
+      }
+    }
+
     const textPermissions = message.channel.permissionsFor(message.client.user)
 
     const filter = (reaction, user) => {
