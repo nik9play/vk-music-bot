@@ -82,7 +82,16 @@ client.once('ready', () => {
       const serverSize = results.reduce((acc, guildCount) => acc + guildCount, 0)
       client.user.setPresence({activity: {name: `-vh | ${serverSize} ${serversStringByDigit(serverSize % 100)}`, type: 2}})
     })
-  
+    .catch(err => {
+      console.error("shard spawning... waiting", err)
+      setTimeout(() => {
+        client.shard.fetchClientValues('guilds.cache.size')
+          .then(results => {
+            const serverSize = results.reduce((acc, guildCount) => acc + guildCount, 0)
+            client.user.setPresence({activity: {name: `-vh | ${serverSize} ${serversStringByDigit(serverSize % 100)}`, type: 2}})
+          })
+      }, 10000)
+    })
   setInterval(() => {
     client.shard.fetchClientValues('guilds.cache.size')
 			.then(results => {
