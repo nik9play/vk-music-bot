@@ -56,49 +56,8 @@ for (const file of commandFiles) {
   })
 }
 
-function serversStringByDigit(digits) {
-  if (digits >= 10 && digits <= 20) {
-    return "серверов"
-  }
-
-  switch(digits % 10) {
-    case 1:
-      return "сервер"
-    case 2:
-    case 3:
-    case 4:
-      return "сервера"
-    default:
-      return "серверов"
-  }
-}
-
 client.once('ready', () => {
   console.log('Ready!')
-  if (process.env.NODE_ENV == "production") SDCClient.setAutoPost(client)
-
-  client.shard.fetchClientValues('guilds.cache.size')
-    .then(results => {
-      const serverSize = results.reduce((acc, guildCount) => acc + guildCount, 0)
-      client.user.setPresence({activity: {name: `-vh | ${serverSize} ${serversStringByDigit(serverSize % 100)}`, type: 2}})
-    })
-    .catch(err => {
-      console.error("shard spawning... waiting", err)
-      setTimeout(() => {
-        client.shard.fetchClientValues('guilds.cache.size')
-          .then(results => {
-            const serverSize = results.reduce((acc, guildCount) => acc + guildCount, 0)
-            client.user.setPresence({activity: {name: `-vh | ${serverSize} ${serversStringByDigit(serverSize % 100)}`, type: 2}})
-          })
-      }, 10000)
-    })
-  setInterval(() => {
-    client.shard.fetchClientValues('guilds.cache.size')
-			.then(results => {
-        const serverSize = results.reduce((acc, guildCount) => acc + guildCount, 0)
-        client.user.setPresence({activity: {name: `-vh | ${serverSize} ${serversStringByDigit(serverSize % 100)}`, type: 2}})
-			})
-  }, 1800000)
 })
 
 client.once('reconnecting', () => {
