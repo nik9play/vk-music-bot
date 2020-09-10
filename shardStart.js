@@ -1,3 +1,5 @@
+if (process.env.NODE_ENV == "development") require('dotenv').config()
+
 const { ShardingManager } = require('discord.js')
 const manager = new ShardingManager('./dist/main.js', { token: process.env.DISCORD_TOKEN })
 const axios = require('axios').default
