@@ -1,4 +1,4 @@
-import play from '../tools/play'
+import vps from './vps'
 
 export default {
   name: "vsh",
@@ -6,10 +6,21 @@ export default {
   premium: true,
   cooldown: 5,
   execute: async function(message, _args, options) {
-    if (!options.serverQueue) return message.reply('нечего перемешивать.')
-    if (options.serverQueue.songs.length < 3) return message.reply('слишком маленькая очередь.')
+    const serverQueue = options.queue.get(message.guild.id)
+
+    if (serverQueue.loopType != 0) {
+      message.reply("отключите зацикливание (`-vl off`) и попробуйте снова.")
+    }
+
+    if (!serverQueue) return message.reply('нечего перемешивать.')
+    if (serverQueue.songs.length < 3) return message.reply('слишком маленькая очередь.')
+
+    const player = options.shoukaku.getPlayer(message.guild.id)
+    if (!player) return
+    if (player.paused) await vps.execute(message, _args, options)
+
     function shuffleArray(array) {
-      let arrayCopy = array
+      let arrayCopy = [...array]
       let currentIndex = arrayCopy.length
       let temporaryValue, randomIndex
       while (0 !== currentIndex) {
@@ -22,11 +33,14 @@ export default {
       }
       return arrayCopy
     }
+    
+    const newArray = shuffleArray(serverQueue.songs)
   
-    const newArray = shuffleArray(options.serverQueue.songs)
-  
-    options.serverQueue.songs = newArray
-    play(message.guild, options.serverQueue.songs[0], options)
+    serverQueue.songs = [serverQueue.songs[0]]
+    serverQueue.songs = [...serverQueue.songs, ...newArray]
+
+    player.stopTrack()
+
     message.reply("перемешано.")
   }
 }
