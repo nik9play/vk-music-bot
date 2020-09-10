@@ -48,7 +48,7 @@ function sendInfo() {
           })
             .then(res => {
               if (res.data.error) {
-                console.log("Ошибка отправки статистики на мониторинг. (Ошибка сервера)")
+                console.log("Ошибка отправки статистики на мониторинг. (Ошибка сервера)", res.data.error)
               } else {
                 console.log("Статистика отправлена на мониторинг.")
               }
