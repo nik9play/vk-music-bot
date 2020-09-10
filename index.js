@@ -1,6 +1,5 @@
 import Discord from 'discord.js'
 import { prefix } from './config.json'
-import SDC from '@megavasiliy007/sdc-api'
 import fs from 'fs'
 import rateLimit from 'axios-rate-limit'
 import axios from 'axios'
@@ -11,8 +10,6 @@ import getRightClockEmoji from './tools/getRightClockEmoji'
 
 const http = rateLimit(axios.create(), { maxRPS: 3 })
 
-let SDCClient
-if (process.env.NODE_ENV == "production") SDCClient = new SDC(process.env.SDC_TOKEN)
 const client = new Discord.Client({
   messageCacheLifetime: 60,
   messageSweepInterval: 10
