@@ -34,7 +34,7 @@ function sendInfo() {
       manager.fetchClientValues("user.id")
         .then(results => {
           const id = results[0]
-          
+
           axios.post(`https://api.server-discord.com/v2/bots/${id}/stats`, {
             servers: serverSize,
             shards: manager.shards.size
@@ -45,7 +45,14 @@ function sendInfo() {
             }
           })
             .then(res => {
-              console.log(res)
+              if (res.data.error) {
+                console.log("Ошибка отправки статистики на мониторинг. (Ошибка сервера)")
+              } else {
+                console.log("Статистика отправлена на мониторинг.")
+              }
+            })
+            .catch(() => {
+              console.log("Ошибка отправки статистики на мониторинг. (Ошибка подключения)")
             })
         })
     })
