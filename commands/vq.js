@@ -74,12 +74,12 @@ export default {
 
     if (args[0] > 1) {
       if (textPermissions.has("ADD_REACTIONS"))
-        msg.react("⬅️")
+        await msg.react("⬅️")
     }
 
     if (count < songs.length) {
       if (textPermissions.has("ADD_REACTIONS"))
-        msg.react("➡️")
+        await msg.react("➡️")
     }
 
     msg.awaitReactions(filter, { max: 1, time: 30000, errors: ["time"]})
