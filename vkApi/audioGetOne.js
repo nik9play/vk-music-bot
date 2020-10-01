@@ -46,7 +46,7 @@ async function audioGetOne(query, captcha, http) {
     urlSearch.append("captcha_key", captcha.key)
   }
 
-  if (/^[0-9]+_[0-9]+$/g.test(query)) {
+  if (/^-?[0-9]+_[0-9]+$/g.test(query)) {
     return await tryID(query, http, urlSearch)
   }
 
