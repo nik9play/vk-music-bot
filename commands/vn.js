@@ -7,7 +7,7 @@ export default {
   execute: async function skip(message, args, options) {
     const player = options.shoukaku.getPlayer(message.guild.id)
     if (player) {
-      if (player.paused) vps.execute(message, args, options)
+      if (player.paused) await vps.execute(message, args, options)
 
       player.stopTrack()
     
