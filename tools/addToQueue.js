@@ -26,38 +26,37 @@ export default async function(options, message, voiceChannel, newArray) {
 
     try {
       const node = options.shoukaku.getNode()
-      let player = options.shoukaku.getPlayer(message.guild.id)
 
       if (!options.shoukaku.getPlayer(message.guild.id)) {
-        player = await node.joinVoiceChannel({
+        const player = await node.joinVoiceChannel({
           guildID: message.guild.id,
           voiceChannelID: voiceChannel.id,
           deaf: true
         })
+
+        player.on("closed", () => {
+          options.queue.delete(message.guild.id)
+          player.disconnect()
+          if (serverQueue)
+            if (serverQueue.pauseTimer)
+              clearTimeout(serverQueue.pauseTimer)
+  
+          console.log(`${message.guild.id} бот отключился от канала`)
+        })
+  
+        player.on("error", () => {
+          options.queue.delete(message.guild.id)
+          player.disconnect()
+          console.log(`${message.guild.id} ошибка плеера`)
+        })
+  
+        player.on("end", () => {
+          console.log(`${message.guild.id} трек закончился`)
+          const serverQueue = options.queue.get(message.guild.id)
+          serverQueue.songs.shift()
+          play(message.guild, serverQueue.songs[0], options)
+        })
       }
-
-      player.on("closed", () => {
-        options.queue.delete(message.guild.id)
-        player.disconnect()
-        if (serverQueue)
-          if (serverQueue.pauseTimer)
-            clearTimeout(serverQueue.pauseTimer)
-
-        console.log(`${message.guild.id} бот отключился от канала`)
-      })
-
-      player.on("error", () => {
-        options.queue.delete(message.guild.id)
-        player.disconnect()
-        console.log(`${message.guild.id} ошибка плеера`)
-      })
-
-      player.on("end", () => {
-        console.log(`${message.guild.id} трек закончился`)
-        const serverQueue = options.queue.get(message.guild.id)
-        serverQueue.songs.shift()
-        play(message.guild, serverQueue.songs[0], options)
-      })
 
       play(message.guild, queueContruct.songs[0], options)
     } catch (err) {
