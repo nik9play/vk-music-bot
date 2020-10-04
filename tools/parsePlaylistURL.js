@@ -8,7 +8,7 @@ export default function(url) {
     }
   }
   
-  if (url.pathname.includes("/music/playlist/")) {
+  if (url.pathname.includes("/music/playlist/") || url.pathname.includes("/music/album/")) {
     const query = url.pathname.split("/")[3]
     let id = null, access_key = null
 
