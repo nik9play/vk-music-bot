@@ -23,7 +23,7 @@ export default {
     let offset = args[2] ?? 1
     offset = (offset - 1) * count
     
-    if (count > 100) return message.reply("слишком большой `count`.")
+    if (count > 1000) return message.reply("слишком большой `count`.")
     if (id.length < 3) return message.reply("слишком короткий запрос.")
 
     const res = await audioGetUser(id, count, offset, options.captcha, options.http)
