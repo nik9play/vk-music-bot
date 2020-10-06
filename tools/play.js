@@ -29,12 +29,20 @@ export default async function play(guild, song, options) {
       if (songResolved) {
         player.playTrack(songResolved.tracks[0].track)
       } else {
-        console.log(`${guild.id} resolve err`)
+        console.log(`${guild.id} resolve empty`)
         serverQueue.songs.shift()
         const newSong = serverQueue.songs[0]
         play(guild, newSong, options)
         if (serverQueue.textChannel)
-          serverQueue.textChannel.send(`Ошибка воспроизведения трека. \`${song.artist} — ${song.title}\` пропущен.`)
+          serverQueue.textChannel.send(`Ошибка воспроизведения трека. Возможно, с момента добавления трека прошло больше суток. \`${song.artist} — ${song.title}\` пропущен.`)
       }
+    })
+    .catch(() => {
+      console.log(`${guild.id} resolve err`)
+      serverQueue.songs.shift()
+      const newSong = serverQueue.songs[0]
+      play(guild, newSong, options)
+      if (serverQueue.textChannel)
+        serverQueue.textChannel.send(`Ошибка воспроизведения трека. Возможно, трек всё ещё не релизнулся. \`${song.artist} — ${song.title}\` пропущен.`)
     })
 }
