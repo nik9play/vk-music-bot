@@ -29,6 +29,8 @@ export default async function play(guild, song, options) {
       if (songResolved) {
         player.playTrack(songResolved.tracks[0].track)
       } else {
+        serverQueue.loopType = 0
+        serverQueue.loopSongs = []
         console.log(`${guild.id} resolve empty`)
         serverQueue.songs.shift()
         const newSong = serverQueue.songs[0]
@@ -39,6 +41,8 @@ export default async function play(guild, song, options) {
     })
     .catch(() => {
       console.log(`${guild.id} resolve err`)
+      serverQueue.loopType = 0
+      serverQueue.loopSongs = []
       serverQueue.songs.shift()
       const newSong = serverQueue.songs[0]
       play(guild, newSong, options)
