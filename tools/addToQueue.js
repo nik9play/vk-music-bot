@@ -34,24 +34,25 @@ export default async function(options, message, voiceChannel, newArray) {
           deaf: true
         })
 
-        player.on("closed", () => {
+        player.on("closed", reason => {
+          console.log(reason)
           options.queue.delete(message.guild.id)
           player.disconnect()
           if (serverQueue)
             if (serverQueue.pauseTimer)
               clearTimeout(serverQueue.pauseTimer)
-  
-          console.log(`${message.guild.id} бот отключился от канала`)
+
+          console.log(`${message.guild.shardID}/${message.guild.id} бот отключился от канала`)
         })
   
         player.on("error", () => {
           options.queue.delete(message.guild.id)
           player.disconnect()
-          console.log(`${message.guild.id} ошибка плеера`)
+          console.log(`${message.guild.shardID}/${message.guild.id} ошибка плеера`)
         })
   
         player.on("end", () => {
-          console.log(`${message.guild.id} трек закончился`)
+          console.log(`${message.guild.shardID}/${message.guild.id} трек закончился`)
           const serverQueue = options.queue.get(message.guild.id)
           serverQueue.songs.shift()
           play(message.guild, serverQueue.songs[0], options)

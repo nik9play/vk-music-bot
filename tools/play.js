@@ -17,7 +17,7 @@ export default async function play(guild, song, options) {
       player.disconnect()
     
       options.queue.delete(guild.id)
-      return console.log(`${guild.id} закончил воспроизводить треки`)
+      return console.log(`${guild.shardID}/${guild.id} закончил воспроизводить треки`)
     }
   }
 
