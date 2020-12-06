@@ -26,7 +26,7 @@ export default async function(options, message, voiceChannel, newArray) {
 
     try {
       const node = options.shoukaku.getNode()
-
+      console.log(options.shoukaku.getPlayer(message.guild.id))
       if (!options.shoukaku.getPlayer(message.guild.id)) {
         const player = await node.joinVoiceChannel({
           guildID: message.guild.id,

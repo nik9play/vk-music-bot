@@ -24,7 +24,7 @@ export default {
     offset = (offset - 1) * count
     
     if (count > 1000) return message.reply("слишком большой `count`.")
-    if (id.length < 3) return message.reply("слишком короткий запрос.")
+    if (id.length < 1) return message.reply("слишком короткий запрос.")
 
     const res = await audioGetUser(id, count, offset, options.captcha, options.http)
 
@@ -47,11 +47,21 @@ export default {
     }
   
     const playlistEmbed = {
+      title: res.info.name,
+      thumbnail: {
+        url: res.info.img
+      },
       color: 0x5181b8,
-      title: `Добавлено треков: **${newArray.length}**.`,
       author: {
-        name: "Музыка пользователя добавлена!"
-      }
+        name: "Треки следующего пользователя добавлены"
+      },
+      fields: [
+        {
+          name: "Добавлено треков",
+          value: newArray.length,
+          inline: true
+        }
+      ]
     }
   
     await addToQueue(options, message, voiceChannel, newArray)
