@@ -2,8 +2,8 @@ import mashupList from '../mashup.json'
 import vp from './vp'
 
 export default {
-  name: "vmash",
-  description: "Включить трек на выбор ДЖКБ",
+  name: "vmashup",
+  description: "Включить рандомный мэшап (ВНИМАНИЕ: ВОЗМОЖНЫ МЭШАПЫ С МОРГЕНШТЕРНОМ)",
   cooldown: 4,
   execute: async function(message, _args, options) {
     const id = mashupList[Math.floor(Math.random() * mashupList.length)]
