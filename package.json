@@ -9,7 +9,7 @@
     "dev": "webpack --mode development && cross-env NODE_ENV=development node --inspect shardStart.js"
   },
   "dependencies": {
-    "axios": "^0.19.2",
+    "axios": "^0.21.1",
     "axios-rate-limit": "^1.2.1",
     "bufferutil": "^4.0.1",
     "discord.js": "^12.2.0",
