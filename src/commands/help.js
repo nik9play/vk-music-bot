@@ -1,6 +1,7 @@
 export default {
   name: "help",
   cooldown: 1,
+  adminOnly: true,
   aliases: ["h"],
   execute: async function(message) {
     const embed = {

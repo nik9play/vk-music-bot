@@ -118,6 +118,20 @@ client.on("message", async message => {
       setTimeout(() => timestamps.delete(message.author.id), cooldownAmount)
     }
 
+    if (commandHandler.djOnly)
+      if (await client.configDB.getAccessRoleEnabled(message.guild.id)) {
+        const djRole = await client.configDB.getAccessRole(message.guild.id)
+
+        if (message.member.roles.cache.some(role => role.name === djRole))
+          return commandHandler.execute(message, args)
+        else return
+      }
+
+    if (commandHandler.adminOnly)
+      if (message.member.permissions.has("MANAGE_GUILD"))
+        return commandHandler.execute(message, args)
+      else return
+
     commandHandler.execute(message, args)
   }
 })

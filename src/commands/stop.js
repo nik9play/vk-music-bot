@@ -1,7 +1,7 @@
 export default {
   name: "stop",
   aliases: ["s"],
-  perms: ["MANAGE_PLAYER"],
+  djOnly: true,
   cooldown: 1,
   execute: async (message) => { 
     const player = message.client.manager.get(message.guild.id)

@@ -5,7 +5,7 @@ export default {
   name: "queue",
   description: "Показать очередь",
   aliases: ["q"],
-  perms: ["VIEW_QUEUE"],
+  djOnly: true,
   cooldown: 3,
   execute: async function(message, args) {
     const player = message.client.manager.get(message.guild.id);

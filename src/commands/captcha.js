@@ -2,6 +2,7 @@ import play from './play'
 
 export default {
   name: "captcha",
+  djOnly: true,
   cooldown: 5,
   execute: async (message, args) => {
     if (message.client.captcha.has(message.guild.id)) {

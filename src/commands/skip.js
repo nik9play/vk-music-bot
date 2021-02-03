@@ -1,7 +1,7 @@
 export default {
   name: "skip",
   aliases: ["n"],
-  perms: ["MANAGE_QUEUE"],
+  djOnly: true,
   cooldown: 1,
   execute: async (message) => { 
     const player = message.client.manager.get(message.guild.id);

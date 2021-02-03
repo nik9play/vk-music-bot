@@ -11,7 +11,7 @@ import { TrackUtils } from 'erela.js-vk'
 export default {
   name: "play",
   aliases: ["p", "pl"],
-  perms: ["ADD_TO_QUEUE"],
+  djOnly: true,
   cooldown: 2,
   execute: async (message, args, options) => {
     const { channel } = message.member.voice

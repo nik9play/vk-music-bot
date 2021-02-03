@@ -2,6 +2,7 @@
 export default {
   name: "settings",
   cooldown: 5,
+  adminOnly: true,
   execute: async (message, args) => {
     if (args.length == 0) {
       const embed = {
