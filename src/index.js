@@ -1,0 +1,123 @@
+import { Client, Collection } from 'discord.js'
+import { Manager } from 'erela.js-vk'
+import { readdirSync } from 'fs'
+
+import colors from 'colors/safe'
+
+import ConfigDB from './tools/db/ConfigDB'
+
+const client = new Client({
+  messageCacheLifetime: 60,
+  messageSweepInterval: 10
+})
+
+client.cooldowns = new Collection()
+client.commands = new Collection()
+client.captcha = new Collection()
+client.prefixes = new Collection()
+
+const LavalinkServersString = process.env.LAVALINK_NODES
+const nodes = LavalinkServersString.split(";").map(val => {
+  const arr = val.split(",")
+  return {
+    name: arr[0],
+    host: arr[1],
+    port: parseInt(arr[2]),
+    password: arr[3]
+  }
+})
+
+const commandFiles = readdirSync('./src/commands').filter(file => file.endsWith('.js'))
+
+for (const file of commandFiles) {
+  import(`./commands/${file}`).then(command => {
+    client.commands.set(command.default.name, command.default)
+    if (command.default.aliases) {
+      command.default.aliases.forEach((e) => {
+        client.commands.set(e, command.default)
+      })
+    }
+  })
+}
+
+client.manager = new Manager({
+  nodes,
+  send: (id, payload) => {
+    const guild = client.guilds.cache.get(id)
+    if (guild) guild.shard.send(payload)
+  }
+})
+  .on("nodeConnect", node => console.log(`Node "${node.options.identifier}" connected.`))
+  .on("nodeError", (node, error) => console.log(
+    `Node "${node.options.identifier}" encountered an error: ${error.message}.`
+  ))
+  .on("trackStart", (player, track) => {
+    const channel = client.channels.cache.get(player.textChannel)
+    channel.send({embed: {
+      description: `Сейчас играет **${track.author} — ${track.title}**.`,
+      color: 0x5181b8
+    }})
+  })
+
+client.once("ready", () => {
+  client.manager.init(client.user.id);
+  console.log(`Logged in as ${client.user.tag}`)
+});
+
+client.on("raw", d => client.manager.updateVoiceState(d))
+
+client.login(process.env.DISCORD_TOKEN)
+
+// подключение к дб
+client.configDB = new ConfigDB(process.env.MONGO_URL)
+client.configDB.init()
+
+client.on("message", async message => {
+  if (!message.channel.permissionsFor(message.client.user).has("SEND_MESSAGES")) return
+  if (message.channel.type != "text" || message.author.bot || !client.configDB.isConnected) return
+
+  let prefix
+
+  if (client.prefixes.has(message.guild.id))
+    prefix = client.prefixes.get(message.guild.id)
+  else {
+    prefix = await client.configDB.getPrefix(message.guild.id)
+    client.prefixes.set(message.guild.id, prefix)
+  }
+
+
+  if (!message.content.startsWith(prefix)) return
+
+  let args = message.content.slice(prefix.length).split(/ +/)
+  const command = args.shift().toLowerCase()
+
+  if (client.commands.has(command)) {
+    console.log(`${colors.green(message.guild.shardID)}/${colors.red(message.guild.id)} выполнил ${colors.yellow.bold(command)} с аргументами ${colors.bold(args)}`)
+
+    const commandHandler = client.commands.get(command)
+    if (!client.cooldowns.has(commandHandler.name)) {
+      client.cooldowns.set(commandHandler.name, new Collection())
+    }
+    
+    //проверка кулдауна
+    const now = Date.now()
+    const timestamps = client.cooldowns.get(commandHandler.name)
+    const cooldownAmount = (commandHandler.cooldown || 3) * 1000
+    
+    if (timestamps.has(message.author.id)) {
+      const expirationTime = timestamps.get(message.author.id) + cooldownAmount
+
+      if (now < expirationTime) {
+        const timeLeft = (expirationTime - now) / 1000
+
+        return message.reply(`пожалуйста, подождите еще ${timeLeft.toFixed(2)} секунд перед тем как использовать \`${commandHandler.name}\`!`)
+          .then(msg => msg.delete({timeout: timeLeft * 1000 + 1000}))
+      }
+    } else {
+      timestamps.set(message.author.id, now)
+      setTimeout(() => timestamps.delete(message.author.id), cooldownAmount)
+    }
+
+    commandHandler.execute(message, args)
+  }
+})
