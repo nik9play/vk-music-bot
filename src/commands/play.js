@@ -17,6 +17,7 @@ export default {
     const { channel } = message.member.voice
 
     if (!channel) return message.reply('необходимо находиться в голосовом канале.')
+
     if (!args.length) return message.reply('вставьте после команды ссылку на плейлист или альбом, ID пользователя или трека.')
 
     const player = message.client.manager.create({
@@ -27,6 +28,8 @@ export default {
 
     if (player.state !== "CONNECTED") player.connect()
 
+    if (channel.id !== player.voiceChannel) return message.reply("вы находитесь не в том голосовом канале.")
+    
     const search = args.join(' ')
 
     const count = args[1] ?? 10

@@ -15,6 +15,7 @@ client.cooldowns = new Collection()
 client.commands = new Collection()
 client.captcha = new Collection()
 client.prefixes = new Collection()
+client.timers = new Collection()
 
 const LavalinkServersString = process.env.LAVALINK_NODES
 const nodes = LavalinkServersString.split(";").map(val => {
@@ -57,6 +58,35 @@ client.manager = new Manager({
       description: `Сейчас играет **${track.author} — ${track.title}**.`,
       color: 0x5181b8
     }})
+  })
+  .on("trackEnd", async (player) => {
+    if (!await client.configDB.get247(player.guild))
+      if (player) {
+        const voiceChannel = client.channels.cache.get(player.voiceChannel)
+        const arr =  Array.from(voiceChannel.members.filter(m => m.user.bot == false).keys())
+        if (!arr.length) {
+          player.destroy()
+          const channel = client.channels.cache.get(player.textChannel)
+          channel.send({embed: {
+            description: `**Я покинул канал, так как тут никого не осталось.** Хотите, чтобы я оставался? Включите режим 24/7 (доступен только для Премиум пользователей). `,
+            color: 0x5181b8
+          }}).then(msg => setTimeout(() => msg.delete(), 30000))
+        }
+      }
+  })
+  .on("queueEnd", async (player) => {
+    if (!await client.configDB.get247(player.guild))
+      if (player)
+        client.timers.set(player.guild, setTimeout(() => {
+          if(player) {
+            player.destroy()
+            const channel = client.channels.cache.get(player.textChannel)
+            channel.send({embed: {
+              description: `**Я покинул канал, так слишком долго был неактивен.** Хотите, чтобы я оставался? Включите режим 24/7 (доступен только для Премиум пользователей). `,
+              color: 0x5181b8
+            }}).then(msg => setTimeout(() => msg.delete(), 30000))
+          }
+        }, 1200000))
   })
 
 client.once("ready", () => {

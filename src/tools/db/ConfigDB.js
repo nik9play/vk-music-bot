@@ -223,6 +223,27 @@ export default class ConfigDB {
       return server.prefix
   }
 
+  async set247(enable, guild_id) {
+    const query = { guild_id: guild_id }
+
+    await this.collection.updateOne(query, {
+      $set: {
+        e247: enable
+      }
+    }, {upsert: true})
+  }
+
+  async get247(guild_id) {
+    const query = { guild_id: guild_id, e247: { $exists:true } }
+
+    const server = await this.collection.findOne(query)
+
+    if (!server)
+      return false
+    else
+      return server.e247
+  }
+
   async checkPremium(guild_id) {
     const query = { guild_id: guild_id, premium: true }
 
