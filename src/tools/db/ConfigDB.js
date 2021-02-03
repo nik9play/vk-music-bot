@@ -79,85 +79,128 @@ export default class ConfigDB {
     await this.collection.insertOne(config)
   }
 
-  reverseAction(action) {
-    return action == "allow" ? "deny" : "allow"
-  }
+  // reverseAction(action) {
+  //   return action == "allow" ? "deny" : "allow"
+  // }
 
-  async setPerm(id, perm, action, guild_id) {
-    // await this.getConfig(true)
-    const query = { guild_id: guild_id }
+  // async setPerm(id, perm, action, guild_id) {
+  //   // await this.getConfig(true)
+  //   const query = { guild_id: guild_id }
     
-    if (perm == "ALL") {
-      if (action == "reset")
-        return await this.collection.updateOne(query, {
-          $pull: {
-            [`perms.${action}.ADD_TO_QUEUE`]: id,
-            [`perms.${action}.MANAGE_QUEUE`]: id,
-            [`perms.${action}.VIEW_QUEUE`]: id,
-            [`perms.${action}.MANAGE_PLAYER`]: id,
-            [`perms.${this.reverseAction(action)}.ADD_TO_QUEUE`]: id,
-            [`perms.${this.reverseAction(action)}.MANAGE_QUEUE`]: id,
-            [`perms.${this.reverseAction(action)}.VIEW_QUEUE`]: id,
-            [`perms.${this.reverseAction(action)}.MANAGE_PLAYER`]: id
-          }
-        }, {upsert: true})
+  //   if (perm == "ALL") {
+  //     if (action == "reset")
+  //       return await this.collection.updateOne(query, {
+  //         $pull: {
+  //           [`perms.${action}.ADD_TO_QUEUE`]: id,
+  //           [`perms.${action}.MANAGE_QUEUE`]: id,
+  //           [`perms.${action}.VIEW_QUEUE`]: id,
+  //           [`perms.${action}.MANAGE_PLAYER`]: id,
+  //           [`perms.${this.reverseAction(action)}.ADD_TO_QUEUE`]: id,
+  //           [`perms.${this.reverseAction(action)}.MANAGE_QUEUE`]: id,
+  //           [`perms.${this.reverseAction(action)}.VIEW_QUEUE`]: id,
+  //           [`perms.${this.reverseAction(action)}.MANAGE_PLAYER`]: id
+  //         }
+  //       }, {upsert: true})
       
-      return await this.collection.updateOne(query, {
-        $addToSet: {
-          [`perms.${action}.ADD_TO_QUEUE`]: id,
-          [`perms.${action}.MANAGE_QUEUE`]: id,
-          [`perms.${action}.VIEW_QUEUE`]: id,
-          [`perms.${action}.MANAGE_PLAYER`]: id
-        },
-        $pull: {
-          [`perms.${this.reverseAction(action)}.ADD_TO_QUEUE`]: id,
-          [`perms.${this.reverseAction(action)}.MANAGE_QUEUE`]: id,
-          [`perms.${this.reverseAction(action)}.VIEW_QUEUE`]: id,
-          [`perms.${this.reverseAction(action)}.MANAGE_PLAYER`]: id
-        }
-      }, {upsert: true})
-    } else {
-      if (action == "reset")
-        return await this.collection.updateOne(query, {
-          $pull: {
-            [`perms.${action}.${perm}`]: id,
-            [`perms.${this.reverseAction(action)}.${perm}`]: id
-          }
-        }, {upsert: true})
+  //     return await this.collection.updateOne(query, {
+  //       $addToSet: {
+  //         [`perms.${action}.ADD_TO_QUEUE`]: id,
+  //         [`perms.${action}.MANAGE_QUEUE`]: id,
+  //         [`perms.${action}.VIEW_QUEUE`]: id,
+  //         [`perms.${action}.MANAGE_PLAYER`]: id
+  //       },
+  //       $pull: {
+  //         [`perms.${this.reverseAction(action)}.ADD_TO_QUEUE`]: id,
+  //         [`perms.${this.reverseAction(action)}.MANAGE_QUEUE`]: id,
+  //         [`perms.${this.reverseAction(action)}.VIEW_QUEUE`]: id,
+  //         [`perms.${this.reverseAction(action)}.MANAGE_PLAYER`]: id
+  //       }
+  //     }, {upsert: true})
+  //   } else {
+  //     if (action == "reset")
+  //       return await this.collection.updateOne(query, {
+  //         $pull: {
+  //           [`perms.${action}.${perm}`]: id,
+  //           [`perms.${this.reverseAction(action)}.${perm}`]: id
+  //         }
+  //       }, {upsert: true})
 
-      return await this.collection.updateOne(query, {
-        $addToSet: {
-          [`perms.${action}.${perm}`]: id
-        },
-        $pull: {
-          [`perms.${this.reverseAction(action)}.${perm}`]: id
-        }
-      }, {upsert: true})
-    }
+  //     return await this.collection.updateOne(query, {
+  //       $addToSet: {
+  //         [`perms.${action}.${perm}`]: id
+  //       },
+  //       $pull: {
+  //         [`perms.${this.reverseAction(action)}.${perm}`]: id
+  //       }
+  //     }, {upsert: true})
+  //   }
+  // }
+
+  // async checkPerm(id, perm, guild_id) {
+  //   const query = {
+  //     guild_id: guild_id,
+  //     $or: [
+  //       {
+  //         [`perms.allow.${perm}`]: { $in: [id] },
+  //         [`perms.deny.${perm}`]: { $not: { $in: [id] } }
+
+  //       },
+  //       {
+  //         [`perms.allow.${perm}`]: { $not: { $in: [id] } },
+  //         [`perms.deny.${perm}`]: { $not: { $in: [id] } }
+  //       }
+  //     ]
+  //   }
+  //   const server = await this.collection.countDocuments(query)
+
+  //   if (server)
+  //     return true
+  //   else
+  //     return false
+  // }
+
+  async setAccessRole(name, guild_id) {
+    const query = { guild_id: guild_id }
+
+    await this.collection.updateOne(query, {
+      $set: {
+        accessRoleName: name
+      }
+    }, {upsert: true})
   }
 
-  async checkPerm(id, perm, guild_id) {
-    const query = {
-      guild_id: guild_id,
-      $or: [
-        {
-          [`perms.allow.${perm}`]: { $in: [id] },
-          [`perms.deny.${perm}`]: { $not: { $in: [id] } }
+  async getAccessRole(guild_id) {
+    const query = { guild_id: guild_id, accessRoleName: { $exists: true } }
 
-        },
-        {
-          [`perms.allow.${perm}`]: { $not: { $in: [id] } },
-          [`perms.deny.${perm}`]: { $not: { $in: [id] } }
-        }
-      ]
-    }
-    const server = await this.collection.countDocuments(query)
+    const server = await this.collection.findOne(query)
 
-    if (server)
-      return true
+    if (!server)
+      return "DJ"
     else
-      return false
+      return server.accessRoleName
   }
+
+  async setAccessRoleEnabled(enable, guild_id) {
+    const query = { guild_id: guild_id }
+
+    await this.collection.updateOne(query, {
+      $set: {
+        accessRoleNameEnabled: enable
+      }
+    }, {upsert: true})
+  }
+
+  async getAccessRoleEnabled(guild_id) {
+    const query = { guild_id: guild_id, accessRoleNameEnabled: { $exists:true } }
+
+    const server = await this.collection.findOne(query)
+
+    if (!server)
+      return false
+    else
+      return server.accessRoleNameEnabled
+  }
+
 
   async setPrefix(prefix, guild_id) {
     const query = { guild_id: guild_id }

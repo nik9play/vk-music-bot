@@ -4,7 +4,7 @@ export default {
   aliases: ["h"],
   execute: async function(message) {
     const embed = {
-      title: "Справка",
+      title: "❔ Справка",
       color: 0x5181b8,
       fields: [
         {
@@ -73,7 +73,7 @@ export default {
         },
         {
           name: "`settings`",
-          value: "Настройки. `settings prefix` — настройка префикса,\n`settings perms` — настройка разрешений",
+          value: "Настройки. Введите `settings` для подробностей",
           inline: true
         },
         {
