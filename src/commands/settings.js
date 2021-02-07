@@ -110,7 +110,7 @@ export default {
         if (args[1] === "on")
           message.client.configDB.setAccessRoleEnabled(true, message.guild.id).then(() => message.reply("<:yes:806179743766413323> DJ режим включен."))
         else if (args[1] === "off")
-          message.client.configDB.setAccessRoleEnabled(true, message.guild.id).then(() => message.reply("<:no:806178831994978385> DJ режим выключен."))
+          message.client.configDB.setAccessRoleEnabled(false, message.guild.id).then(() => message.reply("<:no:806178831994978385> DJ режим выключен."))
       }
   }
 }
