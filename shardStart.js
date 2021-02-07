@@ -9,29 +9,29 @@ manager.spawn().then(() => {
   sendInfo()
 })
 
-function serversStringByDigit(digits) {
-  if (digits >= 10 && digits <= 20) {
-    return "серверов"
-  }
+// function serversStringByDigit(digits) {
+//   if (digits >= 10 && digits <= 20) {
+//     return "серверов"
+//   }
 
-  switch(digits % 10) {
-    case 1:
-      return "сервер"
-    case 2:
-    case 3:
-    case 4:
-      return "сервера"
-    default:
-      return "серверов"
-  }
-}
+//   switch(digits % 10) {
+//     case 1:
+//       return "сервер"
+//     case 2:
+//     case 3:
+//     case 4:
+//       return "сервера"
+//     default:
+//       return "серверов"
+//   }
+// }
 
 function sendInfo() {
   manager.fetchClientValues("guilds.cache.size")
     .then(results => {
       const serverSize = results.reduce((acc, guildCount) => acc + guildCount, 0)
       
-      manager.broadcastEval(`this.user.setPresence({activity: {name: '-vh | ${serverSize} ${serversStringByDigit(serverSize % 100)}', type: 2}})`)
+      manager.broadcastEval(`this.user.setPresence({activity: {name: '-vh | ${(serverSize/1000).toFixed(1)}k серверов', type: 2}})`)
 
       manager.fetchClientValues("user.id")
         .then(results => {
