@@ -15,6 +15,10 @@ export default {
         if (player.paused || player.queue.length == 0)
           message.client.timers.set(message.guild.id, setTimeout(() => {
             if(player) player.destroy()
+            message.channel.send({embed: {
+              description: `**Я покинул канал, так как слишком долго был неактивен.** Хотите, чтобы я оставался? Включите режим 24/7 (доступен только для Премиум пользователей). `,
+              color: 0x5181b8
+            }}).then(msg => setTimeout(() => msg.delete(), 30000))
           }, 1200000))
     }
   }
