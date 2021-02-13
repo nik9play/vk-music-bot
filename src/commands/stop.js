@@ -12,7 +12,11 @@ export default {
     if (!channel) return message.reply('необходимо находиться в голосовом канале.')
     if (channel.id !== player.voiceChannel) return message.reply("вы находитесь не в том голосовом канале.")
     
-    player.destroy()
+    // if (message.client.timers.has(message.guild.id))
+    //   clearTimeout(message.client.timers.get(message.guild.id))
+
+    player.queue.clear()
+    player.stop()
     return message.reply("проигрывание остановлено, очередь очищена.")
   }
 }
