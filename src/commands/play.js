@@ -29,7 +29,12 @@ export default {
     if (player.state !== "CONNECTED") player.connect()
 
     if (channel.id !== player.voiceChannel) return message.reply("вы находитесь не в том голосовом канале.")
-    
+
+    // сброс таймера и снятие с паузы при добавлении в очередь
+    if (player.paused) player.pause(false)
+    if (message.client.timers.has(message.guild.id))
+      clearTimeout(message.client.timers.get(message.guild.id))
+
     const search = args.join(' ')
 
     const count = args[1] ?? 10
@@ -152,7 +157,7 @@ export default {
           if (!player.playing && !player.paused && !player.queue.size) player.play()
       }
 
-      return message.channel.send({embed: songEmbed})
+      message.channel.send({embed: songEmbed})
     } else if (arg.type === "playlist") {
       const newArray = req.newArray
 
@@ -190,7 +195,7 @@ export default {
         if (!player.playing && !player.paused && !player.queue.size) player.play()
       }
 
-      return message.channel.send({embed: playlistEmbed})
+      message.channel.send({embed: playlistEmbed})
     } else if (arg.type === "user") {
       const newArray = req.newArray
 
@@ -222,7 +227,7 @@ export default {
         if (!player.playing && !player.paused && !player.queue.size) player.play()
       }
 
-      return message.channel.send({embed: playlistEmbed})
+      message.channel.send({embed: playlistEmbed})
     } else if (arg.type === "group") {
       const newArray = req.newArray
 
@@ -255,7 +260,16 @@ export default {
         if (!player.playing && !player.paused && !player.queue.size) player.play()
       }
 
-      return message.channel.send({embed: playlistEmbed})
+      message.channel.send({embed: playlistEmbed})
+    }
+
+    if (!await message.client.configDB.checkPremium(message.guild.id)) {
+      if (player)
+        if (player.queue.totalSize >= 200) {
+          player.queue.remove(201, player.queue.totalSize)
+          return message.reply("в очереди было больше 200 треков, поэтому лишние треки были удалены. Хотите больше треков? Приобретите Премиум, подробности: `donate`.")
+        }
+          
     }
   }
 }
