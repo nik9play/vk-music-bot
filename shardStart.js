@@ -30,8 +30,26 @@ function sendInfo() {
   manager.fetchClientValues("guilds.cache.size")
     .then(results => {
       const serverSize = results.reduce((acc, guildCount) => acc + guildCount, 0)
-      
+
       manager.broadcastEval(`this.user.setPresence({activity: {name: '-vh | ${(serverSize/1000).toFixed(1)}k серверов', type: 2}})`)
+
+      axios.post("https://vkmusicbotapi.megaworld.space/metrics", {
+        token: process.env.API_TOKEN,
+        metrics: {
+          servers: serverSize,
+          serverShards: results
+        }
+      })
+        .then(res => {
+          if (res.data.status === "error") {
+            console.log("Ошибка отправки статистики на метрику. (Ошибка сервера)", res.data.message)
+          } else {
+            console.log("Статистика отправлена на метрику.")
+          }
+        })
+        .catch(() => {
+          console.log("Ошибка отправки статистики на метрику. (Ошибка подключения)")
+        })
 
       manager.fetchClientValues("user.id")
         .then(results => {
