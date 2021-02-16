@@ -24,6 +24,7 @@ export default {
       guild: message.guild.id,
       voiceChannel: channel.id,
       textChannel: message.channel.id,
+      selfDeafen: true
     })
 
     if (player.state !== "CONNECTED") player.connect()
