@@ -17,6 +17,8 @@ export default {
 
     player.queue.clear()
     player.stop()
-    return message.reply("проигрывание остановлено, очередь очищена.")
+    const textPermissions = message.channel.permissionsFor(message.client.user)
+    if (textPermissions.has("ADD_REACTIONS"))
+      message.react('⏹️') 
   }
 }
