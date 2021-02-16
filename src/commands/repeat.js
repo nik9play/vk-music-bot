@@ -1,6 +1,6 @@
 export default {
   name: "repeat",
-  aliases: ["l", "rp"],
+  aliases: ["l", "rp", "loop"],
   djOnly: true,
   execute: async function(message, args) {
     const player = message.client.manager.get(message.guild.id)
