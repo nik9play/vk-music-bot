@@ -15,6 +15,9 @@ export default {
       if (message.client.timers.has(message.guild.id))
         clearTimeout(message.client.timers.get(message.guild.id))
       
+      const textPermissions = message.channel.permissionsFor(message.client.user)
+      if (textPermissions.has("ADD_REACTIONS"))
+        message.react('▶️') 
       return player.pause(false)
     }
 
@@ -27,6 +30,9 @@ export default {
         if(player) player.destroy()
       }, 1200000))
 
-    player.pause(true)
+    const textPermissions = message.channel.permissionsFor(message.client.user)
+    if (textPermissions.has("ADD_REACTIONS"))
+      message.react('⏸️') 
+    return player.pause(true)
   }
 }
