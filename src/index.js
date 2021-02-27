@@ -82,12 +82,19 @@ client.manager = new Manager({
             player.destroy()
             const channel = client.channels.cache.get(player.textChannel)
             channel.send({embed: {
-              description: `**Я покинул канал, так слишком долго был неактивен.** Хотите, чтобы я оставался? Включите режим 24/7 (доступен только для Премиум пользователей). `,
+              description: `**Я покинул канал, так как слишком долго был неактивен.**\n Хотите, чтобы я оставался? Включите режим 24/7 (доступен только для Премиум пользователей, подробности: \`-vdonate\`). `,
               color: 0x5181b8
             }}).then(msg => setTimeout(() => msg.delete(), 30000))
           }
         }, 1200000))
   })
+  .on("playerDestroy", () => {
+    console.log("player destroyed")
+  })
+  .on("socketClosed", (player, web) => {
+    console.log("socket closed. info: ",web)
+  })
+  //.on("trackStuck")
 
 client.once("ready", () => {
   client.manager.init(client.user.id);
