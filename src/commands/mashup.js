@@ -1,4 +1,4 @@
-import mashupList from '../lists/mashup.json.json'
+import mashupList from '../lists/mashup.json'
 import play from './play'
 
 export default {
