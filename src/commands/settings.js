@@ -14,7 +14,7 @@ export default {
             value: `Настройка префикса. Текущий префикс: \`${await message.client.configDB.getPrefix(message.guild.id)}\``
           },
           {
-            name: `\`djenabled\` ${await message.client.configDB.getPrefix(message.guild.id) ? "<:yes:806179743766413323>" : "<:no:806178831994978385>"}`,
+            name: `\`djenabled\` ${await message.client.configDB.getAccessRoleEnabled(message.guild.id) ? "<:yes:806179743766413323>" : "<:no:806178831994978385>"}`,
             value: "DJ режим. Позовляет пользоваться ботом только если у пользователя есть определенная роль."
           },
           {
@@ -86,7 +86,7 @@ export default {
         message.reply(`префикс \`${args[1]}\`успешно установлен!`)
         break
       case "djrole":
-        console.log(message.mentions.roles.first())
+        //console.log(message.mentions.roles.first())
         const role = message.mentions.roles.first()
         
         let roleName
