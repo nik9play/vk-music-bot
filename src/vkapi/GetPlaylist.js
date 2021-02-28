@@ -30,7 +30,6 @@ export default class GetPlaylist extends VKApi {
     }
 
     const res = await super.sendRequest("execute", {...captchaQuery, code })
-    console.log(res)
     if (res.status === "error") {
       return res
     } else {
