@@ -1,4 +1,4 @@
-//import { Duration } from 'luxon'
+import { Duration } from 'luxon'
 import { MessageEmbed } from 'discord.js'
 
 export default {
@@ -24,7 +24,8 @@ export default {
 
     const tracks = queue.slice(start, end)
 
-    if (queue.current) embed.addField("Сейчас играет", `${queue.current.author} — ${queue.current.title}`)
+    if (queue.current) embed.addField("Сейчас играет", `${queue.current.author} — ${queue.current.title} (${Duration.fromMillis(player.position).toFormat("mm:ss")}/${Duration.fromMillis(queue.current.duration).toFormat("mm:ss")})`)
+    console.log(queue.current)
 
     if (!tracks.length) embed.setDescription(`Нет треков на странице \`${page}\`.`)
     else embed.setDescription(tracks.map((track, i) => `${start + (++i)}. ${track.author} — ${track.title}`).join("\n"))
