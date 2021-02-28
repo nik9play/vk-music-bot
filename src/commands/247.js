@@ -2,6 +2,7 @@ export default {
   name: "24/7",
   aliases: ["247"],
   adminOnly: true,
+  premium: true,
   execute: async function(message) {
     const player = message.client.manager.get(message.guild.id)
 
