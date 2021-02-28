@@ -155,6 +155,10 @@ client.on("message", async message => {
       setTimeout(() => timestamps.delete(message.author.id), cooldownAmount)
     }
 
+    if (commandHandler.premium)
+      if (!await client.configDB.checkPremium(message.guild.id))
+        return message.reply("на этом сервере нет **Премиума**, поэтому команда не может быть выполнена. Подробнее: `-vdonate`")
+
     if (commandHandler.djOnly)
       if (await client.configDB.getAccessRoleEnabled(message.guild.id)) {
         const djRole = await client.configDB.getAccessRole(message.guild.id)
