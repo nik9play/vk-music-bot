@@ -57,7 +57,7 @@ client.manager = new Manager({
     channel.send({embed: {
       description: `Сейчас играет **${track.author} — ${track.title}**.`,
       color: 0x5181b8
-    }})
+    }}).then(msg => msg.delete({timeout: track.duration}))
   })
   .on("trackEnd", async (player) => {
     if (!await client.configDB.get247(player.guild))
@@ -70,7 +70,7 @@ client.manager = new Manager({
           channel.send({embed: {
             description: `**Я покинул канал, так как тут никого не осталось.** Хотите, чтобы я оставался? Включите режим 24/7 (доступен только для Премиум пользователей). `,
             color: 0x5181b8
-          }}).then(msg => setTimeout(() => msg.delete(), 30000))
+          }}).then(msg => msg.delete({timeout: 30000}))
         }
       }
   })
@@ -84,7 +84,7 @@ client.manager = new Manager({
             channel.send({embed: {
               description: `**Я покинул канал, так как слишком долго был неактивен.**\n Хотите, чтобы я оставался? Включите режим 24/7 (доступен только для Премиум пользователей, подробности: \`-vdonate\`). `,
               color: 0x5181b8
-            }}).then(msg => setTimeout(() => msg.delete(), 30000))
+            }}).then(msg => msg.delete({timeout: 30000}))
           }
         }, 1200000))
   })
@@ -155,18 +155,16 @@ client.on("message", async message => {
       setTimeout(() => timestamps.delete(message.author.id), cooldownAmount)
     }
 
+    if (await client.configDB.getAccessRoleEnabled(message.guild.id)) {
+      const djRole = await client.configDB.getAccessRole(message.guild.id)
+
+      if (!message.member.roles.cache.some(role => role.name === djRole))
+      return
+    }
+
     if (commandHandler.premium)
       if (!await client.configDB.checkPremium(message.guild.id))
         return message.reply("на этом сервере нет **Премиума**, поэтому команда не может быть выполнена. Подробнее: `-vdonate`")
-
-    if (commandHandler.djOnly)
-      if (await client.configDB.getAccessRoleEnabled(message.guild.id)) {
-        const djRole = await client.configDB.getAccessRole(message.guild.id)
-
-        if (message.member.roles.cache.some(role => role.name === djRole))
-          return commandHandler.execute(message, args)
-        else return
-      }
 
     if (commandHandler.adminOnly)
       if (message.member.permissions.has("MANAGE_GUILD"))
