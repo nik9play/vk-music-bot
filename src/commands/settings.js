@@ -15,7 +15,7 @@ export default {
           },
           {
             name: `\`djenabled\` ${await message.client.configDB.getAccessRoleEnabled(message.guild.id) ? "<:yes:806179743766413323>" : "<:no:806178831994978385>"}`,
-            value: "DJ режим. Позовляет пользоваться ботом только если у пользователя есть определенная роль."
+            value: "DJ режим. Позволяет пользоваться ботом только если у пользователя есть определенная роль."
           },
           {
             name: "`djrole`",
