@@ -15,7 +15,7 @@ export default class ConfigDB {
     this.client = new MongoClient(this.url, { useUnifiedTopology: true })
     await this.client.connect()
 
-    this.database = this.client.db('vkmusicbot')
+    this.database = this.client.db('vkmusicbot_db')
     this.collection = this.database.collection('serverconfig')
   }
 
