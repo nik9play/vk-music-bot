@@ -1,24 +1,24 @@
 import mongoose from 'mongoose'
 
-const ServerConfig = new mongoose.Schema({
-  guild_id: {type: String, required: true, index: true},
-  prefix: String,
-  premium: Boolean,
-  perms: {
-    allow: {
-      ADD_TO_QUEUE: Array,
-      MANAGE_QUEUE: Array,
-      VIEW_QUEUE: Array,
-      MANAGE_PLAYER: Array
-    },
-    deny: {
-      ADD_TO_QUEUE: Array,
-      MANAGE_QUEUE: Array,
-      VIEW_QUEUE: Array,
-      MANAGE_PLAYER: Array
-    }
-  }
-})
+// const ServerConfig = new mongoose.Schema({
+//   guild_id: {type: String, required: true, index: true},
+//   prefix: String,
+//   premium: Boolean,
+//   perms: {
+//     allow: {
+//       ADD_TO_QUEUE: Array,
+//       MANAGE_QUEUE: Array,
+//       VIEW_QUEUE: Array,
+//       MANAGE_PLAYER: Array
+//     },
+//     deny: {
+//       ADD_TO_QUEUE: Array,
+//       MANAGE_QUEUE: Array,
+//       VIEW_QUEUE: Array,
+//       MANAGE_PLAYER: Array
+//     }
+//   }
+// })
 
 export default class dbConfig {
   /**
