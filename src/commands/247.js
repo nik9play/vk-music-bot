@@ -19,7 +19,7 @@ export default {
             message.channel.send({embed: {
               description: `**Я покинул канал, так как слишком долго был неактивен.** Хотите, чтобы я оставался? Включите режим 24/7 (доступен только для Премиум пользователей). `,
               color: 0x5181b8
-            }}).then(msg => setTimeout(() => msg.delete(), 30000))
+            }}).then(msg => msg.delete({timeout: 30000}))
           }, 1200000))
     }
   }
