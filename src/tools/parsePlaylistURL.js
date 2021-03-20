@@ -1,13 +1,4 @@
 export default function(url) {
-  try {
-    url = new URL(url)
-  } catch {
-    return {
-      id: null,
-      access_key: null
-    }
-  }
-  
   if (url.pathname.includes("/music/playlist/") || url.pathname.includes("/music/album/")) {
     const query = url.pathname.split("/")[3]
     let id = null, access_key = null
@@ -37,5 +28,4 @@ export default function(url) {
       access_key
     }
   }
-
 }
