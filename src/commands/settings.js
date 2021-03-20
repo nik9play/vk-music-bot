@@ -10,16 +10,16 @@ export default {
         color: 0x5181b8,
         fields: [
           {
-            name: "`prefix`",
-            value: `Настройка префикса. Текущий префикс: \`${await message.client.configDB.getPrefix(message.guild.id)}\``
+            name: `\`prefix\`: \`${await message.client.configDB.getPrefix(message.guild.id)}\``,
+            value: `Настройка префикса.`
           },
           {
-            name: `\`djenabled\` ${await message.client.configDB.getAccessRoleEnabled(message.guild.id) ? "<:yes:806179743766413323>" : "<:no:806178831994978385>"}`,
+            name: `\`dj\`: ${await message.client.configDB.getAccessRoleEnabled(message.guild.id) ? "<:yes:806179743766413323>" : "<:no:806178831994978385>"}`,
             value: "DJ режим. Позволяет пользоваться ботом только если у пользователя есть определенная роль."
           },
           {
-            name: "`djrole`",
-            value: `Установка имени роли для DJ режима. Текущее значение: \`${await message.client.configDB.getAccessRole(message.guild.id)}\``
+            name: `\`djrole\`: \`${await message.client.configDB.getAccessRole(message.guild.id)}\``,
+            value: `Установка имени роли для DJ режима.`
           }
         ]
       }
@@ -101,7 +101,7 @@ export default {
 
         message.client.configDB.setAccessRole(roleName, message.guild.id).then(() => message.reply("DJ роль установлена."))
         break
-      case "djenabled":
+      case "dj":
         if (!args[1])
           return message.reply("используйте `on`/`off`.")
         if (args[1] !== "on" && args[1] !== "off")
