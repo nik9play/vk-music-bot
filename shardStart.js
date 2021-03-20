@@ -33,7 +33,7 @@ function sendInfo() {
 
       manager.broadcastEval(`this.user.setPresence({activity: {name: '-vh | ${(serverSize/1000).toFixed(1)}k серверов', type: 2}})`)
 
-      axios.post("https://vkmusicbotapi.megaworld.space/metrics", {
+      axios.post("https://vk-api-v2.megaworld.space/metrics", {
         token: process.env.API_TOKEN,
         metrics: {
           servers: serverSize,
