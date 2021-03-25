@@ -8,8 +8,8 @@ export default {
   djOnly: true,
   cooldown: 3,
   execute: async function(message, args) {
-    const player = message.client.manager.get(message.guild.id);
-    if (!player) return message.reply("сейчас ничего не играет.");
+    const player = message.client.manager.get(message.guild.id)
+    if (!player) return message.reply("сейчас ничего не играет.")
 
     const queue = player.queue
     const embed = new MessageEmbed()
