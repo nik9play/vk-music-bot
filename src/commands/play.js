@@ -43,7 +43,7 @@ export default {
     offset = (offset - 1) * count
 
     const arg = detectArgType(args[0])
-
+    console.log(arg)
     let req
 
     let audioGetOne = new GetOne()
@@ -77,6 +77,7 @@ export default {
 
           ...query
         })
+        console.log(req)
         break
       case "group":
       case "user":
@@ -107,7 +108,7 @@ export default {
           }
         }
 
-        return message.channel.send(embed)
+        return message.channel.send({embed: embed})
       } else if (req.type === "empty") {
         return message.reply("не удалось ничего найти по запросу.")
       } else if (req.type === "api") {
