@@ -12,13 +12,26 @@ export default {
     if (channel.id !== player.voiceChannel) return message.reply("вы находитесь не в том голосовом канале.")
 
     if (args.length && /queue/i.test(args[0])) {
-      player.setQueueRepeat(!player.queueRepeat)
-      const queueRepeat = player.queueRepeat ? "включен" : "отключен"
-      return message.reply(`${queueRepeat} повтор очереди.`)
-    }
+      player.setQueueRepeat(true)
+      player.setTrackRepeat(false)
+      return message.reply(`включен повтор очереди.`)
+    } else if (args.length && /track/i.test(args[0])) {
+      player.setQueueRepeat(false)
+      player.setTrackRepeat(true)
+      return message.reply(`включен повтор текущего трека.`)
+    } else if (args.length && /off/i.test(args[0])) {
+      player.setQueueRepeat(false)
+      player.setTrackRepeat(false)
+      return message.reply(`повтор выключен.`)
+    } else {
+      let msg
+      if (player.trackRepeat) msg = "повтор текущего трека"
+      else if (player.queueRepeat) msg = "повтор очереди"
 
-    player.setTrackRepeat(!player.trackRepeat);
-    const trackRepeat = player.trackRepeat ? "включен" : "отключен";
-    return message.reply(`${trackRepeat} повтор трека.`)
+      if (msg)
+        message.reply(`${msg} сейчас включен. Доступные режимы: \`queue\`, \`track\`, \`off\``)
+      else
+        message.reply(`Режим повтора сейчас выключен. Доступные режимы: \`queue\`, \`track\`, \`off\``)
+    }
   }
 }
