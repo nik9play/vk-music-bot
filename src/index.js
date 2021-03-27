@@ -68,7 +68,7 @@ client.manager = new Manager({
           player.destroy()
           const channel = client.channels.cache.get(player.textChannel)
           channel.send({embed: {
-            description: `**Я покинул канал, так как тут никого не осталось.** Хотите, чтобы я оставался? Включите режим 24/7 (доступен только для Премиум пользователей). `,
+            description: `**Я покинул канал, так как тут никого не осталось.** Хотите, чтобы я оставался? Включите режим 24/7 (доступен только для Премиум пользователей, подробности: \`-vdonate\`). `,
             color: 0x5181b8
           }}).then(msg => msg.delete({timeout: 30000}))
         }
