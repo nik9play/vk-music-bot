@@ -63,6 +63,11 @@ export default {
           inline: true
         },
         {
+          name: "`sh`, `shuffle`",
+          value: "Перемешивание очереди",
+          inline: true
+        },
+        {
           name: "`gachi`",
           value: "Случайный гачи-ремикс",
           inline: true
