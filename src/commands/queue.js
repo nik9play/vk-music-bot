@@ -34,6 +34,6 @@ export default {
 
     embed.setFooter(`Страница ${page > maxPages ? maxPages : page} из ${maxPages}`)
 
-    return message.reply(embed);
+    return message.reply(embed).then(msg => msg.delete({timeout: 60000}))
   }
 }
