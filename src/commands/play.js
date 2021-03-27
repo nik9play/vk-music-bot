@@ -54,7 +54,7 @@ export default {
 
     if (options) {
       if (options.captcha) {
-        query.captcha_sid = options.captcha.captcha_sid
+        query.captcha_sid = options.captcha.sid
         query.captcha_key = options.captcha.captcha_key
       }
     }
@@ -77,7 +77,6 @@ export default {
 
           ...query
         })
-        console.log(req)
         break
       case "group":
       case "user":
@@ -92,6 +91,7 @@ export default {
     }
 
     if (req.status === "error") {
+      console.log("error:   ", req)
       if (req.type === "captcha") {
         message.client.captcha.set(message.guild.id, {
           args,
