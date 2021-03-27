@@ -11,7 +11,7 @@ export default {
     const { channel } = message.member.voice
 
     if (!channel) return message.reply('необходимо находиться в голосовом канале.')
-    if (channel.id !== player.voiceChannel) return message.reply("вы находитесь не в том голосовом канале.")
+    //if (channel.id !== player.voiceChannel) return message.reply("вы находитесь не в том голосовом канале.")
 
     if (!player.queue.current) return message.reply("очередь пуста.")
 

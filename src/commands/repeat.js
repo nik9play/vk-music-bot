@@ -9,7 +9,7 @@ export default {
     const { channel } = message.member.voice
     
     if (!channel) return message.reply('необходимо находиться в голосовом канале.')
-    if (channel.id !== player.voiceChannel) return message.reply("вы находитесь не в том голосовом канале.")
+    //if (channel.id !== player.voiceChannel) return message.reply("вы находитесь не в том голосовом канале.")
 
     if (args.length && /queue/i.test(args[0])) {
       player.setQueueRepeat(true)

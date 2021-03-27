@@ -16,7 +16,7 @@ export default {
     const { channel } = message.member.voice;
     
     if (!channel) return message.reply('необходимо находиться в голосовом канале.')
-    if (channel.id !== player.voiceChannel) return message.reply("вы находитесь не в том голосовом канале.")
+    //if (channel.id !== player.voiceChannel) return message.reply("вы находитесь не в том голосовом канале.")
 
     let level = "none"
     if (args.length && args[0].toLowerCase() in levels) level = args[0].toLowerCase()
