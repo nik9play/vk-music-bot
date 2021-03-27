@@ -11,13 +11,13 @@ export default function(arg) {
       const url = new URL(arg)
 
       if (!url.searchParams.get("z")) {
-        if (url.pathname.startsWith("/audios-") || !url.searchParams.has("z"))
+        if (url.pathname.startsWith("/audios-") && !url.searchParams.has("z"))
         return {
           type: "group",
           id: url.pathname.slice(7)
         }
 
-      if (url.pathname.startsWith("/audios") || !url.searchParams.has("z"))
+      if (url.pathname.startsWith("/audios") && !url.searchParams.has("z"))
         return {
           type: "user",
           id: url.pathname.slice(7)
