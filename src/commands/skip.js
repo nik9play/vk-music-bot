@@ -20,6 +20,6 @@ export default {
     return message.channel.send({embed: {
       description: `**${author} — ${title}** пропущен.`,
       color: 0x5181b8
-    }})
+    }}).then(msg => msg.delete({timeout: 20000}))
   }
 }
