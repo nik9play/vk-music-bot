@@ -59,21 +59,21 @@ client.manager = new Manager({
       color: 0x5181b8
     }}).then(msg => msg.delete({timeout: track.duration}))
   })
-  .on("trackEnd", async (player) => {
-    if (!await client.configDB.get247(player.guild))
-      if (player) {
-        const voiceChannel = client.channels.cache.get(player.voiceChannel)
-        const arr =  Array.from(voiceChannel.members.filter(m => m.user.bot == false).keys())
-        if (!arr.length) {
-          player.destroy()
-          const channel = client.channels.cache.get(player.textChannel)
-          channel.send({embed: {
-            description: `**Я покинул канал, так как тут никого не осталось.** Хотите, чтобы я оставался? Включите режим 24/7 (доступен только для Премиум пользователей, подробности: \`-vdonate\`). `,
-            color: 0x5181b8
-          }}).then(msg => msg.delete({timeout: 30000}))
-        }
-      }
-  })
+  // .on("trackEnd", async (player) => {
+  //   if (!await client.configDB.get247(player.guild))
+  //     if (player) {
+  //       const voiceChannel = client.channels.cache.get(player.voiceChannel)
+  //       const arr =  Array.from(voiceChannel.members.filter(m => m.user.bot == false).keys())
+  //       if (!arr.length) {
+  //         player.destroy()
+  //         const channel = client.channels.cache.get(player.textChannel)
+  //         channel.send({embed: {
+  //           description: `**Я покинул канал, так как тут никого не осталось.** Хотите, чтобы я оставался? Включите режим 24/7 (доступен только для Премиум пользователей, подробности: \`-vdonate\`). `,
+  //           color: 0x5181b8
+  //         }}).then(msg => msg.delete({timeout: 30000}))
+  //       }
+  //     }
+  // })
   .on("queueEnd", async (player) => {
     if (!await client.configDB.get247(player.guild))
       if (player)
