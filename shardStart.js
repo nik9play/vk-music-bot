@@ -83,4 +83,4 @@ function sendInfo() {
 
 setInterval(() => {
   sendInfo()
-}, 1800000)
+}, 300000)
