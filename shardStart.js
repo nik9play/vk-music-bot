@@ -47,8 +47,8 @@ function sendInfo() {
             console.log("Статистика отправлена на метрику.")
           }
         })
-        .catch(() => {
-          console.log("Ошибка отправки статистики на метрику. (Ошибка подключения)")
+        .catch((e) => {
+          console.log("Ошибка отправки статистики на метрику. (Ошибка подключения)", e.response.data)
         })
 
       manager.fetchClientValues("user.id")
