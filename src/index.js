@@ -88,6 +88,9 @@ client.manager = new Manager({
           }
         }, 1200000))
   })
+  .on("playerMove", () => {
+    console.log("moved player")
+  })
   .on("playerDestroy", () => {
     console.log("player destroyed")
   })
