@@ -10,17 +10,17 @@ export default {
 
     let removedTracks = []
 
-    args.forEach(a => {
-      if (a.includes("-")) {
-        const first = parseInt(a.split("-")[0])
-        const last = parseInt(a.split("-")[1])
-        
-        if ((last > first)) removedTracks = [...removedTracks, ...queue.remove(first-1, last)]
-      } else {
-        a = parseInt(a)
-        if (a > 1) removedTracks = [...removedTracks, ...queue.remove(a-1)]
-      }
-    })
+    const a = args[0]
+
+    if (a.includes("-")) {
+      const first = parseInt(a.split("-")[0])
+      const last = parseInt(a.split("-")[1])
+      
+      if ((last > first)) removedTracks = [...removedTracks, ...queue.remove(first-1, last)]
+    } else {
+      const inta = parseInt(a)
+      if (inta > 1) removedTracks = [...removedTracks, ...queue.remove(inta-1)]
+    }
 
     message.reply(`удалено треков: ${removedTracks.length}.`)
   }
