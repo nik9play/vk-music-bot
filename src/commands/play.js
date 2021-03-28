@@ -20,6 +20,11 @@ export default {
 
     if (!args.length) return message.reply('вставьте после команды ссылку на плейлист или альбом, ID пользователя или трека.')
 
+    const permissions = channel.permissionsFor(message.client.user)
+    if (!permissions.has('CONNECT') || !permissions.has('SPEAK') || !permissions.has('VIEW_CHANNEL')) {
+      return message.reply('мне нужны права, чтобы войти в канал.')
+    }
+
     const player = message.client.manager.create({
       guild: message.guild.id,
       voiceChannel: channel.id,
@@ -29,7 +34,8 @@ export default {
 
     if (player.state !== "CONNECTED") player.connect()
 
-    if (channel.id !== player.voiceChannel) return message.reply("вы находитесь не в том голосовом канале.")
+    console.log(player.voiceChannel)
+    //if (channel.id !== player.voiceChannel) return message.reply("вы находитесь не в том голосовом канале.")
 
     // сброс таймера и снятие с паузы при добавлении в очередь
     if (player.paused) player.pause(false)
