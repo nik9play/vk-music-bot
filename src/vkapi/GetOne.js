@@ -31,7 +31,7 @@ export default class GetOne extends VKApi {
   async tryID(opts) {
     const captchaQuery = {}
 
-    if (opts.captcha) {
+    if (opts.captcha_sid && opts.captcha_key) {
       captchaQuery.captcha_sid = opts.captcha_sid
       captchaQuery.captcha_key = opts.captcha_key
     }

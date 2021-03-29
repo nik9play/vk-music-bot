@@ -34,7 +34,7 @@ export default {
 
     if (player.state !== "CONNECTED") player.connect()
 
-    console.log(player.voiceChannel)
+    console.log("player info: ", player.voiceChannel, player.state)
     //if (channel.id !== player.voiceChannel) return message.reply("вы находитесь не в том голосовом канале.")
 
     // сброс таймера и снятие с паузы при добавлении в очередь
@@ -107,7 +107,7 @@ export default {
 
         const captcha = message.client.captcha.get(message.guild.id)
         const embed = {
-          description: "Ошибка! Требуется капча. Введите команду `captcha`, а после код с картинки.",
+          description: "Ошибка! Требуется капча. Введите команду `-vcaptcha`, а после код с картинки.",
           color: 0x5181b8,
           image: {
             url: captcha.url
