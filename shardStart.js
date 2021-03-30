@@ -6,7 +6,7 @@ const axios = require('axios').default
 
 manager.on("shardCreate", shard => console.log(`Launched shard ${shard.id}`))
 manager.spawn().then(() => {
-  sendInfo()
+  if (process.env.NODE_ENV != "development") sendInfo()
 })
 
 // function serversStringByDigit(digits) {
@@ -81,6 +81,6 @@ function sendInfo() {
   })
 }
 
-setInterval(() => {
+if (process.env.NODE_ENV != "development") setInterval(() => {
   sendInfo()
 }, 300000)
