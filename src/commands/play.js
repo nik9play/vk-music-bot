@@ -34,6 +34,11 @@ export default {
 
     if (player.state !== "CONNECTED") player.connect()
 
+    if (!player.voiceChannel) {
+      player.setVoiceChannel(channel.id)
+      player.connect()
+    }
+
     console.log("player info: ", player.voiceChannel, player.state)
     //if (channel.id !== player.voiceChannel) return message.reply("вы находитесь не в том голосовом канале.")
 
