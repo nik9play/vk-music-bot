@@ -113,8 +113,8 @@ client.configDB = new ConfigDB(process.env.MONGO_URL)
 client.configDB.init()
 
 client.on("message", async message => {
-  if (!message.channel.permissionsFor(message.client.user).has("SEND_MESSAGES")) return
   if (message.channel.type != "text" || message.author.bot || !client.configDB.isConnected) return
+  if (!message.channel.permissionsFor(message.client.user).has("SEND_MESSAGES")) return
 
   let prefix
 
