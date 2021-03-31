@@ -17,8 +17,7 @@
     "dotenv": "^8.2.0",
     "erela.js-vk": "^2.3.1-vk.4",
     "luxon": "^1.25.0",
-    "mongodb": "^3.6.3",
-    "mongoose": "^5.11.12"
+    "mongodb": "^3.6.3"
   },
   "devDependencies": {
     "@babel/core": "^7.12.10",
