@@ -39,7 +39,7 @@ export default {
       player.connect()
     }
 
-    console.log("player info: ", player.voiceChannel, player.state)
+    console.log("player info: ", player.guild, player.voiceChannel, player.state)
     //if (channel.id !== player.voiceChannel) return message.reply("вы находитесь не в том голосовом канале.")
 
     // сброс таймера и снятие с паузы при добавлении в очередь
@@ -199,6 +199,15 @@ export default {
       }
     
       for await (const e of newArray) {
+        if (!e.url) {
+          const embed = {
+            description: `Трек **${e.author} — ${e.title}** недоступен по решению автора или представителя, поэтому я не могу добавить его в очередь.`,
+            color: 0x5181b8
+          }
+          message.reply({embed}).then(msg => msg.delete({timeout: 30000}))
+          continue
+        }
+
         const unresolvedTrack = TrackUtils.buildUnresolvedQuery(e.url)
 
         unresolvedTrack.title = e.title
@@ -231,6 +240,14 @@ export default {
       }
 
       for await (const e of newArray) {
+        if (!e.url) {
+          const embed = {
+            description: `Трек **${e.author} — ${e.title}** недоступен по решению автора или представителя, поэтому я не могу добавить его в очередь.`,
+            color: 0x5181b8
+          }
+          message.reply({embed}).then(msg => msg.delete({timeout: 30000}))
+          continue
+        }
         const unresolvedTrack = TrackUtils.buildUnresolvedQuery(e.url)
 
         unresolvedTrack.title = e.title
