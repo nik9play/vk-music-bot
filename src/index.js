@@ -91,13 +91,15 @@ client.manager = new Manager({
   .on("playerMove", () => {
     console.log("moved player")
   })
-  .on("playerDestroy", () => {
-    console.log("player destroyed")
+  .on("playerDestroy", (player) => {
+    console.log(`${player.guild} player destroyed`)
   })
   .on("socketClosed", (player, web) => {
-    console.log("socket closed. info: ",web)
+    console.log("socket closed. info: ", web, player.guild)
   })
-  //.on("trackStuck")
+  .on("trackStuck", (guildId) => {
+    console.log(`${guildId} track stuck`)
+  })
 
 client.once("ready", () => {
   client.manager.init(client.user.id);
