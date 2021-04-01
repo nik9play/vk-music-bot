@@ -51,7 +51,7 @@ export default {
 
     const count = args[1] ?? 10
     let offset = args[2] ?? 1
-    offset = (offset - 1) * count
+    offset--
 
     const arg = detectArgType(args[0])
     console.log(arg)
