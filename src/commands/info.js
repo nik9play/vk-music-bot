@@ -7,7 +7,23 @@ export default {
     totalServers = totalServers.reduce((acc, guildCount) => acc + guildCount, 0)
 
     let totalPlayers = 0
-    message.client.manager.players.each(() => totalPlayers++)
+    message.client.manager.nodes.each(e => {
+      totalPlayers += e.stats.playingPlayers
+    })
+
+    let RamLl = 0
+    message.client.manager.nodes.each(e => {
+      RamLl += e.stats.memory.used
+    })
+
+    let avCPULl = 0
+    let llcount = 0
+    message.client.manager.nodes.each(e => {
+      avCPULl += e.stats.cpu.lavalinkLoad
+      llcount++
+    })
+
+    avCPULl /= llcount
 
     const embed = {
       "author": {
@@ -18,6 +34,16 @@ export default {
         {
           "name": "Shard RAM",
           "value": `\`\`\`js\n${Math.round(process.memoryUsage().rss / 1024 / 1024 * 100) / 100} MB\`\`\``,
+          "inline": true
+        },
+        {
+          "name": "Lavalink RAM",
+          "value": `\`\`\`js\n${Math.round(RamLl / 1024 / 1024 * 100) / 100} MB\`\`\``,
+          "inline": true
+        },
+        {
+          "name": "Загрузка Lavalink",
+          "value": `\`\`\`js\n${avCPULl.toFixed(3)}\`\`\``,
           "inline": true
         },
         {
@@ -48,6 +74,11 @@ export default {
         {
           "name": "Пинг",
           "value": `\`\`\`js\n${message.client.ws.ping} MS\`\`\``,
+          "inline": true
+        },
+        {
+          "name": "ID сервера",
+          "value": `\`\`\`js\n${message.guild.id}\`\`\``,
           "inline": true
         },
       ]
