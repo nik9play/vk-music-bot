@@ -195,7 +195,10 @@ export default {
             value: req.info.count,
             inline: true
           }
-        ]
+        ],
+        footer: {
+          text: "Чтобы добавить больше 10 треков, введите количество треков после ссылки."
+        }
       }
     
       for await (const e of newArray) {
