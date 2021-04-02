@@ -3,8 +3,7 @@ import { Duration } from 'luxon'
 
 export default {
   name: "search",
-  adminOnly: true,
-  aliases: ["h"],
+  djOnly: true,
   cooldown: 5,
   execute: async function (message, args, options) {
     const search = args.join(' ')
@@ -80,7 +79,7 @@ export default {
 
         const { channel } = message.member.voice
         if (!channel) return message.reply('необходимо находиться в голосовом канале.')
-        
+
         const permissions = channel.permissionsFor(message.client.user)
         if (!permissions.has('CONNECT') || !permissions.has('SPEAK') || !permissions.has('VIEW_CHANNEL')) {
           return message.reply('мне нужны права, чтобы войти в канал.')
