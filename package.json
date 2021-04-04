@@ -15,7 +15,7 @@
     "colors": "^1.4.0",
     "discord.js": "^12.5.1",
     "dotenv": "^8.2.0",
-    "erela.js-vk": "^2.3.1-vk.4",
+    "erela.js-vk": "^2.3.3-vk",
     "luxon": "^1.25.0",
     "mongodb": "^3.6.3"
   },
