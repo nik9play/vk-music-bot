@@ -75,6 +75,7 @@ client.manager = new Manager({
   //     }
   // })
   .on("queueEnd", async (player) => {
+    console.log("end of queue", player.guild)
     if (!await client.configDB.get247(player.guild))
       if (player)
         client.timers.set(player.guild, setTimeout(() => {
@@ -99,6 +100,14 @@ client.manager = new Manager({
   })
   .on("trackStuck", (guildId) => {
     console.log(`${guildId} track stuck`)
+  })
+  .on("trackError", (player, track) => {
+    const channel = client.channels.cache.get(player.textChannel)
+    channel.send({embed: {
+      description: `С треком **${track.author} — ${track.title}** произошла проблема, поэтому он был пропущен.`,
+      color: 0x5181b8
+    }})
+    console.log(track)
   })
 
 client.once("ready", () => {
