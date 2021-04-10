@@ -200,14 +200,12 @@ export default {
           text: "Чтобы добавить больше 10 треков, введите количество треков после ссылки."
         }
       }
-    
+      
+      let wrongTracks = []
+
       for await (const e of newArray) {
         if (!e.url) {
-          const embed = {
-            description: `Трек **${e.author} — ${e.title}** недоступен по решению автора или представителя, поэтому я не могу добавить его в очередь.`,
-            color: 0x5181b8
-          }
-          message.reply({embed}).then(msg => msg.delete({timeout: 30000}))
+          wrongTracks.push(e)
           continue
         }
 
@@ -218,6 +216,22 @@ export default {
 
         player.queue.add(unresolvedTrack)
         if (!player.playing && !player.paused && !player.queue.size) player.play()
+      }
+
+      if (wrongTracks.length > 0) {
+        let desc = wrongTracks.slice(0, 5).map(e => {
+          return `${e.author} - ${e.title}`
+        }).join("\n")
+  
+        desc = `${desc}\n${wrongTracks.length > 5 ? `...\nи еще ${wrongTracks.length - 5} треков.` : ""}`
+  
+        message.channel.send({embed: {
+          color: 0x5181b8,
+          author: {
+            name: "Следующие треки не могут быть добавлены из-за решения автора или представителя"
+          },
+          description: desc
+        }}).then(msg => msg.delete({timeout: 30000}))
       }
 
       message.channel.send({embed: playlistEmbed})
@@ -242,13 +256,11 @@ export default {
         ]
       }
 
+      let wrongTracks = []
+
       for await (const e of newArray) {
         if (!e.url) {
-          const embed = {
-            description: `Трек **${e.author} — ${e.title}** недоступен по решению автора или представителя, поэтому я не могу добавить его в очередь.`,
-            color: 0x5181b8
-          }
-          message.reply({embed}).then(msg => msg.delete({timeout: 30000}))
+          wrongTracks.push(e)
           continue
         }
         const unresolvedTrack = TrackUtils.buildUnresolvedQuery(e.url)
@@ -258,6 +270,22 @@ export default {
 
         player.queue.add(unresolvedTrack)
         if (!player.playing && !player.paused && !player.queue.size) player.play()
+      }
+
+      if (wrongTracks.length > 0) {
+        let desc = wrongTracks.slice(0, 5).map(e => {
+          return `${e.author} - ${e.title}`
+        }).join("\n")
+  
+        desc = `${desc}\n${wrongTracks.length > 5 ? `...\nи еще ${wrongTracks.length - 5} треков.` : ""}`
+  
+        message.channel.send({embed: {
+          color: 0x5181b8,
+          author: {
+            name: "Следующие треки не могут быть добавлены из-за решения автора или представителя"
+          },
+          description: desc
+        }}).then(msg => msg.delete({timeout: 30000}))
       }
 
       message.channel.send({embed: playlistEmbed})
@@ -280,7 +308,10 @@ export default {
             value: newArray.length,
             inline: true
           }
-        ]
+        ],
+        footer: {
+          text: "Чтобы добавить больше 10 треков, введите количество треков после ссылки."
+        }
       }
 
       for await (const e of newArray) {
