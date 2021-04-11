@@ -4,6 +4,7 @@ import GetPlaylist from '../vkapi/GetPlaylist'
 import GetUser from '../vkapi/GetUser'
 
 import detectArgType from '../tools/detectArgType'
+import declOfNum from '../tools/declOfNum'
 
 import { Duration } from 'luxon'
 import { TrackUtils } from 'erela.js-vk'
@@ -129,6 +130,8 @@ export default {
       }
     }
 
+    let wrongTracks = []
+
     if (arg.type === "track") {
       const songEmbed = {
         color: 0x5181b8,
@@ -200,8 +203,6 @@ export default {
           text: "Чтобы добавить больше 10 треков, введите количество треков после ссылки."
         }
       }
-      
-      let wrongTracks = []
 
       for await (const e of newArray) {
         if (!e.url) {
@@ -216,22 +217,6 @@ export default {
 
         player.queue.add(unresolvedTrack)
         if (!player.playing && !player.paused && !player.queue.size) player.play()
-      }
-
-      if (wrongTracks.length > 0) {
-        let desc = wrongTracks.slice(0, 5).map(e => {
-          return `${e.author} - ${e.title}`
-        }).join("\n")
-  
-        desc = `${desc}\n${wrongTracks.length > 5 ? `...\nи еще ${wrongTracks.length - 5} треков.` : ""}`
-  
-        message.channel.send({embed: {
-          color: 0x5181b8,
-          author: {
-            name: "Следующие треки не могут быть добавлены из-за решения автора или представителя"
-          },
-          description: desc
-        }}).then(msg => msg.delete({timeout: 30000}))
       }
 
       message.channel.send({embed: playlistEmbed})
@@ -256,8 +241,6 @@ export default {
         ]
       }
 
-      let wrongTracks = []
-
       for await (const e of newArray) {
         if (!e.url) {
           wrongTracks.push(e)
@@ -270,22 +253,6 @@ export default {
 
         player.queue.add(unresolvedTrack)
         if (!player.playing && !player.paused && !player.queue.size) player.play()
-      }
-
-      if (wrongTracks.length > 0) {
-        let desc = wrongTracks.slice(0, 5).map(e => {
-          return `${e.author} - ${e.title}`
-        }).join("\n")
-  
-        desc = `${desc}\n${wrongTracks.length > 5 ? `...\nи еще ${wrongTracks.length - 5} треков.` : ""}`
-  
-        message.channel.send({embed: {
-          color: 0x5181b8,
-          author: {
-            name: "Следующие треки не могут быть добавлены из-за решения автора или представителя"
-          },
-          description: desc
-        }}).then(msg => msg.delete({timeout: 30000}))
       }
 
       message.channel.send({embed: playlistEmbed})
@@ -325,6 +292,22 @@ export default {
       }
 
       message.channel.send({embed: playlistEmbed})
+    }
+
+    if (wrongTracks.length > 0) {
+      let desc = wrongTracks.slice(0, 5).map(e => {
+        return `${e.author} - ${e.title}`
+      }).join("\n")
+
+      desc = `${desc}\n${wrongTracks.length > 5 ? `...\nи еще ${wrongTracks.length - 5} ${declOfNum(wrongTracks.length - 5, ['трек', 'трека', 'треков'])}.` : ""}`
+
+      message.channel.send({embed: {
+        color: 0x5181b8,
+        author: {
+          name: "Следующие треки не могут быть добавлены из-за решения автора или представителя"
+        },
+        description: desc
+      }}).then(msg => msg.delete({timeout: 30000}))
     }
 
     if (!await message.client.configDB.checkPremium(message.guild.id)) {
