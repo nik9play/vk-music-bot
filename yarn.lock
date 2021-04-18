@@ -1489,10 +1489,10 @@ envinfo@^7.7.3:
   resolved "https://registry.yarnpkg.com/envinfo/-/envinfo-7.7.4.tgz#c6311cdd38a0e86808c1c9343f667e4267c4a320"
   integrity sha512-TQXTYFVVwwluWSFis6K2XKxgrD22jEv0FTuLCQI+OjH7rn93+iY0fSSFM5lrSxFY+H1+B0/cvvlamr3UsBivdQ==
 
-erela.js-vk@^2.3.3-vk-1:
-  version "2.3.3-vk-1"
-  resolved "https://registry.yarnpkg.com/erela.js-vk/-/erela.js-vk-2.3.3-vk-1.tgz#5d2c4ab5a4a8a95056efe6495bd23ff5656effb4"
-  integrity sha512-aD32fis0UsFeflj1cGjfYg1gQNy8FR6po0JJDiAPWU/YrabcCKq3oGorq4JGjJYEAujxxYzy7R+lzWggWhEhrQ==
+erela.js-vk@^2.3.3-vk-2:
+  version "2.3.3-vk-2"
+  resolved "https://registry.yarnpkg.com/erela.js-vk/-/erela.js-vk-2.3.3-vk-2.tgz#02ed5db0bfc917c74918be6b83422ace56ddaff2"
+  integrity sha512-an8LWewdIwwMHojvXAMLFynSreOlxSg+8bv9ZY2ZUqlJfu8U0PK6+bMbKSax74DT2c4aPEQyir5UGhigc5WmJA==
   dependencies:
     "@discordjs/collection" "^0.1.6"
     petitio "^1.1.0"
