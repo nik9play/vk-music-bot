@@ -89,8 +89,9 @@ client.manager = new Manager({
           }
         }, 1200000))
   })
-  .on("playerMove", () => {
+  .on("playerMove", player => {
     console.log("moved player")
+    setTimeout(() =>  player.pause(false), 1000)
   })
   .on("playerDestroy", (player) => {
     console.log(`${player.guild} player destroyed`)
@@ -113,7 +114,7 @@ client.manager = new Manager({
 client.once("ready", () => {
   client.manager.init(client.user.id);
   console.log(`Logged in as ${client.user.tag}`)
-});
+})
 
 client.on("raw", d => client.manager.updateVoiceState(d))
 
