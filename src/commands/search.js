@@ -1,4 +1,5 @@
-import GetMany from '../vkapi/GetMany'
+import VK from '../apis/VK'
+
 import { Duration } from 'luxon'
 
 export default {
@@ -8,7 +9,7 @@ export default {
   execute: async function (message, args, options) {
     const search = args.join(' ')
 
-    let audioGetMany = new GetMany()
+    const vk = new VK()
 
     const query = {}
 
@@ -19,7 +20,7 @@ export default {
       }
     }
 
-    const req = await audioGetMany.execute({
+    const req = await vk.GetMany({
       q: search,
 
       ...query
@@ -114,6 +115,9 @@ export default {
           title: track.title,
           author: {
             name: "Трек добавлен!"
+          },
+          thumbnail: {
+            url: track.thumb
           },
           description: track.author,
           fields: [
