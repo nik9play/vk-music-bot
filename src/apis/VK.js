@@ -66,9 +66,9 @@ export default class VK {
     } else {
       let thumb = null
 
-      if (res.data.response.items[0].album) 
-        if (res.data.response.items[0].album.thumb)
-          thumb = res.data.response.items[0].album.thumb.photo_300
+      if (res.data.response[0].album) 
+        if (res.data.response[0].album.thumb)
+          thumb = res.data.response[0].album.thumb.photo_300
 
       return {
         status: "success",
