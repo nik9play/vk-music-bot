@@ -14,7 +14,7 @@ export default {
             value: `Настройка префикса.`
           },
           {
-            name: `\`dj\`: ${await message.client.configDB.getAccessRoleEnabled(message.guild.id) ? "<:yes:806179743766413323>" : "<:no:806178831994978385>"}`,
+            name: `\`dj\`: ${await message.client.configDB.getAccessRoleEnabled(message.guild.id) ? "<:yes2:835498559805063169>" : "<:no2:835498572916195368>"}`,
             value: "DJ режим. Позволяет пользоваться ботом только если у пользователя есть определенная роль."
           },
           {
@@ -22,7 +22,7 @@ export default {
             value: `Установка имени роли для DJ режима.`
           },
           {
-            name: `\`announcements\`: ${await message.client.configDB.getDisableAnnouncements(message.guild.id) ? "<:no:806178831994978385>" : "<:yes:806179743766413323>"}`,
+            name: `\`announcements\`: ${await message.client.configDB.getDisableAnnouncements(message.guild.id) ? "<:no2:835498572916195368>" : "<:yes2:835498559805063169>"}`,
             value: `Включить/выключить сообщения о каждом играющем треке.`
           }
         ]
@@ -52,19 +52,19 @@ export default {
       //       fields: [
       //         {
       //           name: "Добавление в очередь",
-      //           value: await message.client.configDB.checkPerm(id, "ADD_TO_QUEUE", message.guild.id) ? "<:yes:806179743766413323> разрешено" : "<:no:806178831994978385> запрещено"
+      //           value: await message.client.configDB.checkPerm(id, "ADD_TO_QUEUE", message.guild.id) ? "<:yes2:835498559805063169> разрешено" : "<:no2:835498572916195368> запрещено"
       //         },
       //         {
       //           name: "Управление очередью",
-      //           value: await message.client.configDB.checkPerm(id, "MANAGE_QUEUE", message.guild.id) ? "<:yes:806179743766413323> разрешено" : "<:no:806178831994978385> запрещено"
+      //           value: await message.client.configDB.checkPerm(id, "MANAGE_QUEUE", message.guild.id) ? "<:yes2:835498559805063169> разрешено" : "<:no2:835498572916195368> запрещено"
       //         },
       //         {
       //           name: "Просмотр очереди",
-      //           value: await message.client.configDB.checkPerm(id, "VIEW_QUEUE", message.guild.id) ? "<:yes:806179743766413323> разрешено" : "<:no:806178831994978385> запрещено"
+      //           value: await message.client.configDB.checkPerm(id, "VIEW_QUEUE", message.guild.id) ? "<:yes2:835498559805063169> разрешено" : "<:no2:835498572916195368> запрещено"
       //         },
       //         {
       //           name: "Управление плеером",
-      //           value: await message.client.configDB.checkPerm(id, "MANAGE_PLAYER", message.guild.id) ? "<:yes:806179743766413323> разрешено" : "<:no:806178831994978385> запрещено"
+      //           value: await message.client.configDB.checkPerm(id, "MANAGE_PLAYER", message.guild.id) ? "<:yes2:835498559805063169> разрешено" : "<:no2:835498572916195368> запрещено"
       //         }
       //       ]
       //     }})
@@ -112,9 +112,9 @@ export default {
           return message.reply("используйте `on`/`off`.")
 
         if (args[1] === "on")
-          message.client.configDB.setAccessRoleEnabled(true, message.guild.id).then(() => message.reply("<:yes:806179743766413323> DJ режим включен."))
+          message.client.configDB.setAccessRoleEnabled(true, message.guild.id).then(() => message.reply("<:yes2:835498559805063169> DJ режим включен."))
         else if (args[1] === "off")
-          message.client.configDB.setAccessRoleEnabled(false, message.guild.id).then(() => message.reply("<:no:806178831994978385> DJ режим выключен."))
+          message.client.configDB.setAccessRoleEnabled(false, message.guild.id).then(() => message.reply("<:no2:835498572916195368> DJ режим выключен."))
         break
       case "announcements":
         if (!args[1])
@@ -123,9 +123,9 @@ export default {
           return message.reply("используйте `on`/`off`.")
 
         if (args[1] === "on")
-          message.client.configDB.setDisableAnnouncements(false, message.guild.id).then(() => message.reply("<:yes:806179743766413323> сообщения включены."))
+          message.client.configDB.setDisableAnnouncements(false, message.guild.id).then(() => message.reply("<:yes2:835498559805063169> сообщения включены."))
         else if (args[1] === "off")
-          message.client.configDB.setDisableAnnouncements(true, message.guild.id).then(() => message.reply("<:no:806178831994978385> сообщения выключены."))
+          message.client.configDB.setDisableAnnouncements(true, message.guild.id).then(() => message.reply("<:no2:835498572916195368> сообщения выключены."))
         break
       }
   }

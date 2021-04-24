@@ -18,7 +18,7 @@ export default {
 
       const embed = {
         color: 0x5181b8,
-        title: `Статус **Премиума**:  ${premium ? "<:yes:806179743766413323>" : "<:no:806178831994978385>"}`,
+        title: `Статус **Премиума**:  ${premium ? "<:yes2:835498559805063169>" : "<:no2:835498572916195368>"}`,
         description: info
       }
 
