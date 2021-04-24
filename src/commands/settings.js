@@ -20,6 +20,10 @@ export default {
           {
             name: `\`djrole\`: \`${await message.client.configDB.getAccessRole(message.guild.id)}\``,
             value: `Установка имени роли для DJ режима.`
+          },
+          {
+            name: `\`announcements\`: ${await message.client.configDB.getDisableAnnouncements(message.guild.id) ? "<:no:806178831994978385>" : "<:yes:806179743766413323>"}`,
+            value: `Включить/выключить сообщения о каждом играющем треке.`
           }
         ]
       }
@@ -111,6 +115,18 @@ export default {
           message.client.configDB.setAccessRoleEnabled(true, message.guild.id).then(() => message.reply("<:yes:806179743766413323> DJ режим включен."))
         else if (args[1] === "off")
           message.client.configDB.setAccessRoleEnabled(false, message.guild.id).then(() => message.reply("<:no:806178831994978385> DJ режим выключен."))
+        break
+      case "announcements":
+        if (!args[1])
+          return message.reply("используйте `on`/`off`.")
+        if (args[1] !== "on" && args[1] !== "off")
+          return message.reply("используйте `on`/`off`.")
+
+        if (args[1] === "on")
+          message.client.configDB.setDisableAnnouncements(false, message.guild.id).then(() => message.reply("<:yes:806179743766413323> сообщения включены."))
+        else if (args[1] === "off")
+          message.client.configDB.setDisableAnnouncements(true, message.guild.id).then(() => message.reply("<:no:806178831994978385> сообщения выключены."))
+        break
       }
   }
 }
