@@ -15,7 +15,7 @@ export default {
         {
           name: "`play`, `p`",
           value: "Добавить в очереди трек/треки. Принимает название трека, ID трека, ссылку на плейлист или на пользователя. Также добавляет по ID пользователя при помощи префикса `>` (например: `-vp >nikitabogun`)",
-          inline: true
+          inline: false
         },
         {
           name: "`stop`, `s`",
@@ -30,6 +30,16 @@ export default {
         {
           name: "`pause`, `ps`",
           value: "Поставить текущий трек на паузу. Бот выйдет из канала через 20 минут, если не включен режим 24/7",
+          inline: true
+        },
+        {
+          name: "`search`",
+          value: "Поиск по базе ВК. Выводит 5 результатов с выбором",
+          inline: true
+        },
+        {
+          name: "`leave`",
+          value: "Выход из канала",
           inline: true
         },
         {
@@ -90,6 +100,11 @@ export default {
         {
           name: "`info`",
           value: "Техническая информация о боте",
+          inline: true
+        },
+        {
+          name: "`captcha`",
+          value: "Ввод капчи",
           inline: true
         },
 
