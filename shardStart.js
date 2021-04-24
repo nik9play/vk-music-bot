@@ -1,7 +1,7 @@
 if (process.env.NODE_ENV == "development") require('dotenv').config()
 
 const { ShardingManager } = require('discord.js')
-const manager = new ShardingManager('./dist/main.js', { token: process.env.DISCORD_TOKEN })
+const manager = new ShardingManager('./dist/index.js', { token: process.env.DISCORD_TOKEN })
 const axios = require('axios').default
 
 manager.on("shardCreate", shard => console.log(`Launched shard ${shard.id}`))
@@ -77,10 +77,27 @@ function sendInfo() {
         })
     })
   .catch(err => {
-    console.error(err)
+    console.error("send stat err: ", err)
   })
 }
 
 if (process.env.NODE_ENV != "development") setInterval(() => {
   sendInfo()
 }, 300000)
+
+process.stdin.resume()
+
+function exitHandler(options, exitCode) {
+  if (options.cleanup) console.log('clean')
+  if (exitCode || exitCode === 0) console.log(exitCode)
+  if (options.exit) process.exit();
+}
+
+process.on('exit', exitHandler.bind(null,{cleanup:true}))
+
+//catches ctrl+c event
+process.on('SIGINT', exitHandler.bind(null, {exit:true}))
+
+// catches "kill pid" (for example: nodemon restart)
+process.on('SIGUSR1', exitHandler.bind(null, {exit:true}))
+process.on('SIGUSR2', exitHandler.bind(null, {exit:true}))

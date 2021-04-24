@@ -6,8 +6,8 @@
   "license": "MIT",
   "scripts": {
     "start": "node shardStart.js",
-    "build": "webpack --mode production",
-    "dev": "webpack --mode development && cross-env NODE_ENV=development node --inspect shardStart.js"
+    "build": "rollup -c",
+    "dev": "rollup -c && cross-env NODE_ENV=development node --inspect shardStart.js"
   },
   "dependencies": {
     "axios": "^0.21.1",
@@ -16,19 +16,16 @@
     "colors": "^1.4.0",
     "discord.js": "^12.5.1",
     "dotenv": "^8.2.0",
-    "erela.js-vk": "^2.3.3-vk-2",
+    "erela.js-vk": "^2.3.3-vk-3",
     "luxon": "^1.25.0",
     "mongodb": "^3.6.3",
     "utf-8-validate": "^5.0.4"
   },
   "devDependencies": {
-    "@babel/core": "^7.12.10",
-    "@babel/preset-env": "^7.12.11",
-    "babel-loader": "^8.2.2",
+    "@rollup/plugin-dynamic-import-vars": "^1.1.1",
+    "@rollup/plugin-json": "^4.1.0",
     "cross-env": "^7.0.3",
     "eslint": "^7.17.0",
-    "webpack": "^5.11.1",
-    "webpack-cli": "^4.3.1",
-    "webpack-node-externals": "^2.5.2"
+    "rollup": "^2.45.2"
   }
 }
