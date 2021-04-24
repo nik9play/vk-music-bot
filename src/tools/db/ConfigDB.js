@@ -30,54 +30,54 @@ export default class ConfigDB {
     await this.client.close()
   }
 
-  /**
-   * Получить дефолтный конфиг для сервера
-   */
-  getDefaultConfig(id) {
-    return {
-      guild_id: id,
-      prefix: "-v",
-      premium: false,
-      perms: {
-        allow: {
-          ADD_TO_QUEUE: [],
-          MANAGE_QUEUE: [],
-          VIEW_QUEUE: [],
-          MANAGE_PLAYER: []
-        },
-        deny: {
-          ADD_TO_QUEUE: [],
-          MANAGE_QUEUE: [],
-          VIEW_QUEUE: [],
-          MANAGE_PLAYER: []
-        }
-      }
-    }
-  }
+  // /**
+  //  * Получить дефолтный конфиг для сервера
+  //  */
+  // getDefaultConfig(id) {
+  //   return {
+  //     guild_id: id,
+  //     prefix: "-v",
+  //     premium: false,
+  //     perms: {
+  //       allow: {
+  //         ADD_TO_QUEUE: [],
+  //         MANAGE_QUEUE: [],
+  //         VIEW_QUEUE: [],
+  //         MANAGE_PLAYER: []
+  //       },
+  //       deny: {
+  //         ADD_TO_QUEUE: [],
+  //         MANAGE_QUEUE: [],
+  //         VIEW_QUEUE: [],
+  //         MANAGE_PLAYER: []
+  //       }
+  //     }
+  //   }
+  // }
 
-  /**
-   * Получить конфиг для сервера
-   * @param generate Создать запись в базе, если ее нет
-   */
-  async getConfig(generate, id) {
-    const query = { guild_id: id }
-    let server = await this.collection.findOne(query)
+  // /**
+  //  * Получить конфиг для сервера
+  //  * @param generate Создать запись в базе, если ее нет
+  //  */
+  // async getConfig(generate, id) {
+  //   const query = { guild_id: id }
+  //   let server = await this.collection.findOne(query)
 
-    if (!server) {
-      if (generate)
-        await this.generateConfig(id)
+  //   if (!server) {
+  //     if (generate)
+  //       await this.generateConfig(id)
       
-      server = this.getDefaultConfig(id)
-    }
+  //     server = this.getDefaultConfig(id)
+  //   }
 
-    return server
-  }
+  //   return server
+  // }
 
-  async generateConfig(id) {
-    const config = this.getDefaultConfig(id)
+  // async generateConfig(id) {
+  //   const config = this.getDefaultConfig(id)
 
-    await this.collection.insertOne(config)
-  }
+  //   await this.collection.insertOne(config)
+  // }
 
   // reverseAction(action) {
   //   return action == "allow" ? "deny" : "allow"
@@ -242,6 +242,27 @@ export default class ConfigDB {
       return false
     else
       return server.e247
+  }
+
+  async setDisableAnnouncements(enable, guild_id) {
+    const query = { guild_id: guild_id }
+
+    await this.collection.updateOne(query, {
+      $set: {
+        disableAnnouncements: enable
+      }
+    }, {upsert: true})
+  }
+
+  async getDisableAnnouncements(guild_id) {
+    const query = { guild_id: guild_id, disableAnnouncements: { $exists:true } }
+
+    const server = await this.collection.findOne(query)
+
+    if (!server)
+      return false
+    else
+      return server.disableAnnouncements
   }
 
   async checkPremium(guild_id) {
