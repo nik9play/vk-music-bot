@@ -52,8 +52,8 @@ client.manager = new Manager({
   .on("nodeError", (node, error) => console.log(
     `Node "${node.options.identifier}" encountered an error: ${error.message}.`
   ))
-  .on("trackStart", (player, track) => {
-    if (!client.configDB.getDisableAnnouncements(player.guild)) {
+  .on("trackStart", async (player, track) => {
+    if (!await client.configDB.getDisableAnnouncements(player.guild)) {
       const channel = client.channels.cache.get(player.textChannel)
       channel.send({embed: {
         description: `Сейчас играет **${track.author} — ${track.title}**.`,
