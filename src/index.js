@@ -58,7 +58,7 @@ client.manager = new Manager({
       channel.send({embed: {
         description: `Сейчас играет **${track.author} — ${track.title}**.`,
         color: 0x5181b8
-      }}).then(msg => { if (msg.deletable) msg.delete({timeout: track.duration}) }).catch(console.log("Msg send error"))
+      }}).then(msg => { if (msg.deletable) msg.delete({timeout: track.duration}).catch(console.error) }).catch(console.error)
     }
   })
   // .on("trackEnd", async (player) => {
@@ -80,20 +80,20 @@ client.manager = new Manager({
     console.log("end of queue", player.guild)
     if (!await client.configDB.get247(player.guild))
       if (player)
-        client.timers.set(player.guild, setTimeout(() => {
+        client.timers.set(player.guild, setTimeout(async () => {
           if(player) {
             player.destroy()
             const channel = client.channels.cache.get(player.textChannel)
             channel.send({embed: {
-              description: `**Я покинул канал, так как слишком долго был неактивен.**\n Хотите, чтобы я оставался? Включите режим 24/7 (доступен только для Премиум пользователей, подробности: \`-vdonate\`). `,
+              description: `**Я покинул канал, так как слишком долго был неактивен.**\n Хотите, чтобы я оставался? Включите режим 24/7 (доступен только для Премиум пользователей, подробности: \`${await client.configDB.getPrefix(player.guild)}donate\`). `,
               color: 0x5181b8
-            }}).then(msg => msg.delete({timeout: 30000}).catch(console.log("Remove msg error"))).catch(console.log("Msg send error"))
+            }}).then(msg => msg.delete({timeout: 30000}).catch(console.error)).catch(console.error)
           }
         }, 1200000))
   })
   .on("playerMove", player => {
     console.log("moved player")
-    setTimeout(() =>  player.pause(false), 1000)
+    setTimeout(() =>  player.pause(false), 2000)
   })
   .on("playerDestroy", (player) => {
     console.log(`${player.guild} player destroyed`)
@@ -109,7 +109,7 @@ client.manager = new Manager({
     channel.send({embed: {
       description: `С треком **${track.author} — ${track.title}** произошла проблема, поэтому он был пропущен.`,
       color: 0x5181b8
-    }}).then(msg => msg.delete({timeout: 30000})).catch(console.log("kavo?"))
+    }}).then(msg => msg.delete({timeout: 30000}).catch(console.error)).catch(console.error)
     console.log(track)
   })
 
