@@ -31,7 +31,7 @@ const nodes = LavalinkServersString.split(";").map(val => {
 const commandFiles = readdirSync('./src/commands').filter(file => file.endsWith('.js'))
 
 for (const file of commandFiles) {
-  import(`./commands/${file}`).then(command => {
+  import(`./commands/${file.replace('.js', '')}.js`).then(command => {
     client.commands.set(command.default.name, command.default)
     if (command.default.aliases) {
       command.default.aliases.forEach((e) => {
@@ -53,11 +53,13 @@ client.manager = new Manager({
     `Node "${node.options.identifier}" encountered an error: ${error.message}.`
   ))
   .on("trackStart", (player, track) => {
-    const channel = client.channels.cache.get(player.textChannel)
-    channel.send({embed: {
-      description: `Сейчас играет **${track.author} — ${track.title}**.`,
-      color: 0x5181b8
-    }}).then(msg => msg.delete({timeout: track.duration}))
+    if (!client.configDB.getDisableAnnouncements(player.guild)) {
+      const channel = client.channels.cache.get(player.textChannel)
+      channel.send({embed: {
+        description: `Сейчас играет **${track.author} — ${track.title}**.`,
+        color: 0x5181b8
+      }}).then(msg => { if (msg.deletable) msg.delete({timeout: track.duration}) }).catch(console.log("Msg send error"))
+    }
   })
   // .on("trackEnd", async (player) => {
   //   if (!await client.configDB.get247(player.guild))
@@ -85,7 +87,7 @@ client.manager = new Manager({
             channel.send({embed: {
               description: `**Я покинул канал, так как слишком долго был неактивен.**\n Хотите, чтобы я оставался? Включите режим 24/7 (доступен только для Премиум пользователей, подробности: \`-vdonate\`). `,
               color: 0x5181b8
-            }}).then(msg => msg.delete({timeout: 30000}))
+            }}).then(msg => msg.delete({timeout: 30000}).catch(console.log("Remove msg error"))).catch(console.log("Msg send error"))
           }
         }, 1200000))
   })
@@ -107,7 +109,7 @@ client.manager = new Manager({
     channel.send({embed: {
       description: `С треком **${track.author} — ${track.title}** произошла проблема, поэтому он был пропущен.`,
       color: 0x5181b8
-    }})
+    }}).then(msg => msg.delete({timeout: 30000})).catch(console.log("kavo?"))
     console.log(track)
   })
 
@@ -117,6 +119,16 @@ client.once("ready", () => {
 })
 
 client.on("raw", d => client.manager.updateVoiceState(d))
+
+client.on("guildDelete", (guild) => {
+  console.log(`${guild.id} leaves`)
+  const player = client.manager.get(guild.id)
+
+  if (player) player.destroy()
+
+  if (client.timers.has(guild.id))
+    clearTimeout(client.timers.get(guild.id))
+})
 
 client.login(process.env.DISCORD_TOKEN)
 
@@ -137,6 +149,15 @@ client.on("message", async message => {
     client.prefixes.set(message.guild.id, prefix)
   }
 
+  if (message.mentions.users.has(client.user.id)) {
+    return message.channel.send({
+      embed: {
+        title: "VK Music Bot",
+        color: 0x5181b8,
+        description: `Ваш текущий префикс: \`${prefix}\`. Чтобы узнать список команд, введите \`${prefix}h\`. Чтобы включить музыку, используйте \`${prefix}p\`.`
+      }
+    })
+  }
 
   if (!message.content.startsWith(prefix)) return
 
