@@ -1,7 +1,5 @@
 /* eslint-disable no-case-declarations */
-import GetOne from '../vkapi/GetOne'
-import GetPlaylist from '../vkapi/GetPlaylist'
-import GetUser from '../vkapi/GetUser'
+import VK from '../apis/VK'
 
 import detectArgType from '../tools/detectArgType'
 import declOfNum from '../tools/declOfNum'
@@ -58,9 +56,7 @@ export default {
     console.log(arg)
     let req
 
-    let audioGetOne = new GetOne()
-    let audioGetPlaylist = new GetPlaylist()
-    let audioGetUser = new GetUser()
+    const vk = new VK()
 
     const query = {}
 
@@ -73,14 +69,14 @@ export default {
 
     switch (arg.type) {
       case "track":
-        req = await audioGetOne.execute({
+        req = await vk.GetOne({
           q: search,
 
           ...query
         })
         break
       case "playlist":
-        req = await audioGetPlaylist.execute({
+        req = await vk.GetPlaylist({
           owner_id: arg.parsedURL.id.split("_")[0],
           album_id: arg.parsedURL.id.split("_")[1],
           count,
@@ -92,7 +88,7 @@ export default {
         break
       case "group":
       case "user":
-        req = await audioGetUser.execute({
+        req = await vk.GetUser({
           owner_id: arg.id,
           count,
           offset,
@@ -138,6 +134,9 @@ export default {
         title: req.title,
         author: {
           name: "Трек добавлен!"
+        },
+        thumbnail: {
+          url: req.thumb
         },
         description: req.author,
         fields: [
@@ -238,7 +237,10 @@ export default {
             value: newArray.length,
             inline: true
           }
-        ]
+        ],
+        footer: {
+          text: "Чтобы добавить больше 10 треков, введите количество треков после ссылки."
+        }
       }
 
       for await (const e of newArray) {
