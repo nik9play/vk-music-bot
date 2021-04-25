@@ -2,10 +2,18 @@ import axios from 'axios'
 import convertMP3 from '../tools/convertMP3'
 
 export default class VK {
+  constructor (accessToken = process.env.VK_TOKEN,
+              version = "5.116",
+              userAgent = "VKAndroidApp/5.52-4543 (Android 5.1.1; SDK 22; x86_64; unknown Android SDK built for x86_64; en; 320x240)") {
+    this.accessToken = accessToken
+    this.version = version
+    this.userAgent = userAgent
+  }
+
   async sendRequest(path, opts) {
     let urlParams = new URLSearchParams()
-    urlParams.append("v", "5.116")
-    urlParams.append("access_token", process.env.VK_TOKEN)
+    urlParams.append("v", this.version)
+    urlParams.append("access_token", this.accessToken)
 
     for (const [key, value] of Object.entries(opts)) {
       urlParams.append(key, value)
@@ -14,7 +22,7 @@ export default class VK {
     try {
       const res = await axios.get(`https://api.vk.com/method/${path}`, {
         headers: {
-          "User-Agent": "VKAndroidApp/5.52-4543 (Android 5.1.1; SDK 22; x86_64; unknown Android SDK built for x86_64; en; 320x240)"
+          "User-Agent": this.userAgent
         },
         params: urlParams
       })
@@ -83,8 +91,8 @@ export default class VK {
 
   /**
    * Получить первый трек из поиска либо трек по ID
-   * @param opts Параметры запроса
-   * @returns Трек
+   * @param {Object} opts Параметры запроса
+   * @returns {Object[]} Трек
    */
   async GetOne(opts) {
     if (/^-?[0-9]+_[0-9]+$/g.test(opts.q)) {
@@ -122,8 +130,8 @@ export default class VK {
 
   /**
    * Получение треков из плейлиста по ID создателя и ID плейлиста
-   * @param opts Параметры запроса 
-   * @returns Массив треков
+   * @param {Object} opts Параметры запроса 
+   * @returns {Object[]} Массив треков
    */
   async GetPlaylist(opts) {
     const code = `var playlistInfoAPI = API.audio.getPlaylistById({
@@ -205,8 +213,8 @@ export default class VK {
 
   /**
    * Получение треков пользователя или группы по ID
-   * @param opts Параметры запроса 
-   * @returns Массив треков
+   * @param {Object} opts Параметры запроса 
+   * @returns {Object[]} Массив треков
    */
   async GetUser(opts) {
     let code = ""
@@ -311,8 +319,8 @@ export default class VK {
 
   /**
    * Получение 5 треков по запросу
-   * @param opts Параметры запроса 
-   * @returns Массив треков
+   * @param {Object} opts Параметры запроса 
+   * @returns {Object[]} Массив треков
    */
   async GetMany(opts) {
     opts.count = 5
@@ -344,6 +352,25 @@ export default class VK {
             thumb
           }
         })
+      }
+    }
+  }
+
+  async GetWall(opts) {
+    const res = await this.sendRequest("wall.getById", opts)
+
+    if (res.status === "error") {
+      return res
+    } else if (res.data.response.items.length === 0 || !res.data.response.items[0].attachments) {
+      return {
+        status: "error",
+        type: "empty"
+      }
+    } else {
+      const attachments = res.data.response.items[0].attachments
+      return {
+        status: "success",
+        tracks: attachments.map()
       }
     }
   }
