@@ -91,8 +91,9 @@ client.manager = new Manager({
           }
         }, 1200000))
   })
-  .on("playerMove", player => {
-    console.log("moved player")
+  .on("playerMove", (player, initChannel, newChannel) => {
+    console.log(newChannel ? `${player.guild} moved player` : `${player.guild} disconnected`)
+    if (!newChannel) return player.destroy()
     setTimeout(() =>  player.pause(false), 2000)
   })
   .on("playerDestroy", (player) => {
