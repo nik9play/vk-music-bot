@@ -6,11 +6,16 @@ export default function(arg) {
       type: "user",
       id: arg.slice(1)
     }
+  } else if (arg.startsWith(">-")) {
+    return {
+      type: "group",
+      id: arg.slice(1)
+    }
   } else {
     try {
       const url = new URL(arg)
 
-      if (!url.searchParams.get("z")) {
+      if (!url.searchParams.has("z")) {
         if (url.pathname.startsWith("/audios-") && !url.searchParams.has("z"))
         return {
           type: "group",
@@ -21,6 +26,13 @@ export default function(arg) {
         return {
           type: "user",
           id: url.pathname.slice(7)
+        }
+      }
+
+      if (url.searchParams.has("w")) {
+        return {
+          type: "wall",
+          id: url.get("w").slice(4)
         }
       }
 
