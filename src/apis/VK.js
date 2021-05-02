@@ -4,7 +4,10 @@ import convertMP3 from '../tools/convertMP3'
 export default class VK {
   constructor (accessToken = process.env.VK_TOKEN,
               version = "5.116",
-              userAgent = "VKAndroidApp/5.52-4543 (Android 5.1.1; SDK 22; x86_64; unknown Android SDK built for x86_64; en; 320x240)") {
+              //userAgent = "VKAndroidApp/5.52-4543 (Android 5.1.1; SDK 22; x86_64; unknown Android SDK built for x86_64; en; 320x240)"
+              userAgent = "KateMobileAndroid/56 lite-460 (Android 4.4.2; SDK 19; x86; unknown Android SDK built for x86; en)"
+              )
+  {
     this.accessToken = accessToken
     this.version = version
     this.userAgent = userAgent
