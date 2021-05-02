@@ -93,14 +93,22 @@ client.manager = new Manager({
   })
   .on("playerMove", (player, initChannel, newChannel) => {
     console.log(newChannel ? `${player.guild} moved player` : `${player.guild} disconnected`)
-    if (!newChannel) return player.destroy()
+    if (!newChannel) { 
+      if (client.timers.has(player.guild.id))
+        clearTimeout(client.timers.get(player.guild.id))
+      return player.destroy() 
+    }
     setTimeout(() =>  player.pause(false), 2000)
   })
   .on("playerDestroy", (player) => {
     console.log(`${player.guild} player destroyed`)
   })
-  .on("socketClosed", (player, web) => {
-    console.log("socket closed. info: ", web, player.guild)
+  .on("socketClosed", (player, socket) => {
+    if (socket.code == 1006) {
+      if (player.state !== "CONNECTED") player.connect()
+    }
+
+    console.log("socket closed. info: ", socket, player.guild)
   })
   .on("trackStuck", (guildId) => {
     console.log(`${guildId} track stuck`)
