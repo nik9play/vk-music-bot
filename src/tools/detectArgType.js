@@ -1,14 +1,14 @@
 import parsePlaylistURL from './parsePlaylistURL'
 
 export default function(arg) {
-  if (arg.startsWith(">")) {
-    return {
-      type: "user",
-      id: arg.slice(1)
-    }
-  } else if (arg.startsWith(">-")) {
+  if (arg.startsWith(">-")) {
     return {
       type: "group",
+      id: arg.slice(1)
+    }
+  } else if (arg.startsWith(">")) {
+    return {
+      type: "user",
       id: arg.slice(1)
     }
   } else {
