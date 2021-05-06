@@ -105,7 +105,9 @@ client.manager = new Manager({
   })
   .on("socketClosed", (player, socket) => {
     if (socket.code == 1006) {
-      if (player.state !== "CONNECTED") player.connect()
+      player.disconnect()
+      setTimeout(() =>  player.connect(), 500)
+      setTimeout(() =>  player.pause(false), 1000)
     }
 
     console.log("socket closed. info: ", socket, player.guild)
