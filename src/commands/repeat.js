@@ -13,10 +13,8 @@ export default {
 
     if (args.length && /queue/i.test(args[0])) {
       player.setQueueRepeat(true)
-      player.setTrackRepeat(false)
       return message.reply(`включен повтор очереди.`)
     } else if (args.length && /track/i.test(args[0])) {
-      player.setQueueRepeat(false)
       player.setTrackRepeat(true)
       return message.reply(`включен повтор текущего трека.`)
     } else if (args.length && /off/i.test(args[0])) {
