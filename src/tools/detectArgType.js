@@ -29,12 +29,12 @@ export default function(arg) {
         }
       }
 
-      if (url.searchParams.has("w")) {
-        return {
-          type: "wall",
-          id: url.get("w").slice(4)
-        }
-      }
+      // if (url.searchParams.has("w")) {
+      //   return {
+      //     type: "wall",
+      //     id: url.get("w").slice(4)
+      //   }
+      // }
 
       const parsedURL = parsePlaylistURL(url)
 
