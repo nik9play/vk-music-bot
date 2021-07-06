@@ -81,7 +81,7 @@ client.manager = new Manager({
     if (!await client.configDB.get247(player.guild))
       if (player)
         client.timers.set(player.guild, setTimeout(async () => {
-          if(player) {
+          if (player) {
             player.destroy()
             const channel = client.channels.cache.get(player.textChannel)
             channel.send({embed: {
@@ -103,11 +103,27 @@ client.manager = new Manager({
   .on("playerDestroy", (player) => {
     console.log(`${player.guild} player destroyed`)
   })
-  .on("socketClosed", (player, socket) => {
+  .on("socketClosed", async (player, socket) => {
+    // reconnect on "Abnormal closure"
     if (socket.code == 1006) {
-      player.disconnect()
-      setTimeout(() =>  player.connect(), 500)
-      setTimeout(() =>  player.pause(false), 1000)
+      const voiceChannel = player.voiceChannel
+      const textChannel = player.textChannel
+
+      try {
+        player.disconnect()
+      } catch {
+        //
+      }
+
+      setTimeout(() => {
+        player.setVoiceChannel(voiceChannel)
+        player.setTextChannel(textChannel)
+  
+        player.connect()
+        setTimeout(() => {
+          player.pause(false)
+        }, 500)
+      }, 500)
     }
 
     console.log("socket closed. info: ", socket, player.guild)
