@@ -1,6 +1,6 @@
 import { MongoClient } from 'mongodb'
 
-export default class ConfigDB {
+export default class db {
   /**
    * @param {string} databaseURL MongoDB URL
    */

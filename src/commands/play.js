@@ -312,7 +312,7 @@ export default {
       }}).then(msg => msg.delete({timeout: 30000}))
     }
 
-    if (!await message.client.configDB.checkPremium(message.guild.id)) {
+    if (!await message.client.db.checkPremium(message.guild.id)) {
       if (player)
         if (player.queue.totalSize >= 200) {
           player.queue.remove(201, player.queue.totalSize)

@@ -4,7 +4,7 @@ import { readdirSync } from 'fs'
 
 import colors from 'colors/safe'
 
-import ConfigDB from './tools/db/ConfigDB'
+import db from './tools/db/DBManager'
 
 const client = new Client({
   messageCacheLifetime: 60,
@@ -53,7 +53,7 @@ client.manager = new Manager({
     `Node "${node.options.identifier}" encountered an error: ${error.message}.`
   ))
   .on("trackStart", async (player, track) => {
-    if (!await client.configDB.getDisableAnnouncements(player.guild)) {
+    if (!await client.db.getDisableAnnouncements(player.guild)) {
       const channel = client.channels.cache.get(player.textChannel)
       channel.send({embed: {
         description: `Сейчас играет **${track.author} — ${track.title}**.`,
@@ -62,7 +62,7 @@ client.manager = new Manager({
     }
   })
   // .on("trackEnd", async (player) => {
-  //   if (!await client.configDB.get247(player.guild))
+  //   if (!await client.db.get247(player.guild))
   //     if (player) {
   //       const voiceChannel = client.channels.cache.get(player.voiceChannel)
   //       const arr =  Array.from(voiceChannel.members.filter(m => m.user.bot == false).keys())
@@ -78,14 +78,14 @@ client.manager = new Manager({
   // })
   .on("queueEnd", async (player) => {
     console.log("end of queue", player.guild)
-    if (!await client.configDB.get247(player.guild))
+    if (!await client.db.get247(player.guild))
       if (player)
         client.timers.set(player.guild, setTimeout(async () => {
           if (player) {
             player.destroy()
             const channel = client.channels.cache.get(player.textChannel)
             channel.send({embed: {
-              description: `**Я покинул канал, так как слишком долго был неактивен.**\n Хотите, чтобы я оставался? Включите режим 24/7 (доступен только для Премиум пользователей, подробности: \`${await client.configDB.getPrefix(player.guild)}donate\`). `,
+              description: `**Я покинул канал, так как слишком долго был неактивен.**\n Хотите, чтобы я оставался? Включите режим 24/7 (доступен только для Премиум пользователей, подробности: \`${await client.db.getPrefix(player.guild)}donate\`). `,
               color: 0x5181b8
             }}).then(msg => msg.delete({timeout: 30000}).catch(console.error)).catch(console.error)
           }
@@ -160,11 +160,11 @@ client.on("guildDelete", (guild) => {
 client.login(process.env.DISCORD_TOKEN)
 
 // подключение к дб
-client.configDB = new ConfigDB(process.env.MONGO_URL)
-client.configDB.init()
+client.db = new db(process.env.MONGO_URL)
+client.db.init()
 
 client.on("message", async message => {
-  if (message.channel.type != "text" || message.author.bot || !client.configDB.isConnected) return
+  if (message.channel.type != "text" || message.author.bot || !client.db.isConnected) return
   if (!message.channel.permissionsFor(message.client.user).has("SEND_MESSAGES")) return
 
   let prefix
@@ -172,7 +172,7 @@ client.on("message", async message => {
   if (client.prefixes.has(message.guild.id))
     prefix = client.prefixes.get(message.guild.id)
   else {
-    prefix = await client.configDB.getPrefix(message.guild.id)
+    prefix = await client.db.getPrefix(message.guild.id)
     client.prefixes.set(message.guild.id, prefix)
   }
 
@@ -218,15 +218,15 @@ client.on("message", async message => {
       setTimeout(() => timestamps.delete(message.author.id), cooldownAmount)
     }
 
-    if (await client.configDB.getAccessRoleEnabled(message.guild.id)) {
-      const djRole = await client.configDB.getAccessRole(message.guild.id)
+    if (await client.db.getAccessRoleEnabled(message.guild.id)) {
+      const djRole = await client.db.getAccessRole(message.guild.id)
 
       if (!message.member.roles.cache.some(role => role.name === djRole))
       return
     }
 
     if (commandHandler.premium)
-      if (!await client.configDB.checkPremium(message.guild.id))
+      if (!await client.db.checkPremium(message.guild.id))
         return message.reply("на этом сервере нет **Премиума**, поэтому команда не может быть выполнена. Подробнее: `-vdonate`")
 
     if (commandHandler.adminOnly)
