@@ -44,10 +44,21 @@ export default class VK {
           type: "api"
         }
       } else if (res.data.execute_errors)
-        return {
-          status: "error",
-          type: "api"
-        }
+        if (res.data.execute_errors[0].error_code === 201)
+          return {
+            status: "error",
+            type: "access_denied"
+          }
+        else if (res.data.execute_errors[0].error_code === 104)
+          return {
+            status: "error",
+            type: "empty"
+          }
+        else
+          return {
+            status: "error",
+            type: "api"
+          }
 
       return {
         status: "success",
