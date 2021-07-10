@@ -5,16 +5,20 @@ import { readdirSync } from 'fs'
 import colors from 'colors/safe'
 
 import db from './tools/db/DBManager'
+import generateErrorMessage from './tools/generateErrorMessage'
+import SlashCommandManager from './tools/SlashCommandManager'
 
 const client = new Client({
   messageCacheLifetime: 60,
   messageSweepInterval: 10
 })
 
+new SlashCommandManager(client)
+
 client.cooldowns = new Collection()
 client.commands = new Collection()
 client.captcha = new Collection()
-client.prefixes = new Collection()
+// client.prefixes = new Collection()
 client.timers = new Collection()
 
 const LavalinkServersString = process.env.LAVALINK_NODES
@@ -28,7 +32,7 @@ const nodes = LavalinkServersString.split(";").map(val => {
   }
 })
 
-const commandFiles = readdirSync('./src/commands').filter(file => file.endsWith('.js'))
+const commandFiles = readdirSync('./src/slashCommands').filter(file => file.endsWith('.js'))
 
 for (const file of commandFiles) {
   import(`./commands/${file.replace('.js', '')}.js`).then(command => {
@@ -140,8 +144,9 @@ client.manager = new Manager({
     console.log(track)
   })
 
+
 client.once("ready", () => {
-  client.manager.init(client.user.id);
+  client.manager.init(client.user.id)
   console.log(`Logged in as ${client.user.tag}`)
 })
 
@@ -167,14 +172,7 @@ client.on("message", async message => {
   if (message.channel.type != "text" || message.author.bot || !client.db.isConnected) return
   if (!message.channel.permissionsFor(message.client.user).has("SEND_MESSAGES")) return
 
-  let prefix
-
-  if (client.prefixes.has(message.guild.id))
-    prefix = client.prefixes.get(message.guild.id)
-  else {
-    prefix = await client.db.getPrefix(message.guild.id)
-    client.prefixes.set(message.guild.id, prefix)
-  }
+  let prefix = await client.db.getPrefix(message.guild.id)
 
   if (message.mentions.users.has(client.user.id)) {
     return message.channel.send({
@@ -227,7 +225,7 @@ client.on("message", async message => {
 
     if (commandHandler.premium)
       if (!await client.db.checkPremium(message.guild.id))
-        return message.reply("на этом сервере нет **Премиума**, поэтому команда не может быть выполнена. Подробнее: `-vdonate`")
+        return message.channel.send({ embed: generateErrorMessage("На этом сервере нет **Премиума**, поэтому команда не может быть выполнена. Подробнее: `-vdonate`.") })
 
     if (commandHandler.adminOnly)
       if (message.member.permissions.has("MANAGE_GUILD"))
