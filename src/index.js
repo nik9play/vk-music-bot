@@ -104,10 +104,26 @@ client.manager = new Manager({
     console.log(`${player.guild} player destroyed`)
   })
   .on("socketClosed", (player, socket) => {
+    // reconnect on "Abnormal closure"
     if (socket.code == 1006) {
-      player.disconnect()
-      setTimeout(() =>  player.connect(), 500)
-      setTimeout(() =>  player.pause(false), 1000)
+      const voiceChannel = player.voiceChannel
+      const textChannel = player.textChannel
+
+      try {
+        player.disconnect()
+      } catch {
+        //
+      }
+
+      setTimeout(() => {
+        player.setVoiceChannel(voiceChannel)
+        player.setTextChannel(textChannel)
+  
+        player.connect()
+        setTimeout(() => {
+          player.pause(false)
+        }, 500)
+      }, 500)
     }
 
     console.log("socket closed. info: ", socket, player.guild)
