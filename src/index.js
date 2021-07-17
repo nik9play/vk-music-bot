@@ -35,7 +35,7 @@ const nodes = LavalinkServersString.split(";").map(val => {
 const commandFiles = readdirSync('./src/slashCommands').filter(file => file.endsWith('.js'))
 
 for (const file of commandFiles) {
-  import(`./commands/${file.replace('.js', '')}.js`).then(command => {
+  import(`./slashCommands/${file.replace('.js', '')}.js`).then(command => {
     client.commands.set(command.default.name, command.default)
     if (command.default.aliases) {
       command.default.aliases.forEach((e) => {
