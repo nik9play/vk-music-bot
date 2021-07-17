@@ -4,17 +4,21 @@ import { readdirSync } from 'fs'
 
 import colors from 'colors/safe'
 
-import ConfigDB from './tools/db/ConfigDB'
+import db from './tools/db/DBManager'
+import generateErrorMessage from './tools/generateErrorMessage'
+import SlashCommandManager from './tools/SlashCommandManager'
 
 const client = new Client({
   messageCacheLifetime: 60,
   messageSweepInterval: 10
 })
 
+new SlashCommandManager(client)
+
 client.cooldowns = new Collection()
 client.commands = new Collection()
 client.captcha = new Collection()
-client.prefixes = new Collection()
+// client.prefixes = new Collection()
 client.timers = new Collection()
 
 const LavalinkServersString = process.env.LAVALINK_NODES
@@ -28,10 +32,10 @@ const nodes = LavalinkServersString.split(";").map(val => {
   }
 })
 
-const commandFiles = readdirSync('./src/commands').filter(file => file.endsWith('.js'))
+const commandFiles = readdirSync('./src/slashCommands').filter(file => file.endsWith('.js'))
 
 for (const file of commandFiles) {
-  import(`./commands/${file.replace('.js', '')}.js`).then(command => {
+  import(`./slashCommands/${file.replace('.js', '')}.js`).then(command => {
     client.commands.set(command.default.name, command.default)
     if (command.default.aliases) {
       command.default.aliases.forEach((e) => {
@@ -53,7 +57,7 @@ client.manager = new Manager({
     `Node "${node.options.identifier}" encountered an error: ${error.message}.`
   ))
   .on("trackStart", async (player, track) => {
-    if (!await client.configDB.getDisableAnnouncements(player.guild)) {
+    if (!await client.db.getDisableAnnouncements(player.guild)) {
       const channel = client.channels.cache.get(player.textChannel)
       channel.send({embed: {
         description: `Сейчас играет **${track.author} — ${track.title}**.`,
@@ -62,7 +66,7 @@ client.manager = new Manager({
     }
   })
   // .on("trackEnd", async (player) => {
-  //   if (!await client.configDB.get247(player.guild))
+  //   if (!await client.db.get247(player.guild))
   //     if (player) {
   //       const voiceChannel = client.channels.cache.get(player.voiceChannel)
   //       const arr =  Array.from(voiceChannel.members.filter(m => m.user.bot == false).keys())
@@ -78,14 +82,14 @@ client.manager = new Manager({
   // })
   .on("queueEnd", async (player) => {
     console.log("end of queue", player.guild)
-    if (!await client.configDB.get247(player.guild))
+    if (!await client.db.get247(player.guild))
       if (player)
         client.timers.set(player.guild, setTimeout(async () => {
-          if(player) {
+          if (player) {
             player.destroy()
             const channel = client.channels.cache.get(player.textChannel)
             channel.send({embed: {
-              description: `**Я покинул канал, так как слишком долго был неактивен.**\n Хотите, чтобы я оставался? Включите режим 24/7 (доступен только для Премиум пользователей, подробности: \`${await client.configDB.getPrefix(player.guild)}donate\`). `,
+              description: `**Я покинул канал, так как слишком долго был неактивен.**\n Хотите, чтобы я оставался? Включите режим 24/7 (доступен только для Премиум пользователей, подробности: \`${await client.db.getPrefix(player.guild)}donate\`). `,
               color: 0x5181b8
             }}).then(msg => msg.delete({timeout: 30000}).catch(console.error)).catch(console.error)
           }
@@ -103,7 +107,7 @@ client.manager = new Manager({
   .on("playerDestroy", (player) => {
     console.log(`${player.guild} player destroyed`)
   })
-  .on("socketClosed", (player, socket) => {
+  .on("socketClosed", async (player, socket) => {
     // reconnect on "Abnormal closure"
     if (socket.code == 1006) {
       const voiceChannel = player.voiceChannel
@@ -140,8 +144,9 @@ client.manager = new Manager({
     console.log(track)
   })
 
+
 client.once("ready", () => {
-  client.manager.init(client.user.id);
+  client.manager.init(client.user.id)
   console.log(`Logged in as ${client.user.tag}`)
 })
 
@@ -160,21 +165,14 @@ client.on("guildDelete", (guild) => {
 client.login(process.env.DISCORD_TOKEN)
 
 // подключение к дб
-client.configDB = new ConfigDB(process.env.MONGO_URL)
-client.configDB.init()
+client.db = new db(process.env.MONGO_URL)
+client.db.init()
 
 client.on("message", async message => {
-  if (message.channel.type != "text" || message.author.bot || !client.configDB.isConnected) return
+  if (message.channel.type != "text" || message.author.bot || !client.db.isConnected) return
   if (!message.channel.permissionsFor(message.client.user).has("SEND_MESSAGES")) return
 
-  let prefix
-
-  if (client.prefixes.has(message.guild.id))
-    prefix = client.prefixes.get(message.guild.id)
-  else {
-    prefix = await client.configDB.getPrefix(message.guild.id)
-    client.prefixes.set(message.guild.id, prefix)
-  }
+  let prefix = await client.db.getPrefix(message.guild.id)
 
   if (message.mentions.users.has(client.user.id)) {
     return message.channel.send({
@@ -218,16 +216,16 @@ client.on("message", async message => {
       setTimeout(() => timestamps.delete(message.author.id), cooldownAmount)
     }
 
-    if (await client.configDB.getAccessRoleEnabled(message.guild.id)) {
-      const djRole = await client.configDB.getAccessRole(message.guild.id)
+    if (await client.db.getAccessRoleEnabled(message.guild.id)) {
+      const djRole = await client.db.getAccessRole(message.guild.id)
 
       if (!message.member.roles.cache.some(role => role.name === djRole))
       return
     }
 
     if (commandHandler.premium)
-      if (!await client.configDB.checkPremium(message.guild.id))
-        return message.reply("на этом сервере нет **Премиума**, поэтому команда не может быть выполнена. Подробнее: `-vdonate`")
+      if (!await client.db.checkPremium(message.guild.id))
+        return message.channel.send({ embed: generateErrorMessage("На этом сервере нет **Премиума**, поэтому команда не может быть выполнена. Подробнее: `-vdonate`.") })
 
     if (commandHandler.adminOnly)
       if (message.member.permissions.has("MANAGE_GUILD"))

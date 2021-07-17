@@ -13,28 +13,27 @@ export default {
   aliases: ["p", "pl"],
   djOnly: true,
   cooldown: 2,
-  execute: async (message, args, options) => {
-    const { channel } = message.member.voice
-    if (!channel) return message.channel.send({embed: generateErrorMessage('Необходимо находиться в голосовом канале.')})
-    console.log(channel)
-    if (!args.length) return message.channel.send({embed: generateErrorMessage('Вставьте после команды ссылку на плейлист или альбом, ID пользователя или трека.')})
+  execute: async ({ guild, voice, text, client, args, captcha, respond, send }) => {
+    if (!voice) return respond(generateErrorMessage('Необходимо находиться в голосовом канале.'))
 
-    const permissions = channel.permissionsFor(message.client.user)
+    if (!args.length) return respond(generateErrorMessage('Вставьте после команды ссылку на плейлист или альбом, ID пользователя или трека.'))
+
+    const permissions = voice.permissionsFor(client.user)
     if (!permissions.has('CONNECT') || !permissions.has('SPEAK') || !permissions.has('VIEW_CHANNEL')) {
-      return message.channel.send({embed: generateErrorMessage('Мне нужны права, чтобы войти в канал.')})
+      return respond(generateErrorMessage('Мне нужны права, чтобы войти в канал.'))
     }
 
-    const player = message.client.manager.create({
-      guild: message.guild.id,
-      voiceChannel: channel.id,
-      textChannel: message.channel.id,
+    const player = client.manager.create({
+      guild: guild.id,
+      voiceChannel: voice.id,
+      textChannel: text.id,
       selfDeafen: true
     })
 
     if (player.state !== "CONNECTED") player.connect()
 
     if (!player.voiceChannel) {
-      player.setVoiceChannel(channel.id)
+      player.setVoiceChannel(voice.id)
       player.connect()
     }
 
@@ -43,8 +42,8 @@ export default {
 
     // сброс таймера и снятие с паузы при добавлении в очередь
     if (player.paused) player.pause(false)
-    if (message.client.timers.has(message.guild.id))
-      clearTimeout(message.client.timers.get(message.guild.id))
+    if (client.timers.has(guild.id))
+      clearTimeout(client.timers.get(guild.id))
 
     const search = args.join(' ')
 
@@ -60,11 +59,10 @@ export default {
 
     const query = {}
 
-    if (options) {
-      if (options.captcha) {
-        query.captcha_sid = options.captcha.sid
-        query.captcha_key = options.captcha.captcha_key
-      }
+
+    if (captcha) {
+      query.captcha_sid = captcha.sid
+      query.captcha_key = captcha.captcha_key
     }
 
     switch (arg.type) {
@@ -101,33 +99,33 @@ export default {
     if (req.status === "error") {
       console.log("error:   ", req)
       if (req.type === "captcha") {
-        message.client.captcha.set(message.guild.id, {
+        client.captcha.set(guild.id, {
           args,
           url: req.data.captcha_img,
           sid: req.data.captcha_sid
         })
 
-        const captcha = message.client.captcha.get(message.guild.id)
+        const captcha = client.captcha.get(guild.id)
         const embed = {
-          description: "Ошибка! Требуется капча. Введите команду `-vcaptcha`, а после код с картинки.",
+          description: `Ошибка! Требуется капча. Введите команду \`${client.db.getPrefix(guild.id)}captcha\`, а после код с картинки.`,
           color: 0x5181b8,
           image: {
             url: captcha.url
           }
         }
 
-        return message.channel.send({embed: embed})
+        return respond({embed: embed})
       } else if (req.type === "empty") {
-        return message.channel.send({embed: generateErrorMessage('Не удалось ничего найти по запросу.')})
+        return respond(generateErrorMessage('Не удалось ничего найти по запросу или плейлиста не существует.'))
       } else if (req.type === "api") {
-        return message.channel.send({embed: generateErrorMessage('Неверный формат ссылки или запроса.')})
+        return respond(generateErrorMessage('Неверный формат ссылки или запроса.'))
       } else if (req.type === "request") {
-        return message.channel.send({embed: generateErrorMessage('Ошибка запроса к ВК.')})
+        return respond(generateErrorMessage('Ошибка запроса к ВК.'))
       } else if (req.type === "access_denied") {
         if (arg.type === "playlist")
-          return message.channel.send({embed: generateErrorMessage('Нет доступа к плейлисту. Попробуйте получить ссылку по [гайду](https://vk.com/@vkmusicbotds-kak-poluchit-rabochuu-ssylku-na-pleilist).')})
+          return respond(generateErrorMessage('Нет доступа к плейлисту. Попробуйте получить ссылку по [гайду](https://vk.com/@vkmusicbotds-kak-poluchit-rabochuu-ssylku-na-pleilist).'))
         else if (arg.type === "user")
-          return message.channel.send({embed: generateErrorMessage('Нет доступа к аудио пользователя. Аудио должны быть открыты.')})
+          return respond(generateErrorMessage('Нет доступа к аудио пользователя. Аудио должны быть открыты.'))
       }
     }
 
@@ -161,13 +159,13 @@ export default {
           throw res.exception
         }
       } catch (err) {
-        return message.reply(`ошибка: ${err.message}`)
+        return respond(generateErrorMessage(err.message))
       }
 
       switch (res.loadType) {
         case 'NO_MATCHES':
           if (!player.queue.current) player.destroy()
-          return message.reply('ошибка.')
+          return respond(generateErrorMessage('Неизвестная ошибка'))
         case 'TRACK_LOADED':
           res.tracks[0].title = req.title
           res.tracks[0].author = req.author
@@ -177,7 +175,7 @@ export default {
           if (!player.playing && !player.paused && !player.queue.size) player.play()
       }
 
-      message.channel.send({embed: songEmbed})
+      respond(songEmbed)
     } else if (arg.type === "playlist") {
       const newArray = req.newArray
 
@@ -223,7 +221,7 @@ export default {
         if (!player.playing && !player.paused && !player.queue.size) player.play()
       }
 
-      message.channel.send({embed: playlistEmbed})
+      respond(playlistEmbed)
     } else if (arg.type === "user") {
       const newArray = req.newArray
 
@@ -262,7 +260,7 @@ export default {
         if (!player.playing && !player.paused && !player.queue.size) player.play()
       }
 
-      message.channel.send({embed: playlistEmbed})
+      respond(playlistEmbed)
     } else if (arg.type === "group") {
       const newArray = req.newArray
 
@@ -298,7 +296,7 @@ export default {
         if (!player.playing && !player.paused && !player.queue.size) player.play()
       }
 
-      message.channel.send({embed: playlistEmbed})
+      respond(playlistEmbed)
     }
 
     if (wrongTracks.length > 0) {
@@ -308,7 +306,7 @@ export default {
 
       desc = `${desc}\n${wrongTracks.length > 5 ? `...\nи еще ${wrongTracks.length - 5} ${declOfNum(wrongTracks.length - 5, ['трек', 'трека', 'треков'])}.` : ""}`
 
-      message.channel.send({embed: {
+      send({embed: {
         color: 0x5181b8,
         author: {
           name: "Следующие треки не могут быть добавлены из-за решения автора или представителя"
@@ -317,11 +315,12 @@ export default {
       }}).then(msg => msg.delete({timeout: 30000}))
     }
 
-    if (!await message.client.db.checkPremium(message.guild.id)) {
+    if (!await client.db.checkPremium(guild.id)) {
       if (player)
         if (player.queue.totalSize >= 200) {
           player.queue.remove(199, player.queue.totalSize - 1)
-          return message.reply("в очереди было больше 200 треков, поэтому лишние треки были удалены. Хотите больше треков? Приобретите Премиум, подробности: `donate`.")
+          return send({embed: generateErrorMessage(`В очереди было больше 200 треков, поэтому лишние треки были удалены. ` +
+          `Хотите больше треков? Приобретите Премиум, подробности: \`${client.db.getPrefix(guild.id)}donate\`.`, 'warning')})
         }
           
     }
