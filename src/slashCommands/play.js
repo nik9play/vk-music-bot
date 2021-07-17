@@ -116,7 +116,7 @@ export default {
 
         return respond({embed: embed})
       } else if (req.type === "empty") {
-        return respond(generateErrorMessage('Не удалось ничего найти по запросу.'))
+        return respond(generateErrorMessage('Не удалось ничего найти по запросу или плейлиста не существует.'))
       } else if (req.type === "api") {
         return respond(generateErrorMessage('Неверный формат ссылки или запроса.'))
       } else if (req.type === "request") {
@@ -165,7 +165,7 @@ export default {
       switch (res.loadType) {
         case 'NO_MATCHES':
           if (!player.queue.current) player.destroy()
-          return respond('ошибка.')
+          return respond(generateErrorMessage('Неизвестная ошибка'))
         case 'TRACK_LOADED':
           res.tracks[0].title = req.title
           res.tracks[0].author = req.author
