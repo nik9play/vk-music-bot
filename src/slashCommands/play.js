@@ -114,7 +114,7 @@ export default {
           }
         }
 
-        return respond({embed: embed})
+        return respond(embed)
       } else if (req.type === "empty") {
         return respond(generateErrorMessage('Не удалось ничего найти по запросу или плейлиста не существует.'))
       } else if (req.type === "api") {
