@@ -1,5 +1,5 @@
 import play from './play'
-// import search from './search'
+import search from './search'
 
 import generateErrorMessage from '../tools/generateErrorMessage'
 
@@ -14,7 +14,7 @@ export default {
       if (captcha.type == 'search') {
         captcha.captcha_key = args[0]
 
-        // search.execute({ guild, voice, text, client, args: captcha.args, captcha, respond, send })
+        search.execute({ guild, voice, text, client, args: captcha.args, captcha, respond, send })
       } else {
         captcha.captcha_key = args[0]
 
