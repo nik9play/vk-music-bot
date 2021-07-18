@@ -363,7 +363,8 @@ export default class VK {
             title: e.title,
             url: convertMP3(e.url),
             duration: e.duration,
-            thumb
+            thumb,
+            id: e.owner_id + "_" + e.id
           }
         })
       }
