@@ -4,6 +4,9 @@
   "main": "index.js",
   "author": "nik9",
   "license": "MIT",
+  "engines": {
+    "node": ">=16.6.0"
+  },
   "scripts": {
     "start": "node shardStart.js",
     "build": "rollup -c",
