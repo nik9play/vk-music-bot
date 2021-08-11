@@ -4,7 +4,7 @@ import search from './search'
 import generateErrorMessage from '../tools/generateErrorMessage'
 
 export default {
-  name: "captcha",
+  name: 'captcha',
   djOnly: true,
   cooldown: 5,
   execute: async ({ guild, voice, text, client, args, respond, send }) => {
@@ -23,7 +23,7 @@ export default {
 
       client.captcha.delete(guild.id)
     } else {
-      respond(generateErrorMessage('В данный момент капчу вводит не надо.', 'info'))
+      respond({ embeds: [generateErrorMessage('В данный момент капчу вводит не надо.', 'info')], ephemeral: true })
     }
   }
 }

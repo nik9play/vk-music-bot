@@ -10,7 +10,7 @@ export default class {
     this.commandFiles = readdirSync('./src/slashCommands').filter(file => file.endsWith('.js'))
 
     for (const file of this.commandFiles) {
-      import(`./slashCommands/${file.replace('.js', '')}.js`).then(command => {
+      import(`../slashCommands/${file.replace('.js', '')}.js`).then(command => {
         this.client.commands.set(command.default.name, command.default)
         if (command.default.aliases) {
           command.default.aliases.forEach((e) => {
@@ -34,9 +34,7 @@ export default class {
   }
 
   async executeSlash(interaction) {
-    const allowedTypes = [2, 3]
-
-    if (interaction.isCommand()) {
+    if (interaction.isCommand() || interaction.isButton()) {
       const guild = interaction.guild
       const user = interaction.member.user
       const text = interaction.channel
@@ -44,7 +42,8 @@ export default class {
       const command = this.client.commands.get(interaction.commandName)
 
       const respond = (data, timeout) => {
-        interaction.reply(data).catch(err => console.error('Can\'t send reply: ', err))
+        console.log(data)
+        interaction.reply(data).catch(err => console.error('Can\'t send reply:', err))
         
         if (timeout)
           setTimeout(() => {
@@ -53,83 +52,23 @@ export default class {
       }
 
       const send = data => {
-        return text.send(data).catch(err => console.error('Can\'t send message: ', err))
+        return text.send(data).catch(err => console.error('Can\'t send message:', err))
       }
 
-      if (command.premium && !await this.client.db.checkPremium(guild.id)) {
-        respond({ embed:generateErrorMessage('Для выполнения этой команды требуется **Премиум**! Подробности: /donate.'), ephemeral: true })
-        return
-      }
-
-      const args = interaction?.options.data.map(el => {
-        return el?.value
-      }) ?? []
-
-      command.execute({ 
-        guild,
-        user,
-        voice: user?.voice.channel,
-        text,
-        client: this.client,
-        args,
-        respond,
-        send
-      })
-    }
-
-    
-
-    if (allowedTypes.includes(interaction.type)) {
-      const guild = await this.client.guilds.fetch(interaction.guild_id)
-      const user = guild.members.cache.get(interaction.member.user.id)
-      const text = guild.channels.cache.get(interaction.channel_id)
-
-      const command = this.client.commands.get(interaction.data.name)
-
-      const respond = (content, type='embed', components, timeout) => {
-        let data
-        if (type === 'embed') {
-          data = {
-            embeds: [content]
-          }
-        } else if (type === 'text') {
-          data = {
-            content
-          }
-        }
-        
-        data = { ...data, components }
-
-        this.client.api.interactions(interaction.id, interaction.token).callback.post({data: {
-          type: 4,
-          data
-        }})
-        
-        if (timeout)
-          setTimeout(() => {
-            axios.delete(`https://discordapp.com/api/webhooks/${this.client.user.id}/${interaction.token}/messages/@original`)
-              .catch(err => console.error('Cant delete response message', err))
-          }, timeout)
-      }
-
-      const send = data => {
-        return text.send(data).catch(err => console.error('Cant send message', err))
-      }
-
-      if (interaction.type === 2) {
+      if (interaction.isCommand()) {
         if (command.premium && !await this.client.db.checkPremium(guild.id)) {
-          respond(generateErrorMessage('Для выполнения этой команды требуется **Премиум**! Подробности: /donate.'))
+          respond({ embeds: [generateErrorMessage('Для выполнения этой команды требуется **Премиум**! Подробности: /donate.')], ephemeral: true })
           return
         }
   
-        const args = interaction.data.options?.map(el => {
-          return el.value
+        const args = interaction?.options.data.map(el => {
+          return el?.value
         }) ?? []
   
         command.execute({ 
           guild,
           user,
-          voice: user?.voice.channel,
+          voice: user?.voice?.channel,
           text,
           client: this.client,
           args,
@@ -138,23 +77,24 @@ export default class {
         })
       }
 
-      if (interaction.type === 3) {
-        // обработка кнопки с поиска
-        if (interaction.data.custom_id.startsWith('search')) {
+      if (interaction.isButton()) {
+        if (interaction.customId.startsWith('search')) {
           const id = interaction.data.custom_id.split(',')[1]
-  
-          const commandPlay = this.client.commands.get('play')
+          
+          if (id) {
+            const commandPlay = this.client.commands.get('play')
 
-          commandPlay.execute({ 
-            guild,
-            user,
-            voice: user?.voice.channel,
-            text,
-            client: this.client,
-            args: [id],
-            respond,
-            send
-          })
+            commandPlay.execute({ 
+              guild,
+              user,
+              voice: user?.voice?.channel,
+              text,
+              client: this.client,
+              args: [id],
+              respond,
+              send
+            })
+          }
         }
       }
     }
