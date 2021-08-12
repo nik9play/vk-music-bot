@@ -154,18 +154,19 @@ export default {
 
       try {
         res = await player.search(req.url)
+
         if (res.loadType === 'LOAD_FAILED') {
           if (!player.queue.current) player.destroy()
           throw res.exception
         }
       } catch (err) {
-        return respond({embed: generateErrorMessage(err.message), ephemeral: true })
+        return respond({embeds: [generateErrorMessage(err.message)], ephemeral: true })
       }
 
       switch (res.loadType) {
         case 'NO_MATCHES':
           if (!player.queue.current) player.destroy()
-          return respond({ embed: generateErrorMessage('Неизвестная ошибка.'), ephemeral: true })
+          return respond({ embeds: [generateErrorMessage('Неизвестная ошибка.')], ephemeral: true })
         case 'TRACK_LOADED':
           res.tracks[0].title = req.title
           res.tracks[0].author = req.author
@@ -312,7 +313,7 @@ export default {
           name: 'Следующие треки не могут быть добавлены из-за решения автора или представителя'
         },
         description: desc
-      }]}).then(msg => msg.delete({ timeout: 30000 }))
+      }]}, 30000)
     }
 
     if (!await client.db.checkPremium(guild.id)) {
