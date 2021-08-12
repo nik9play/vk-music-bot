@@ -1,30 +1,30 @@
 import parsePlaylistURL from './parsePlaylistURL'
 
 export default function(arg) {
-  if (arg.startsWith(">-")) {
+  if (arg.startsWith('>-')) {
     return {
-      type: "group",
+      type: 'group',
       id: arg.slice(1)
     }
-  } else if (arg.startsWith(">")) {
+  } else if (arg.startsWith('>')) {
     return {
-      type: "user",
+      type: 'user',
       id: arg.slice(1)
     }
   } else {
     try {
       const url = new URL(arg)
 
-      if (!url.searchParams.has("z")) {
-        if (url.pathname.startsWith("/audios-") && !url.searchParams.has("z"))
+      if (!url.searchParams.has('z')) {
+        if (url.pathname.startsWith('/audios-') && !url.searchParams.has('z'))
         return {
-          type: "group",
+          type: 'group',
           id: url.pathname.slice(7)
         }
 
-      if (url.pathname.startsWith("/audios") && !url.searchParams.has("z"))
+      if (url.pathname.startsWith('/audios') && !url.searchParams.has('z'))
         return {
-          type: "user",
+          type: 'user',
           id: url.pathname.slice(7)
         }
       }
@@ -39,12 +39,12 @@ export default function(arg) {
       const parsedURL = parsePlaylistURL(url)
 
       return {
-        type: "playlist",
+        type: 'playlist',
         parsedURL
       }
     } catch {
       return {
-        type: "track"
+        type: 'track'
       }
     }
   }
