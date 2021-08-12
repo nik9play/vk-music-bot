@@ -1,15 +1,15 @@
 import generateErrorMessage from './generateErrorMessage'
-import axios from 'axios'
 import colors from 'colors/safe'
 import { readdirSync } from 'fs'
+import { Permissions } from 'discord.js'
 
 export default class {
   constructor(client) {
     this.client = client
 
-    this.commandFiles = readdirSync('./src/slashCommands').filter(file => file.endsWith('.js'))
+    const commandFiles = readdirSync('./src/slashCommands').filter(file => file.endsWith('.js'))
 
-    for (const file of this.commandFiles) {
+    for (const file of commandFiles) {
       import(`../slashCommands/${file.replace('.js', '')}.js`).then(command => {
         this.client.commands.set(command.default.name, command.default)
         if (command.default.aliases) {
@@ -20,26 +20,42 @@ export default class {
       })
     }
 
+    const slashOverwrites = readdirSync('./src/slashOverwrites').filter(file => file.endsWith('.js'))
+
+    for (const file of slashOverwrites) {
+      import(`../slashOverwrites/${file.replace('.js', '')}.js`).then(command => {
+        this.client.slashOverwrites.set(command.default.name, command.default)
+      })
+    }
+
     // слэш команды и кнопки
     this.client.on('interactionCreate', async interaction => {
-      console.log(interaction.token)
+      console.log(interaction.options.data)
       
       this.executeSlash(interaction)
     })
 
     // обычные команды с префиксом
     this.client.on('messageCreate', async message => {
-      // this.executePrefix(message)
+      //console.log(message)
+      this.executePrefix(message)
     })
   }
 
   async executeSlash(interaction) {
+    
     if (interaction.isCommand() || interaction.isButton()) {
       const guild = interaction.guild
       const user = interaction.member.user
+      const member = interaction.member
       const text = interaction.channel
-
-      const command = this.client.commands.get(interaction.commandName)
+      
+      let command
+      if (this.client.slashOverwrites.has(interaction.commandName)) {
+        command = this.client.slashOverwrites.get(interaction.commandName)
+      } else {
+        command = this.client.commands.get(interaction.commandName)
+      }
 
       const respond = (data, timeout) => {
         console.log(data)
@@ -51,8 +67,13 @@ export default class {
           }, timeout)
       }
 
-      const send = data => {
-        return text.send(data).catch(err => console.error('Can\'t send message:', err))
+      const send = async (data, timeout) => {
+        const message = await text.send(data).catch(err => console.error('Can\'t send message:', err))
+
+        if (timeout)
+          setTimeout(() => {
+            message.delete().catch(err => console.error('Can\'t delete message:', err))
+          }, timeout)
       }
 
       if (interaction.isCommand()) {
@@ -63,15 +84,16 @@ export default class {
   
         const args = interaction?.options.data.map(el => {
           return el?.value
-        }) ?? []
-  
+        }) ?? []  
+        
         command.execute({ 
           guild,
           user,
-          voice: user?.voice?.channel,
+          voice: member?.voice?.channel,
           text,
           client: this.client,
           args,
+          interaction,
           respond,
           send
         })
@@ -79,15 +101,15 @@ export default class {
 
       if (interaction.isButton()) {
         if (interaction.customId.startsWith('search')) {
-          const id = interaction.data.custom_id.split(',')[1]
-          
+          const id = interaction.customId.split(',')[1]
+
           if (id) {
             const commandPlay = this.client.commands.get('play')
 
             commandPlay.execute({ 
               guild,
               user,
-              voice: user?.voice?.channel,
+              voice: member?.voice?.channel,
               text,
               client: this.client,
               args: [id],
@@ -101,10 +123,10 @@ export default class {
   }
 
   async executePrefix(message) {
-    if (message.channel.type != 'text' || message.author.bot || !this.client.db.isConnected) return
-    if (!message.channel.permissionsFor(message.client.user).has('SEND_MESSAGES')) return
+    if (message.channel.type != 'GUILD_TEXT' || message.author.bot || !this.client.db.isConnected) return
+    if (!message.channel.permissionsFor(message.client.user).has(Permissions.FLAGS.SEND_MESSAGES)) return
   
-    let prefix = await this.client.db.getPrefix(message.guild.id)
+    const prefix = await this.client.db.getPrefix(message.guild.id)
   
     if (message.mentions.users.has(this.client.user.id)) {
       return message.channel.send({
@@ -122,42 +144,25 @@ export default class {
     const command = args.shift().toLowerCase()
     
     if (this.client.commands.has(command)) {
-      console.log(`${colors.green(message.guild.shardID)}/${colors.red(message.guild.id)} выполнил ${colors.yellow.bold(command)} с аргументами ${colors.bold(args)}`)
+      console.log(`${colors.green(message.guild.shardId)}/${colors.red(message.guild.id)} выполнил ${colors.yellow.bold(command)} с аргументами ${colors.bold(args)}`)
       
       const { guild, member, channel } = message
       
-      const respond = async (content, type='embed', components, timeout) => {
-        let data
-        if (type === 'embed') {
-          data = {
-            embeds: [content]
-          }
-        } else if (type === 'text') {
-          data = {
-            content
-          }
-        }
-        
-        data = { ...data, components }
+      const respond = async (data, timeout) => {
+        const message = await channel.send(data).catch(err => console.error('Can\'t send message:', err))
 
-        const messsage = await this.client.api.channels[channel.id].messages.post({ data })
-        
         if (timeout)
           setTimeout(() => {
-            // axios.delete(`https://discordapp.com/api/webhooks/${this.client.user.id}/${interaction.token}/messages/@original`)
-            //   .catch(err => console.error('Cant delete response message', err))
-            this.client.api.channels[channel.id].messages[messsage.id].delete().catch(console.error)
+            message.delete().catch(err => console.error('Can\'t delete message:', err))
           }, timeout)
       }
 
-      const send = data => {
-        return channel.send(data).catch(err => console.error('Cant send message', err))
-      }
+      const send = respond
 
       this.client.commands.get(command).execute({ 
         guild,
-        user: member,
-        voice: member?.voice.channel,
+        user: member.user,
+        voice: member?.voice?.channel,
         text: channel,
         client: this.client,
         args,
