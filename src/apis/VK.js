@@ -3,9 +3,9 @@ import convertMP3 from '../tools/convertMP3'
 
 export default class VK {
   constructor (accessToken = process.env.VK_TOKEN,
-              version = "5.116",
+              version = '5.116',
               //userAgent = "VKAndroidApp/5.52-4543 (Android 5.1.1; SDK 22; x86_64; unknown Android SDK built for x86_64; en; 320x240)"
-              userAgent = "KateMobileAndroid/56 lite-460 (Android 4.4.2; SDK 19; x86; unknown Android SDK built for x86; en)"
+              userAgent = 'KateMobileAndroid/56 lite-460 (Android 4.4.2; SDK 19; x86; unknown Android SDK built for x86; en)'
               )
   {
     this.accessToken = accessToken
@@ -15,8 +15,8 @@ export default class VK {
 
   async sendRequest(path, opts) {
     let urlParams = new URLSearchParams()
-    urlParams.append("v", this.version)
-    urlParams.append("access_token", this.accessToken)
+    urlParams.append('v', this.version)
+    urlParams.append('access_token', this.accessToken)
 
     for (const [key, value] of Object.entries(opts)) {
       urlParams.append(key, value)
@@ -25,7 +25,7 @@ export default class VK {
     try {
       const res = await axios.get(`https://api.vk.com/method/${path}`, {
         headers: {
-          "User-Agent": this.userAgent
+          'User-Agent': this.userAgent
         },
         params: urlParams
       })
@@ -33,41 +33,41 @@ export default class VK {
       if (res.data.error) {
         if (res.data.error.error_code == 14) {
           return {
-            status: "error",
-            type: "captcha",
+            status: 'error',
+            type: 'captcha',
             data: res.data.error
           }
         }
 
         return {
-          status: "error",
-          type: "api"
+          status: 'error',
+          type: 'api'
         }
       } else if (res.data.execute_errors)
         if (res.data.execute_errors[0].error_code === 201)
           return {
-            status: "error",
-            type: "access_denied"
+            status: 'error',
+            type: 'access_denied'
           }
         else if (res.data.execute_errors[0].error_code === 104)
           return {
-            status: "error",
-            type: "empty"
+            status: 'error',
+            type: 'empty'
           }
         else
           return {
-            status: "error",
-            type: "api"
+            status: 'error',
+            type: 'api'
           }
 
       return {
-        status: "success",
+        status: 'success',
         data: res.data
       }
     } catch {
       return {
-        status: "error",
-        type: "request"
+        status: 'error',
+        type: 'request'
       }
     }
   }
@@ -81,9 +81,9 @@ export default class VK {
     }
 
     opts = {...captchaQuery, audios: opts.q}
-    const res = await this.sendRequest("audio.getById", opts)
+    const res = await this.sendRequest('audio.getById', opts)
 
-    if (res.status === "error") {
+    if (res.status === 'error') {
       return res
     } else {
       let thumb = null
@@ -93,7 +93,7 @@ export default class VK {
           thumb = res.data.response[0].album.thumb.photo_300
 
       return {
-        status: "success",
+        status: 'success',
         author: res.data.response[0].artist,
         title: res.data.response[0].title,
         url: convertMP3(res.data.response[0].url),
@@ -115,14 +115,14 @@ export default class VK {
 
     opts.count = 1
 
-    const res = await this.sendRequest("audio.search", opts)
+    const res = await this.sendRequest('audio.search', opts)
 
-    if (res.status === "error") {
+    if (res.status === 'error') {
       return res
     } else if (res.data.response.items.length === 0) {
       return {
-        status: "error",
-        type: "empty"
+        status: 'error',
+        type: 'empty'
       }
     } else {
       let thumb = null
@@ -132,7 +132,7 @@ export default class VK {
           thumb = res.data.response.items[0].album.thumb.photo_300
 
       return {
-        status: "success",
+        status: 'success',
         author: res.data.response.items[0].artist,
         title: res.data.response.items[0].title,
         url: convertMP3(res.data.response.items[0].url),
@@ -151,15 +151,15 @@ export default class VK {
     const code = `var playlistInfoAPI = API.audio.getPlaylistById({
       owner_id: ${opts.owner_id},
       playlist_id: ${opts.album_id},
-      ${opts.access_key ? `access_key: '${opts.access_key}',` : ""}
+      ${opts.access_key ? `access_key: '${opts.access_key}',` : ''}
     });
     
     var playlistListAPI = API.audio.get({
       owner_id: ${opts.owner_id},
       playlist_id: ${opts.album_id},
-      ${opts.access_key ? `access_key: '${opts.access_key}',` : ""}
-      ${opts.offset ? `offset: ${opts.offset},` : ""}
-      ${opts.count ? `count: ${opts.count},` : ""}
+      ${opts.access_key ? `access_key: '${opts.access_key}',` : ''}
+      ${opts.offset ? `offset: ${opts.offset},` : ''}
+      ${opts.count ? `count: ${opts.count},` : ''}
     });
     
     var data = {
@@ -175,8 +175,8 @@ export default class VK {
       captchaQuery.captcha_key = opts.captcha_key
     }
 
-    const res = await this.sendRequest("execute", {...captchaQuery, code })
-    if (res.status === "error") {
+    const res = await this.sendRequest('execute', {...captchaQuery, code })
+    if (res.status === 'error') {
       return res
     } else {
       const info = res.data.response.info
@@ -184,8 +184,8 @@ export default class VK {
 
       if (list.items.length == 0) {
         return {
-          status: "error",
-          type: "empty"
+          status: 'error',
+          type: 'empty'
         }
       }
 
@@ -213,7 +213,7 @@ export default class VK {
       }
 
       return {
-        status: "success",
+        status: 'success',
         info: {
           title: info.title,
           description: info.description,
@@ -231,9 +231,9 @@ export default class VK {
    * @returns {Object[]} Массив треков
    */
   async GetUser(opts) {
-    let code = ""
+    let code = ''
 
-    if (opts.owner_id.startsWith("-")) {
+    if (opts.owner_id.startsWith('-')) {
       code = `var groupInfoAPI = API.groups.getById({
         group_ids: "${opts.owner_id.slice(1)}",
         fields: "description"
@@ -276,23 +276,23 @@ export default class VK {
       captchaQuery.captcha_key = opts.captcha_key
     }
 
-    const res = await this.sendRequest("execute", {...captchaQuery, code })
+    const res = await this.sendRequest('execute', {...captchaQuery, code })
 
-    if (res.status === "error") {
+    if (res.status === 'error') {
       return res
     } else {
       let info = res.data.response.info
 
-      if (opts.owner_id.startsWith("-")) {
+      if (opts.owner_id.startsWith('-')) {
         info = {
-          type: "group",
+          type: 'group',
           name: info.name,
           description: info.description,
           img: info.photo_200
         }
       } else {
         info = {
-          type: "user",
+          type: 'user',
           name: `${info.first_name} ${info.last_name}`,
           img: info.photo_200
         }
@@ -302,8 +302,8 @@ export default class VK {
 
       if (list.items.length == 0) {
         return {
-          status: "error",
-          type: "empty"
+          status: 'error',
+          type: 'empty'
         }
       }
 
@@ -324,7 +324,7 @@ export default class VK {
       })
 
       return {
-        status: "success",
+        status: 'success',
         info,
         newArray
       }
@@ -339,18 +339,18 @@ export default class VK {
   async GetMany(opts) {
     opts.count = 5
 
-    const res = await this.sendRequest("audio.search", opts)
+    const res = await this.sendRequest('audio.search', opts)
 
-    if (res.status === "error") {
+    if (res.status === 'error') {
       return res
     } else if (res.data.response.items.length === 0) {
       return {
-        status: "error",
-        type: "empty"
+        status: 'error',
+        type: 'empty'
       }
     } else {
       return {
-        status: "success",
+        status: 'success',
         tracks: res.data.response.items.map((e) => {
           let thumb = null
 
@@ -364,7 +364,7 @@ export default class VK {
             url: convertMP3(e.url),
             duration: e.duration,
             thumb,
-            id: e.owner_id + "_" + e.id
+            id: e.owner_id + '_' + e.id
           }
         })
       }
@@ -372,19 +372,19 @@ export default class VK {
   }
 
   async GetWall(opts) {
-    const res = await this.sendRequest("wall.getById", opts)
+    const res = await this.sendRequest('wall.getById', opts)
 
-    if (res.status === "error") {
+    if (res.status === 'error') {
       return res
     } else if (res.data.response.items.length === 0 || !res.data.response.items[0].attachments) {
       return {
-        status: "error",
-        type: "empty"
+        status: 'error',
+        type: 'empty'
       }
     } else {
       const attachments = res.data.response.items[0].attachments
       return {
-        status: "success",
+        status: 'success',
         tracks: attachments.map()
       }
     }
