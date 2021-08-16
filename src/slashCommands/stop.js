@@ -15,6 +15,6 @@ export default {
     player.queue.clear()
     player.stop()
   
-    respond({ embeds: [{ description: '⏹️ Воспроизведение остановлено и очередь очищена.', color: 0x5181b8 }] }) 
+    respond({embeds: [generateErrorMessage('⏹️ Воспроизведение остановлено и очередь очищена.', 'notitle')]}) 
   }
 }
