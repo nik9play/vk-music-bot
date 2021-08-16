@@ -1,12 +1,19 @@
-import { Client, Collection, Intents } from 'discord.js'
+import { Client, Collection, Intents, Options } from 'discord.js'
 import { Manager } from 'erela.js-vk'
 
 import db from './tools/db/DBManager'
 import SlashCommandManager from './tools/SlashCommandManager'
 
 const client = new Client({
-  messageCacheLifetime: 60,
-  messageSweepInterval: 10,
+  makeCache: Options.cacheWithLimits({
+		MessageManager: {
+      sweepInterval: 30,
+      maxSize: 100
+    }, // This is default
+		PresenceManager: 0,
+    ThreadManager: 0
+		// Add more class names here
+	}),
   intents: [ Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_VOICE_STATES, Intents.FLAGS.GUILD_MESSAGES ]
 })
 
@@ -14,6 +21,7 @@ new SlashCommandManager(client)
 
 client.cooldowns = new Collection()
 client.commands = new Collection()
+client.slashOverwrites = new Collection() 
 client.captcha = new Collection()
 // client.prefixes = new Collection()
 client.timers = new Collection()
@@ -137,12 +145,12 @@ client.manager = new Manager({
     console.log(`${guildId} track stuck`)
   })
   .on('trackError', (player, track) => {
-    const channel = client.channels.cache.get(player.textChannel)
-    channel.send({embed: {
-      description: `С треком **${track.author} — ${track.title}** произошла проблема, поэтому он был пропущен.`,
-      color: 0x5181b8
-    }}).then(msg => msg.delete({timeout: 30000}).catch(console.error)).catch(console.error)
-    console.log(track)
+    // const channel = client.channels.cache.get(player.textChannel)
+    // channel.send({embed: {
+    //   description: `С треком **${track.author} — ${track.title}** произошла проблема, поэтому он был пропущен.`,
+    //   color: 0x5181b8
+    // }}).then(msg => msg.delete({timeout: 30000}).catch(console.error)).catch(console.error)
+    console.log('Track error:', player, track)
   })
 
 
