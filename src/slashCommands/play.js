@@ -193,12 +193,12 @@ export default {
         fields: [
           {
             name: 'Добавлено треков',
-            value: newArray.length,
+            value: newArray.length.toString(),
             inline: true
           },
           {
             name: 'Всего треков',
-            value: req.info.count,
+            value: req.info.count.toString(),
             inline: true
           }
         ],
@@ -238,7 +238,7 @@ export default {
         fields: [
           {
             name: 'Добавлено треков',
-            value: newArray.length,
+            value: newArray.length.toString(),
             inline: true
           }
         ],
@@ -246,6 +246,8 @@ export default {
           text: 'Чтобы добавить больше 10 треков, введите количество треков после ссылки.'
         }
       }
+
+      console.log(playlistEmbed)
 
       for await (const e of newArray) {
         if (!e.url) {
@@ -278,7 +280,7 @@ export default {
         fields: [
           {
             name: 'Добавлено треков',
-            value: newArray.length,
+            value: newArray.length.toString(),
             inline: true
           }
         ],
