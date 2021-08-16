@@ -96,7 +96,7 @@ export default class {
           interaction,
           respond,
           send
-        })
+        }).catch(err => console.error('Error executing command:', err))
       }
 
       if (interaction.isButton()) {
@@ -115,7 +115,7 @@ export default class {
               args: [id],
               respond,
               send
-            })
+            }).catch(err => console.error('Error executing command:', err))
           }
         }
       }
@@ -168,7 +168,7 @@ export default class {
         args,
         respond,
         send
-      })
+      }).catch(err => console.error('Error executing command:', err))
     }
   }
 
