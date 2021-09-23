@@ -9,10 +9,9 @@ const client = new Client({
 		MessageManager: {
       sweepInterval: 30,
       maxSize: 100
-    }, // This is default
+    },
 		PresenceManager: 0,
     ThreadManager: 0
-		// Add more class names here
 	}),
   intents: [ Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_VOICE_STATES, Intents.FLAGS.GUILD_MESSAGES ]
 })
@@ -23,7 +22,6 @@ client.cooldowns = new Collection()
 client.commands = new Collection()
 client.slashOverwrites = new Collection() 
 client.captcha = new Collection()
-// client.prefixes = new Collection()
 client.timers = new Collection()
 
 const LavalinkServersString = process.env.LAVALINK_NODES
@@ -36,19 +34,6 @@ const nodes = LavalinkServersString.split(';').map(val => {
     password: arr[3]
   }
 })
-
-// const commandFiles = readdirSync('./src/slashCommands').filter(file => file.endsWith('.js'))
-
-// for (const file of commandFiles) {
-//   import(`./slashCommands/${file.replace('.js', '')}.js`).then(command => {
-//     client.commands.set(command.default.name, command.default)
-//     if (command.default.aliases) {
-//       command.default.aliases.forEach((e) => {
-//         client.commands.set(e, command.default)
-//       })
-//     }
-//   })
-// }
 
 client.manager = new Manager({
   nodes,
@@ -64,10 +49,15 @@ client.manager = new Manager({
   .on('trackStart', async (player, track) => {
     if (!await client.db.getDisableAnnouncements(player.guild)) {
       const channel = client.channels.cache.get(player.textChannel)
-      channel.send({embed: {
+
+      const message = await channel.send({embeds: [{
         description: `Сейчас играет **${track.author} — ${track.title}**.`,
         color: 0x5181b8
-      }}).then(msg => { if (msg.deletable) msg.delete({timeout: track.duration}).catch(console.error) }).catch(console.error)
+      }]}).catch(err => console.error('Can\'t send message:', err))
+
+      setTimeout(() => {
+        message.delete().catch(err => console.error('Can\'t delete message:', err))
+      }, track.duration)
     }
   })
   // .on("trackEnd", async (player) => {
