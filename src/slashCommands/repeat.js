@@ -11,20 +11,20 @@ export default {
     if (!voice) return respond({ embeds: [generateErrorMessage('Необходимо находиться в голосовом канале.')], ephemeral: true })
 
     if (args.length) {
-      if (args[0] === 'queue') {
+      if (args[0] === 'очередь') {
         player.setQueueRepeat(true)
-        respond({ embeds: [generateErrorMessage('Включен повтор очереди.', 'notitle')] })
+        respond({ embeds: [generateErrorMessage('🔁 Включен повтор очереди.', 'notitle')] })
         return
       }
-      if (args[0] === 'track') {
+      if (args[0] === 'трек') {
         player.setTrackRepeat(true)
-        respond({ embeds: [generateErrorMessage('Включен повтор очереди.', 'notitle')] })
+        respond({ embeds: [generateErrorMessage('🔁 Включен повтор очереди.', 'notitle')] })
         return
       }
-      if (args[0] === 'off') {
+      if (args[0] === 'выкл') {
         player.setQueueRepeat(false)
         player.setTrackRepeat(false)
-        respond({ embeds: [generateErrorMessage('Повтор выключен.', 'notitle')] })
+        respond({ embeds: [generateErrorMessage('🔁 Повтор выключен.', 'notitle')] })
         return
       }
     }
@@ -34,8 +34,8 @@ export default {
     else if (player.queueRepeat) msg = 'Повтор очереди'
 
     if (msg)
-      respond({ embeds: [generateErrorMessage(`${msg} сейчас включен. Доступные режимы: \`queue\`, \`track\`, \`off\``, 'notitle')]})
+      respond({ embeds: [generateErrorMessage(`🔁 ${msg} сейчас включен. Доступные режимы: \`очередь\`, \`трек\`, \`выкл\``, 'notitle')]})
     else
-      respond({ embeds: [generateErrorMessage('Повтор сейчас выключен. Доступные режимы: `queue`, `track`, `off`', 'notitle')]})
+      respond({ embeds: [generateErrorMessage('🔁 Повтор сейчас выключен. Доступные режимы: `очередь`, `трек`, `выкл`', 'notitle')]})
   }
 }
