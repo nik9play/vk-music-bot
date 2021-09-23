@@ -107,7 +107,7 @@ export default {
 
         const captcha = client.captcha.get(guild.id)
         const embed = {
-          description: `Ошибка! Требуется капча. Введите команду \`${client.db.getPrefix(guild.id)}captcha\`, а после код с картинки.`,
+          description: `Ошибка! Требуется капча. Введите команду \`${await client.db.getPrefix(guild.id)}captcha\`, а после код с картинки.`,
           color: 0x5181b8,
           image: {
             url: captcha.url
