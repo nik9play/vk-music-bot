@@ -87,15 +87,15 @@
         "choices": [
           {
             "name": "выкл",
-            "value": "off"
+            "value": "выкл"
           },
           {
             "name": "трек",
-            "value": "track"
+            "value": "трек"
           },
           {
             "name": "очередь",
-            "value": "queue"
+            "value": "очередь"
           }
         ]
       }
@@ -153,19 +153,19 @@
         "choices": [
           {
             "name": "выкл",
-            "value": "none"
+            "value": "выкл"
           },
           {
             "name": "слабый",
-            "value": "low"
+            "value": "слабый"
           },
           {
             "name": "средний",
-            "value": "medium"
+            "value": "средний"
           },
           {
             "name": "мощный",
-            "value": "high"
+            "value": "мощный"
           }
         ]
       }
