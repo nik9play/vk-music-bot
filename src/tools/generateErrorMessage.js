@@ -22,7 +22,7 @@ export default function(message, type='error') {
   
   const embed = {
     // title: `<:no2:835498572916195368> ${title}`,
-    description: `${title}${message}`,
+    description: `${title}\n${message}`,
     color
   }
 
