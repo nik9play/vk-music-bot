@@ -22,8 +22,9 @@ export default {
       client.db.setAccessRole(role.role.name, guild.id).then(() => respond({embeds: [generateErrorMessage('DJ роль установлена.', 'notitle')]}))
     } else if (type === 'announcements') {
       const enable = interaction.options.get('включены')
+      console.log(!enable.value)
 
-      client.db.setDisableAnnouncements(!enable.value, guild.id).then(() => respond({embeds: [generateErrorMessage('Оповещения ' + (!enable.value ? 'включены.' : 'выключены.'), 'notitle')]}))
+      client.db.setDisableAnnouncements(!enable.value, guild.id).then(() => respond({embeds: [generateErrorMessage('Оповещения ' + (enable.value ? 'включены.' : 'выключены.'), 'notitle')]}))
     } else if (type === 'show') {
       const embed = {
         title: '⚙ Настройки',
