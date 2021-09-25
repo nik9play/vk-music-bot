@@ -77,11 +77,20 @@ export default class {
       }
 
       if (interaction.isCommand()) {
+        if (await this.client.db.getAccessRoleEnabled(guild.id)) {
+          const djRole = await this.client.db.getAccessRole(guild.id)
+    
+          if (!member.permissions.has(Permissions.FLAGS.MANAGE_GUILD) && !member.roles.cache.some(role => role.name === djRole)) {
+            respond({ embeds: [generateErrorMessage(`Сейчас включен DJ режим, и вы не можете выполнять команды, так как у вас нет роли \`${djRole}\`.`)], ephemeral: true })
+            return
+          }
+        }
+        
         if (command.premium && !await this.client.db.checkPremium(guild.id)) {
           respond({ embeds: [generateErrorMessage('Для выполнения этой команды требуется **Премиум**! Подробности: /donate.')], ephemeral: true })
           return
         }
-  
+
         const args = interaction?.options.data.map(el => {
           return el?.value
         }) ?? []  
