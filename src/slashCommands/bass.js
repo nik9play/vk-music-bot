@@ -20,7 +20,7 @@ export default {
     let level = null
     if (args.length && args[0].toLowerCase() in levels) level = args[0].toLowerCase()
 
-    if (level && levels[level] !== undefined) {
+    if (level && level in levels) {
       const bands = new Array(3)
       .fill(null)
       .map((_, i) =>
