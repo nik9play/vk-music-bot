@@ -53,18 +53,18 @@ export default {
           return respond({embeds: [generateErrorMessage('Используйте `on`/`off`.')]})
 
         if (args[1] === 'on')
-          client.db.setAccessRoleEnabled(true, guild.id).then(() => respond({embeds: [generateErrorMessage('<:yes2:835498559805063169> DJ режим включён.', 'notitle')]}))
+          client.db.setAccessRoleEnabled(true, guild.id).then(() => respond({embeds: [generateErrorMessage('DJ режим включён.', 'notitle')]}))
         else if (args[1] === 'off')
-          client.db.setAccessRoleEnabled(false, guild.id).then(() => respond({embeds: [generateErrorMessage('<:no2:835498572916195368> DJ режим выключён.', 'notitle')]}))
+          client.db.setAccessRoleEnabled(false, guild.id).then(() => respond({embeds: [generateErrorMessage('DJ режим выключён.', 'notitle')]}))
         break
       case 'announcements':
         if (!args[1] || (args[1] !== 'on' && args[1] !== 'off'))
           return respond({embeds: [generateErrorMessage('Используйте `on`/`off`.')]})
 
         if (args[1] === 'on')
-          client.db.setDisableAnnouncements(false, guild.id).then(() => respond({embeds: [generateErrorMessage('<:yes2:835498559805063169> сообщения включены.', 'notitle')]}))
+          client.db.setDisableAnnouncements(false, guild.id).then(() => respond({embeds: [generateErrorMessage('Оповещения включены.', 'notitle')]}))
         else if (args[1] === 'off')
-          client.db.setDisableAnnouncements(true, guild.id).then(() => respond({embeds: [generateErrorMessage('<:yes2:835498559805063169> сообщения выключены.', 'notitle')]}))
+          client.db.setDisableAnnouncements(true, guild.id).then(() => respond({embeds: [generateErrorMessage('Оповещения выключены.', 'notitle')]}))
         break
       }
   }
