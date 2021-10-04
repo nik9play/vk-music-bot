@@ -443,13 +443,13 @@ enquirer@^2.3.5:
   dependencies:
     ansi-colors "^4.1.1"
 
-erela.js-vk@^2.3.3-vk-3:
-  version "2.3.3-vk-3"
-  resolved "https://registry.yarnpkg.com/erela.js-vk/-/erela.js-vk-2.3.3-vk-3.tgz#61811d402ad1f80207d74c289269eac20764ab9e"
-  integrity sha512-C3UkPyllpI3Kpa78KXMFloLOulIQTSa/tdWD8IPWPcLwk3WBYSi2AxXaTYwt+2LsDUHi7QIb+52EfUIiW2atXA==
+erela.js-vk@^2.3.3-vk-5:
+  version "2.3.3-vk-5"
+  resolved "https://registry.yarnpkg.com/erela.js-vk/-/erela.js-vk-2.3.3-vk-5.tgz#f6c047d57a8839a96eb0022c755c8a0d02f89d5b"
+  integrity sha512-N9C+ScH14Cpes9dBc+ZBWZ+klkiFiH9BmNp2RJcGd7LrtRs4PIIrGBXZxMobZV6qogTJxPTjBwUIdqKIC1yscA==
   dependencies:
     "@discordjs/collection" "^0.1.6"
-    petitio "^1.1.0"
+    petitio "^1.3.2"
     ws "^7.3.1"
 
 escape-string-regexp@^1.0.5:
@@ -1057,10 +1057,10 @@ path-type@^4.0.0:
   resolved "https://registry.yarnpkg.com/path-type/-/path-type-4.0.0.tgz#84ed01c0a7ba380afe09d90a8c180dcd9d03043b"
   integrity sha512-gDKb8aZMDeD/tZWs9P6+q0J9Mwkdl6xMV8TjnGP3qJVJ06bdMgkbBlLU8IdfOsIsFz2BW1rNVT3XuNEl8zPAvw==
 
-petitio@^1.1.0:
-  version "1.1.0"
-  resolved "https://registry.yarnpkg.com/petitio/-/petitio-1.1.0.tgz#7996536fc749bd00b8db68f67da7b023f5b4960b"
-  integrity sha512-f/KmNTInqy3LIwqQMmo3Lt93EsYTC8eDvFTS9UaUV2QA9GIFXqgly1FypKuWD3H9QhGJxZWoRYG8EWX/zoWaTg==
+petitio@^1.3.2:
+  version "1.3.2"
+  resolved "https://registry.yarnpkg.com/petitio/-/petitio-1.3.2.tgz#01590497972a2dbfd3bf4e49d1efa4f3b1fdc693"
+  integrity sha512-hbbT+rOvovz39ZneGW+C8B4YsKH20KLXYVDT/IzSUxaY8H7al/TO+vFCm+H5cnYe62gIqF9ak5p8OJktV/I0Ig==
 
 picomatch@^2.2.1, picomatch@^2.2.2, picomatch@^2.2.3:
   version "2.2.3"
