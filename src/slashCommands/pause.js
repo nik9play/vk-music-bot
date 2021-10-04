@@ -1,10 +1,11 @@
 import generateErrorMessage from '../tools/generateErrorMessage'
+import getExitTimeout from '../tools/getExitTimeout'
 
 export default {
   name: 'pause',
   aliases: ['ps', 'resume'],
   djOnly: true,
-  execute: async function({ guild, voice, client, send, respond }) {
+  execute: async function({ guild, voice, client, respond }) {
     const player = client.manager.get(guild.id)
     if (!player) return respond({ embeds: [generateErrorMessage('Сейчас ничего не играет.')], ephemeral: true })
 
@@ -21,13 +22,7 @@ export default {
     }
 
     if (!await client.db.get247(guild.id))
-      client.timers.set(guild.id, setTimeout(() => {
-        send({embeds: [{
-          description: '**Я покинул канал, так как слишком долго был неактивен.**\n Хотите, чтобы я оставался? Включите режим 24/7 (доступен только для Премиум пользователей, подробности: `-vdonate`). ',
-          color: 0x5181b8
-        }]}, 30000)
-        if(player) player.destroy()
-      }, 1200000))
+      client.timers.set(guild.id, getExitTimeout(player, client))
 
     respond({ embeds: [generateErrorMessage('⏸️ Пауза поставлена.', 'notitle')]})
 

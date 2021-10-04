@@ -2,6 +2,7 @@ import { Client, Collection, Intents, Options } from 'discord.js'
 import { Manager } from 'erela.js-vk'
 
 import db from './tools/db/DBManager'
+import getExitTimeout from './tools/getExitTimeout'
 import SlashCommandManager from './tools/SlashCommandManager'
 
 const client = new Client({
@@ -80,16 +81,7 @@ client.manager = new Manager({
     if (!await client.db.get247(player.guild))
       if (player) {
         console.log('set timeout')
-        client.timers.set(player.guild, setTimeout(async () => {
-          if (player) {
-            player.destroy()
-            const channel = client.channels.cache.get(player.textChannel)
-            channel.send({embed: {
-              description: `**Я покинул канал, так как слишком долго был неактивен.**\n Хотите, чтобы я оставался? Включите режим 24/7 (доступен только для Премиум пользователей, подробности: \`${await client.db.getPrefix(player.guild)}donate\`). `,
-              color: 0x5181b8
-            }}).then(msg => msg.delete({timeout: 30000}).catch(console.error)).catch(console.error)
-          }
-        }, 1200000))
+        client.timers.set(player.guild, getExitTimeout(player, client))
       }
 
   })
