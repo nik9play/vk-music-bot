@@ -3,6 +3,7 @@ import VK from '../apis/VK'
 
 import detectArgType from '../tools/detectArgType'
 import declOfNum from '../tools/declOfNum'
+import generateErrorMessage from '../tools/generateErrorMessage'
 
 import { Duration } from 'luxon'
 import { TrackUtils } from 'erela.js-vk'
@@ -14,14 +15,13 @@ export default {
   cooldown: 2,
   execute: async (message, args, options) => {
     const { channel } = message.member.voice
-
-    if (!channel) return message.reply('необходимо находиться в голосовом канале.')
-
-    if (!args.length) return message.reply('вставьте после команды ссылку на плейлист или альбом, ID пользователя или трека.')
+    if (!channel) return message.channel.send({embed: generateErrorMessage('Необходимо находиться в голосовом канале.')})
+    console.log(channel)
+    if (!args.length) return message.channel.send({embed: generateErrorMessage('Вставьте после команды ссылку на плейлист или альбом, ID пользователя или трека.')})
 
     const permissions = channel.permissionsFor(message.client.user)
     if (!permissions.has('CONNECT') || !permissions.has('SPEAK') || !permissions.has('VIEW_CHANNEL')) {
-      return message.reply('мне нужны права, чтобы войти в канал.')
+      return message.channel.send({embed: generateErrorMessage('Мне нужны права, чтобы войти в канал.')})
     }
 
     const player = message.client.manager.create({
@@ -118,11 +118,16 @@ export default {
 
         return message.channel.send({embed: embed})
       } else if (req.type === "empty") {
-        return message.reply("не удалось ничего найти по запросу.")
+        return message.channel.send({embed: generateErrorMessage('Не удалось ничего найти по запросу.')})
       } else if (req.type === "api") {
-        return message.reply("ошибка API.")
+        return message.channel.send({embed: generateErrorMessage('Неверный формат ссылки или запроса.')})
       } else if (req.type === "request") {
-        return message.reply("ошибка подключения.")
+        return message.channel.send({embed: generateErrorMessage('Ошибка запроса к ВК.')})
+      } else if (req.type === "access_denied") {
+        if (arg.type === "playlist")
+          return message.channel.send({embed: generateErrorMessage('Нет доступа к плейлисту. Попробуйте получить ссылку по [гайду](https://vk.com/@vkmusicbotds-kak-poluchit-rabochuu-ssylku-na-pleilist).')})
+        else if (arg.type === "user")
+          return message.channel.send({embed: generateErrorMessage('Нет доступа к аудио пользователя. Аудио должны быть открыты.')})
       }
     }
 
@@ -312,10 +317,10 @@ export default {
       }}).then(msg => msg.delete({timeout: 30000}))
     }
 
-    if (!await message.client.configDB.checkPremium(message.guild.id)) {
+    if (!await message.client.db.checkPremium(message.guild.id)) {
       if (player)
         if (player.queue.totalSize >= 200) {
-          player.queue.remove(201, player.queue.totalSize)
+          player.queue.remove(199, player.queue.totalSize - 1)
           return message.reply("в очереди было больше 200 треков, поэтому лишние треки были удалены. Хотите больше треков? Приобретите Премиум, подробности: `donate`.")
         }
           

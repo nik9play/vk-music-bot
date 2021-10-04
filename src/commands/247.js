@@ -6,12 +6,12 @@ export default {
   execute: async function(message) {
     const player = message.client.manager.get(message.guild.id)
 
-    if (!await message.client.configDB.get247(message.guild.id)) {
-      message.client.configDB.set247(true, message.guild.id).then(() => message.reply("<:yes2:835498559805063169> режим 24/7 включен."))
+    if (!await message.client.db.get247(message.guild.id)) {
+      message.client.db.set247(true, message.guild.id).then(() => message.reply("<:yes2:835498559805063169> режим 24/7 включен."))
       if (message.client.timers.has(message.guild.id))
         clearTimeout(message.client.timers.get(message.guild.id))
     } else {
-      message.client.configDB.set247(false, message.guild.id).then(() => message.reply("<:no2:835498572916195368> режим 24/7 выключен."))
+      message.client.db.set247(false, message.guild.id).then(() => message.reply("<:no2:835498572916195368> режим 24/7 выключен."))
       if (player)
         if (player.paused || player.queue.length == 0)
           message.client.timers.set(message.guild.id, setTimeout(() => {

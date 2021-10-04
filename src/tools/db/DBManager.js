@@ -1,11 +1,15 @@
 import { MongoClient } from 'mongodb'
+import redis from 'redis'
+import { promisify } from 'util'
 
-export default class ConfigDB {
+export default class db {
   /**
    * @param {string} databaseURL MongoDB URL
+   * @param {string} redisURL Redis URL
    */
-  constructor (databaseURL) {
+  constructor (databaseURL, redisURL) {
     this.url = databaseURL
+    this.redisURL = redisURL
   }
 
   /**
@@ -15,12 +19,16 @@ export default class ConfigDB {
     this.client = new MongoClient(this.url, { useUnifiedTopology: true })
     await this.client.connect()
 
+    this.redis = redis.createClient({ url: this.redisURL })
+    this.redisGet = promisify(this.redis.get).bind(this.redis)
+    this.redisSet = promisify(this.redis.set).bind(this.redis)
+
     this.database = this.client.db('vkmusicbot_db')
     this.collection = this.database.collection('serverconfig')
   }
 
   isConnected() {
-    return this.client.isConnected
+    return this.client.isConnected()
   }
 
   /**
@@ -28,6 +36,38 @@ export default class ConfigDB {
    */
   async close() {
     await this.client.close()
+  }
+
+  async setValueUpsert(guild_id, property, value) {
+    const query = { guild_id }
+    const update = {$set: {}}
+    update.$set[property] = value
+
+    this.redisSet(`${guild_id}/${property}`, JSON.stringify({ value }), 'EX', 86400) // удалить ключ через сутки
+    await this.collection.updateOne(query, update, {upsert: true})
+  }
+
+  async getValue(guild_id, property, defaultValue) {
+    const query = { guild_id }
+    query[property] = { $exists: true }
+
+    // чтение из кеша
+    const redisValue = await this.redisGet(`${guild_id}/${property}`)
+    if (redisValue) {
+      const redisObj = JSON.parse(redisValue)
+      return redisObj.value
+    }
+
+    const server = await this.collection.findOne(query)
+
+    if (!server) {
+      this.redisSet(`${guild_id}/${property}`, JSON.stringify({ value: defaultValue }), 'EX', 86400)
+      return defaultValue
+    }
+    else {
+      this.redisSet(`${guild_id}/${property}`, JSON.stringify({ value: server[property] }), 'EX', 86400)
+      return server[property]
+    }
   }
 
   // /**
@@ -160,119 +200,46 @@ export default class ConfigDB {
   // }
 
   async setAccessRole(name, guild_id) {
-    const query = { guild_id: guild_id }
-
-    await this.collection.updateOne(query, {
-      $set: {
-        accessRoleName: name
-      }
-    }, {upsert: true})
+    await this.setValueUpsert(guild_id, 'accessRoleName', name)
   }
 
   async getAccessRole(guild_id) {
-    const query = { guild_id: guild_id, accessRoleName: { $exists: true } }
-
-    const server = await this.collection.findOne(query)
-
-    if (!server)
-      return "DJ"
-    else
-      return server.accessRoleName
+    return await this.getValue(guild_id, 'accessRoleName', 'DJ')
   }
 
   async setAccessRoleEnabled(enable, guild_id) {
-    const query = { guild_id: guild_id }
-
-    await this.collection.updateOne(query, {
-      $set: {
-        accessRoleNameEnabled: enable
-      }
-    }, {upsert: true})
+    await this.setValueUpsert(guild_id, 'accessRoleNameEnabled', enable)
   }
 
   async getAccessRoleEnabled(guild_id) {
-    const query = { guild_id: guild_id, accessRoleNameEnabled: { $exists:true } }
-
-    const server = await this.collection.findOne(query)
-
-    if (!server)
-      return false
-    else
-      return server.accessRoleNameEnabled
+    return await this.getValue(guild_id, 'accessRoleNameEnabled', false)
   }
 
-
   async setPrefix(prefix, guild_id) {
-    const query = { guild_id: guild_id }
-
-    await this.collection.updateOne(query, {
-      $set: {
-        "prefix": prefix
-      }
-    }, {upsert: true})
+    await this.setValueUpsert(guild_id, 'prefix', prefix)
   }
 
   async getPrefix(guild_id) {
-    const query = { guild_id: guild_id, prefix: { $exists: true } }
-
-    const server = await this.collection.findOne(query)
-
-    if (!server)
-      return "-v"
-    else
-      return server.prefix
+    return await this.getValue(guild_id, 'prefix', '-v')
   }
 
   async set247(enable, guild_id) {
-    const query = { guild_id: guild_id }
-
-    await this.collection.updateOne(query, {
-      $set: {
-        e247: enable
-      }
-    }, {upsert: true})
+    await this.setValueUpsert(guild_id, 'e247', enable)
   }
 
   async get247(guild_id) {
-    const query = { guild_id: guild_id, e247: { $exists:true } }
-
-    const server = await this.collection.findOne(query)
-
-    if (!server)
-      return false
-    else
-      return server.e247
+    return await this.getValue(guild_id, 'e247', false)
   }
 
   async setDisableAnnouncements(enable, guild_id) {
-    const query = { guild_id: guild_id }
-
-    await this.collection.updateOne(query, {
-      $set: {
-        disableAnnouncements: enable
-      }
-    }, {upsert: true})
+    await this.setValueUpsert(guild_id, 'disableAnnouncements', enable)
   }
 
   async getDisableAnnouncements(guild_id) {
-    const query = { guild_id: guild_id, disableAnnouncements: { $exists:true } }
-
-    const server = await this.collection.findOne(query)
-
-    if (!server)
-      return false
-    else
-      return server.disableAnnouncements
+    return await this.getValue(guild_id, 'disableAnnouncements', false)
   }
 
   async checkPremium(guild_id) {
-    const query = { guild_id: guild_id, premium: true }
-
-    const server = await this.collection.countDocuments(query)
-
-    if (server)
-      return true
-    else
-      return false
+    return await this.getValue(guild_id, 'premium', false)
   }
 }

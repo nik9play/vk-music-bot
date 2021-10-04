@@ -3,7 +3,7 @@ export default {
   aliases: ["premium", "d"],
   adminOnly: true,
   execute: async (message) => {
-    const premium = await message.client.configDB.checkPremium(message.guild.id)
+    const premium = await message.client.db.checkPremium(message.guild.id)
 
     const info = 
 `${premium ? "**Спасибо за поддержку бота!**\n" : ""}

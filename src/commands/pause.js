@@ -21,7 +21,7 @@ export default {
       return player.pause(false)
     }
 
-    if (!await message.client.configDB.get247(message.guild.id))
+    if (!await message.client.db.get247(message.guild.id))
       message.client.timers.set(message.guild.id, setTimeout(() => {
         message.channel.send({embed: {
           description: `**Я покинул канал, так как слишком долго был неактивен.**\n Хотите, чтобы я оставался? Включите режим 24/7 (доступен только для Премиум пользователей, подробности: \`-vdonate\`). `,
