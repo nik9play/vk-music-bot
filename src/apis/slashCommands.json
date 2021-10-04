@@ -83,7 +83,7 @@
         "type": 3,
         "name": "режим",
         "description": "Режим повтора",
-        "required": true,
+        "required": false,
         "choices": [
           {
             "name": "выкл",
