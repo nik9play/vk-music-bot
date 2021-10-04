@@ -30,7 +30,7 @@ export default class {
 
     // слэш команды и кнопки
     this.client.on('interactionCreate', async interaction => {
-      console.log(interaction.options.data)
+      //console.log(interaction.options.data)
       
       this.executeSlash(interaction)
     })
@@ -109,7 +109,7 @@ export default class {
       }
 
       if (interaction.isButton()) {
-        if (interaction.customId.startsWith('search')) {
+        if (interaction?.customId.startsWith('search')) {
           const id = interaction.customId.split(',')[1]
 
           if (id) {
@@ -137,15 +137,15 @@ export default class {
   
     const prefix = await this.client.db.getPrefix(message.guild.id)
   
-    if (message.mentions.users.has(this.client.user.id)) {
-      return message.channel.send({
-        embed: {
-          title: 'VK Music Bot',
-          color: 0x5181b8,
-          description: `Ваш текущий префикс: \`${prefix}\`. Чтобы узнать список команд, введите \`${prefix}h\`. Чтобы включить музыку, используйте \`${prefix}p\`.`
-        }
-      })
-    }
+    // if (message.mentions.users.has(this.client.user.id)) {
+    //   return message.channel.send({
+    //     embed: {
+    //       title: 'VK Music Bot',
+    //       color: 0x5181b8,
+    //       description: `Ваш текущий префикс: \`${prefix}\`. Чтобы узнать список команд, введите \`${prefix}h\`. Чтобы включить музыку, используйте \`${prefix}p\`.`
+    //     }
+    //   })
+    // }
   
     if (!message.content.startsWith(prefix)) return
   
@@ -167,6 +167,20 @@ export default class {
       }
 
       const send = respond
+
+      if (await this.client.db.getAccessRoleEnabled(guild.id)) {
+        const djRole = await this.client.db.getAccessRole(guild.id)
+  
+        if (!member.permissions.has(Permissions.FLAGS.MANAGE_GUILD) && !member.roles.cache.some(role => role.name === djRole)) {
+          respond({ embeds: [generateErrorMessage(`Сейчас включен DJ режим, и вы не можете выполнять команды, так как у вас нет роли \`${djRole}\`.`)], ephemeral: true })
+          return
+        }
+      }
+      
+      if (command.premium && !await this.client.db.checkPremium(guild.id)) {
+        respond({ embeds: [generateErrorMessage('Для выполнения этой команды требуется **Премиум**! Подробности: /donate.')], ephemeral: true })
+        return
+      }
 
       this.client.commands.get(command).execute({ 
         guild,
