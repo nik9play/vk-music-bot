@@ -1,10 +1,25 @@
 if (process.env.NODE_ENV == 'development') require('dotenv').config()
 
 const { ShardingManager } = require('discord.js')
-const manager = new ShardingManager('./dist/index.js', { token: process.env.DISCORD_TOKEN })
+const manager = new ShardingManager('./dist/index.js', { token: process.env.DISCORD_TOKEN, mode: 'worker' })
 const axios = require('axios').default
 
-manager.on('shardCreate', shard => console.log(`Launched shard ${shard.id}`))
+const winston = require('winston');
+const LogzioWinstonTransport = require('winston-logzio');
+
+const logzioWinstonTransport = new LogzioWinstonTransport({
+  level: 'info',
+  name: 'winston_logzio',
+  token: 'DyFkIIiuopcGMWYOyKhBMEZgOOQhMxuc',
+  host: 'listener-eu.logz.io',
+});
+
+const logger = winston.createLogger({
+  format: winston.format.simple(),
+  transports: [logzioWinstonTransport],
+});
+
+manager.on('shardCreate', shard => logger.log('error', `Launched shard ${shard.id}`))
 manager.spawn().then(() => {
   if (process.env.NODE_ENV != 'development') sendInfo()
 }).catch(console.error)
@@ -28,16 +43,27 @@ manager.spawn().then(() => {
 
 function sendInfo() {
   manager.fetchClientValues('guilds.cache.size')
-    .then(results => {
+    .then(async results => {
       const serverSize = results.reduce((acc, guildCount) => acc + guildCount, 0)
 
       manager.broadcastEval(`this.user.setPresence({activity: {name: '-vh | ${(serverSize/1000).toFixed(1)}k серверов', type: 2}})`)
+
+      const lavalinkInfo = manager.broadcastEval(c => {
+        const info = {
+          playingPlayers: 0
+        }
+        c.manager.nodes.each(e => {
+          info.playingPlayers += e.stats.playingPlayers
+        })
+        return info
+      })
 
       axios.post('https://vk-api-v2.megaworld.space/metrics', {
         token: process.env.API_TOKEN,
         metrics: {
           servers: serverSize,
-          serverShards: results
+          serverShards: results,
+          lavalinkInfo
         }
       })
         .then(res => {
