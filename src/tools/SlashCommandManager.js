@@ -77,6 +77,7 @@ export default class {
       }
 
       if (interaction.isCommand()) {
+        
         if (await this.client.db.getAccessRoleEnabled(guild.id)) {
           const djRole = await this.client.db.getAccessRole(guild.id)
     
@@ -93,8 +94,21 @@ export default class {
 
         const args = interaction?.options.data.map(el => {
           return el?.value
-        }) ?? []  
+        }) ?? []
         
+        if (command.name === 'play' && command.name === 'search' && this.client.captcha.has(guild.id)) {
+          const captcha = this.client.captcha.get(guild.id)
+          const embed = {
+            description: 'Ошибка! Требуется капча. Введите команду `/captcha`, а после код с картинки.',
+            color: 0x5181b8,
+            image: {
+              url: captcha.url
+            }
+          }
+  
+          return respond({ embeds: [embed], ephemeral: true })
+        }
+
         command.execute({ 
           guild,
           user,
@@ -114,7 +128,7 @@ export default class {
 
           if (id) {
             const commandPlay = this.client.commands.get('play')
-
+            console.log(id)
             commandPlay.execute({ 
               guild,
               user,
@@ -178,8 +192,21 @@ export default class {
       }
       
       if (command.premium && !await this.client.db.checkPremium(guild.id)) {
-        respond({ embeds: [generateErrorMessage('Для выполнения этой команды требуется **Премиум**! Подробности: /donate.')], ephemeral: true })
+        respond({ embeds: [generateErrorMessage(`Для выполнения этой команды требуется **Премиум**! Подробности: \`${await this.client.db.getPrefix(guild.id)}donate\``)], ephemeral: true })
         return
+      }
+
+      if (command.name === 'play' && command.name === 'search' && this.client.captcha.has(guild.id)) {
+        const captcha = this.client.captcha.get(guild.id)
+        const embed = {
+          description: `Ошибка! Требуется капча. Введите команду \`${await this.client.db.getPrefix(guild.id)}captcha\`, а после код с картинки.`,
+          color: 0x5181b8,
+          image: {
+            url: captcha.url
+          }
+        }
+
+        return respond({ embeds: [embed], ephemeral: true })
       }
 
       this.client.commands.get(command).execute({ 
