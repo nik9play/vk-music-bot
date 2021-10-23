@@ -55,26 +55,24 @@ export default {
     console.log(arg)
     let req
 
-    const vk = new VK()
-
     const query = {}
 
-
     if (captcha) {
-      query.captcha_sid = captcha.sid
-      query.captcha_key = captcha.captcha_key
+      query.captcha_id = captcha.sid
+      query.captcha_key = captcha.captcha_key,
+      query.captcha_index = captcha.index
     }
 
     switch (arg.type) {
       case 'track':
-        req = await vk.GetOne({
+        req = await VK.GetOne({
           q: search,
 
           ...query
         })
         break
       case 'playlist':
-        req = await vk.GetPlaylist({
+        req = await VK.GetPlaylist({
           owner_id: arg.parsedURL.id.split('_')[0],
           album_id: arg.parsedURL.id.split('_')[1],
           count,
@@ -86,7 +84,7 @@ export default {
         break
       case 'group':
       case 'user':
-        req = await vk.GetUser({
+        req = await VK.GetUser({
           owner_id: arg.id,
           count,
           offset,
@@ -101,13 +99,14 @@ export default {
       if (req.type === 'captcha') {
         client.captcha.set(guild.id, {
           args,
-          url: req.data.captcha_img,
-          sid: req.data.captcha_sid
+          url: req.error.captcha_img,
+          sid: req.error.captcha_id,
+          index: req.error.captcha_index
         })
 
         const captcha = client.captcha.get(guild.id)
         const embed = {
-          description: `Ошибка! Требуется капча. Введите команду \`${await client.db.getPrefix(guild.id)}captcha\`, а после код с картинки.`,
+          description: 'Ошибка! Требуется капча. Введите команду `/captcha`, а после код с картинки.',
           color: 0x5181b8,
           image: {
             url: captcha.url

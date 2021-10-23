@@ -9,16 +9,15 @@ export default {
   execute: async function ({ guild, client, args, captcha, respond }) {
     const search = args.join(' ')
 
-    const vk = new VK()
-
     const query = {}
-
+    
     if (captcha) {
-      query.captcha_sid = captcha.sid
-      query.captcha_key = captcha.captcha_key
+      query.captcha_id = captcha.sid
+      query.captcha_key = captcha.captcha_key,
+      query.captcha_index = captcha.index
     }
 
-    const req = await vk.GetMany({
+    const req = await VK.GetMany({
       q: search,
 
       ...query
@@ -30,13 +29,14 @@ export default {
         client.captcha.set(guild.id, {
           type: 'search',
           args,
-          url: req.data.captcha_img,
-          sid: req.data.captcha_sid
+          url: req.error.captcha_img,
+          sid: req.error.captcha_id,
+          index: req.error.captcha_index
         })
 
         const captcha = client.captcha.get(guild.id)
         const embed = {
-          description: 'Ошибка! Требуется капча. Введите команду `-vcaptcha`, а после код с картинки.',
+          description: 'Ошибка! Требуется капча. Введите команду `/captcha`, а после код с картинки.',
           color: 0x5181b8,
           image: {
             url: captcha.url
