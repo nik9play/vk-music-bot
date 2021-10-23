@@ -17,6 +17,19 @@ export default {
 
     if (!channel) return message.reply('необходимо находиться в голосовом канале.')
 
+    if (message.client.captcha.has(message.guild.id)) {
+      const captcha = message.client.captcha.get(message.guild.id)
+      const embed = {
+        description: "Ошибка! Требуется капча. Введите команду `-vcaptcha`, а после код с картинки.",
+        color: 0x5181b8,
+        image: {
+          url: captcha.url
+        }
+      }
+
+      return message.channel.send({embed: embed})
+    }
+
     if (!args.length) return message.reply('вставьте после команды ссылку на плейлист или альбом, ID пользователя или трека.')
 
     const permissions = channel.permissionsFor(message.client.user)
