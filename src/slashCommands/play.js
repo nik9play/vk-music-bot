@@ -4,6 +4,7 @@ import VK from '../apis/VK'
 import detectArgType from '../tools/detectArgType'
 import declOfNum from '../tools/declOfNum'
 import generateErrorMessage from '../tools/generateErrorMessage'
+import logger from '../tools/logger'
 
 import { Duration } from 'luxon'
 import { TrackUtils } from 'erela.js-vk'
@@ -37,7 +38,7 @@ export default {
       player.connect()
     }
 
-    console.log('player info: ', player.guild, player.voiceChannel, player.state)
+    logger.log('info', 'player info: %s %O %O', player.guild, player.voiceChannel, player.state)
     //if (channel.id !== player.voiceChannel) return message.reply("вы находитесь не в том голосовом канале.")
 
     // сброс таймера и снятие с паузы при добавлении в очередь
@@ -52,7 +53,6 @@ export default {
     offset--
 
     const arg = detectArgType(args[0])
-    console.log(arg)
     let req
 
     const query = {}
@@ -95,7 +95,7 @@ export default {
     }
 
     if (req.status === 'error') {
-      console.log('error:   ', req)
+      logger.log('warning', 'VK Request error: %O', req)
       if (req.type === 'captcha') {
         client.captcha.set(guild.id, {
           args,
@@ -245,8 +245,6 @@ export default {
           text: 'Чтобы добавить больше 10 треков, введите количество треков после ссылки.'
         }
       }
-
-      console.log(playlistEmbed)
 
       for await (const e of newArray) {
         if (!e.url) {

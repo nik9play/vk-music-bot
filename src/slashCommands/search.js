@@ -1,6 +1,7 @@
 import VK from '../apis/VK'
 import generateErrorMessage from '../tools/generateErrorMessage'
 import { MessageActionRow, MessageButton } from 'discord.js'
+import logger from '../tools/logger'
 
 export default {
   name: 'search',
@@ -24,7 +25,7 @@ export default {
     })
 
     if (req.status === 'error') {
-      console.log('error:   ', req)
+      logger.log('info', 'VK Request error: %O', req)
       if (req.type === 'captcha') {
         client.captcha.set(guild.id, {
           type: 'search',

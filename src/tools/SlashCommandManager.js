@@ -1,7 +1,7 @@
 import generateErrorMessage from './generateErrorMessage'
-import colors from 'colors/safe'
 import { readdirSync } from 'fs'
 import { Permissions } from 'discord.js'
+import logger from './logger'
 
 export default class {
   constructor(client) {
@@ -42,8 +42,10 @@ export default class {
     })
   }
 
+  /*
+   * Слэш команды
+   */
   async executeSlash(interaction) {
-    
     if (interaction.isCommand() || interaction.isButton()) {
       const guild = interaction.guild
       const user = interaction.member.user
@@ -58,26 +60,33 @@ export default class {
       }
 
       const respond = (data, timeout) => {
-        console.log(data)
-        interaction.reply(data).catch(err => console.error('Can\'t send reply:', err))
+        interaction.reply(data).catch(err => logger.log('error', 'Can\'t send reply: %O', err))
         
         if (timeout)
           setTimeout(() => {
-            interaction.deleteReply().catch(console.error)
+            interaction.deleteReply().catch(err => logger.log('error', err))
           }, timeout)
       }
 
       const send = async (data, timeout) => {
-        const message = await text.send(data).catch(err => console.error('Can\'t send message:', err))
+        const message = await text.send(data).catch(err => logger.log('error', 'Can\'t send message: %O', err))
 
         if (timeout)
           setTimeout(() => {
-            message.delete().catch(err => console.error('Can\'t delete message:', err))
+            message.delete().catch(err => logger.log('error', 'Can\'t delete message: %O', err))
           }, timeout)
       }
 
       if (interaction.isCommand()) {
-        
+        // проверка на админа
+        if (command.adminOnly) {
+          if (!member.permissions.has(Permissions.FLAGS.MANAGE_GUILD)) {
+            respond({ embeds: [generateErrorMessage('Эту команду могут выполнять только пользователи с правом `Управление сервером`.')], ephemeral: true })
+            return
+          }
+        }
+
+        // проверка на dj роль
         if (await this.client.db.getAccessRoleEnabled(guild.id)) {
           const djRole = await this.client.db.getAccessRole(guild.id)
     
@@ -87,6 +96,7 @@ export default class {
           }
         }
         
+        // проверка на премиум
         if (command.premium && !await this.client.db.checkPremium(guild.id)) {
           respond({ embeds: [generateErrorMessage('Для выполнения этой команды требуется **Премиум**! Подробности: /donate.')], ephemeral: true })
           return
@@ -96,7 +106,9 @@ export default class {
           return el?.value
         }) ?? []
         
-        if (command.name === 'play' && command.name === 'search' && this.client.captcha.has(guild.id)) {
+        logger.log('info', `${guild.shardId}/${guild.id} выполнил ${command.name} с аргументами %O`, args)
+
+        if (this.client.captcha.has(guild.id) && (command.name === 'play' || command.name === 'search')) {
           const captcha = this.client.captcha.get(guild.id)
           const embed = {
             description: 'Ошибка! Требуется капча. Введите команду `/captcha`, а после код с картинки.',
@@ -119,7 +131,7 @@ export default class {
           interaction,
           respond,
           send
-        }).catch(err => console.error('Error executing command:', err))
+        }).catch(err => logger.log('error', 'Error executing command: %O', err))
       }
 
       if (interaction.isButton()) {
@@ -128,7 +140,7 @@ export default class {
 
           if (id) {
             const commandPlay = this.client.commands.get('play')
-            console.log(id)
+
             commandPlay.execute({ 
               guild,
               user,
@@ -138,13 +150,16 @@ export default class {
               args: [id],
               respond,
               send
-            }).catch(err => console.error('Error executing command:', err))
+            }).catch(err => logger.log('error', 'Error executing command: %O', err))
           }
         }
       }
     }
   }
 
+  /*
+   * Обычные команды
+   */
   async executePrefix(message) {
     if (message.channel.type != 'GUILD_TEXT' || message.author.bot || !this.client.db.isConnected) return
     if (!message.channel.permissionsFor(message.client.user).has(Permissions.FLAGS.SEND_MESSAGES)) return
@@ -164,24 +179,35 @@ export default class {
     if (!message.content.startsWith(prefix)) return
   
     let args = message.content.slice(prefix.length).split(/ +/)
-    const command = args.shift().toLowerCase()
+    const commandName = args.shift().toLowerCase()
     
-    if (this.client.commands.has(command)) {
-      console.log(`${colors.green(message.guild.shardId)}/${colors.red(message.guild.id)} выполнил ${colors.yellow.bold(command)} с аргументами ${colors.bold(args)}`)
-      
+    if (this.client.commands.has(commandName)) {      
+      logger.log('info', `${message.guild.shardId}/${message.guild.id} выполнил ${commandName} с аргументами %O`, args)
+
       const { guild, member, channel } = message
       
       const respond = async (data, timeout) => {
-        const message = await channel.send(data).catch(err => console.error('Can\'t send message:', err))
+        const message = await channel.send(data).catch(err => logger.log('error', 'Can\'t send message: %O', err))
 
         if (timeout)
           setTimeout(() => {
-            message.delete().catch(err => console.error('Can\'t delete message:', err))
+            message.delete().catch(err => logger.log('error', 'Can\'t delete message: %O', err))
           }, timeout)
       }
 
       const send = respond
 
+      const command = this.client.commands.get(commandName)
+
+      // проверка на админа
+      if (command.adminOnly) {
+        if (!member.permissions.has(Permissions.FLAGS.MANAGE_GUILD)) {
+          respond({ embeds: [generateErrorMessage('Эту команду могут выполнять только пользователи с правом `Управление сервером`.')], ephemeral: true })
+          return
+        }
+      }
+
+      // проверка на dj роль
       if (await this.client.db.getAccessRoleEnabled(guild.id)) {
         const djRole = await this.client.db.getAccessRole(guild.id)
   
@@ -191,12 +217,15 @@ export default class {
         }
       }
       
+      // проверка на наличие премиума
       if (command.premium && !await this.client.db.checkPremium(guild.id)) {
         respond({ embeds: [generateErrorMessage(`Для выполнения этой команды требуется **Премиум**! Подробности: \`${await this.client.db.getPrefix(guild.id)}donate\``)], ephemeral: true })
         return
       }
 
-      if (command.name === 'play' && command.name === 'search' && this.client.captcha.has(guild.id)) {
+      // проверка на наличие капчи
+      if (this.client.captcha.has(guild.id) &&
+         (command.name === 'play' || command.name === 'search')) {
         const captcha = this.client.captcha.get(guild.id)
         const embed = {
           description: `Ошибка! Требуется капча. Введите команду \`${await this.client.db.getPrefix(guild.id)}captcha\`, а после код с картинки.`,
@@ -206,10 +235,11 @@ export default class {
           }
         }
 
-        return respond({ embeds: [embed], ephemeral: true })
+        respond({ embeds: [embed], ephemeral: true })
+        return
       }
 
-      this.client.commands.get(command).execute({ 
+      command.execute({ 
         guild,
         user: member.user,
         voice: member?.voice?.channel,
@@ -218,7 +248,7 @@ export default class {
         args,
         respond,
         send
-      }).catch(err => console.error('Error executing command:', err))
+      }).catch(err => logger.log('error', 'Error executing command: %O', err))
     }
   }
 

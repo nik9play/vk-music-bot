@@ -58,8 +58,6 @@ export default class VK {
         data: res.data.data
       }
     } catch (ex) {
-      console.log(ex)
-
       return {
         status: 'error',
         type: 'request'

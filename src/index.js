@@ -4,6 +4,7 @@ import { Manager } from 'erela.js-vk'
 import db from './tools/db/DBManager'
 import getExitTimeout from './tools/getExitTimeout'
 import SlashCommandManager from './tools/SlashCommandManager'
+import logger from './tools/logger'
 
 const client = new Client({
   makeCache: Options.cacheWithLimits({
@@ -43,8 +44,8 @@ client.manager = new Manager({
     if (guild) guild.shard.send(payload)
   }
 })
-  .on('nodeConnect', node => console.log(`Node "${node.options.identifier}" connected.`))
-  .on('nodeError', (node, error) => console.log(
+  .on('nodeConnect', node => logger.log('info', `Node "${node.options.identifier}" connected.`))
+  .on('nodeError', (node, error) => logger.log('info', 
     `Node "${node.options.identifier}" encountered an error: ${error.message}.`
   ))
   .on('trackStart', async (player, track) => {
@@ -54,10 +55,10 @@ client.manager = new Manager({
       const message = await channel.send({embeds: [{
         description: `Сейчас играет **${track.author} — ${track.title}**.`,
         color: 0x5181b8
-      }]}).catch(err => console.error('Can\'t send message:', err))
+      }]}).catch(err => logger.log('error', 'Can\'t send message: %O', err))
 
       setTimeout(() => {
-        message.delete().catch(err => console.error('Can\'t delete message:', err))
+        message.delete().catch(err => logger.log('error', 'Can\'t delete message: %O', err))
       }, track.duration)
     }
   })
@@ -77,16 +78,16 @@ client.manager = new Manager({
   //     }
   // })
   .on('queueEnd', async (player) => {
-    console.log('end of queue', player.guild)
+    logger.log('info', 'end of queue %s', player.guild)
     if (!await client.db.get247(player.guild))
       if (player) {
-        console.log('set timeout')
+        logger.log('info', 'set timeout %s', player.guild)
         client.timers.set(player.guild, getExitTimeout(player, client))
       }
 
   })
   .on('playerMove', (player, initChannel, newChannel) => {
-    console.log(newChannel ? `${player.guild} moved player` : `${player.guild} disconnected`)
+    logger.log('info', newChannel ? `${player.guild} moved player` : `${player.guild} disconnected`)
     if (!newChannel) { 
       if (client.timers.has(player.guild.id))
         clearTimeout(client.timers.get(player.guild.id))
@@ -95,12 +96,12 @@ client.manager = new Manager({
     setTimeout(() =>  player.pause(false), 2000)
   })
   .on('playerDestroy', (player) => {
-    console.log(`${player.guild} player destroyed`)
+    logger.log('info', `${player.guild} player destroyed`)
   })
   .on('socketClosed', async (player, socket) => {
     // reconnect on "Abnormal closure"
     if (socket.code == 1006) {
-      console.log('caught Abnormal closure, trying to reconnect...')
+      logger.log('notice', 'caught Abnormal closure, trying to reconnect...')
       const voiceChannel = player.voiceChannel
       const textChannel = player.textChannel
 
@@ -121,10 +122,10 @@ client.manager = new Manager({
       }, 500)
     }
 
-    console.log('socket closed. info: ', socket, player.guild)
+    logger.log('debug', 'socket closed. info: %O, %s', socket, player.guild)
   })
   .on('trackStuck', (guildId) => {
-    console.log(`${guildId} track stuck`)
+    logger.log('notice', `${guildId} track stuck`)
   })
   .on('trackError', (player, track) => {
     // const channel = client.channels.cache.get(player.textChannel)
@@ -132,19 +133,19 @@ client.manager = new Manager({
     //   description: `С треком **${track.author} — ${track.title}** произошла проблема, поэтому он был пропущен.`,
     //   color: 0x5181b8
     // }}).then(msg => msg.delete({timeout: 30000}).catch(console.error)).catch(console.error)
-    console.log('Track error:', player, track)
+    logger.log('warning', 'Track error: %O, %O', player, track)
   })
 
 
 client.once('ready', () => {
   client.manager.init(client.user.id)
-  console.log(`Logged in as ${client.user.tag}`)
+  logger.log('info', `Logged in as ${client.user.tag}`)
 })
 
 client.on('raw', d => client.manager.updateVoiceState(d))
 
 client.on('guildDelete', (guild) => {
-  console.log(`${guild.id} leaves`)
+  logger.log('info', `${guild.id} leaves`)
   const player = client.manager.get(guild.id)
 
   if (player) player.destroy()
