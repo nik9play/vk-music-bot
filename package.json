@@ -10,7 +10,7 @@
   "scripts": {
     "start": "node shardStart.js",
     "build": "rollup -c",
-    "dev": "rollup -c && cross-env NODE_ENV=development node --inspect shardStart.js"
+    "dev": "rollup -c && cross-env NODE_ENV=development node --inspect dist/shardStart.js"
   },
   "dependencies": {
     "axios": "^0.21.1",

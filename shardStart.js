@@ -1,45 +1,32 @@
 if (process.env.NODE_ENV == 'development') require('dotenv').config()
 
-const { ShardingManager } = require('discord.js')
+import { ShardingManager } from 'discord.js'
 const manager = new ShardingManager('./dist/index.js', { token: process.env.DISCORD_TOKEN, mode: 'worker' })
-const axios = require('axios').default
+import axios from 'axios'
 
-const winston = require('winston');
-const LogzioWinstonTransport = require('winston-logzio');
+import { createLogger, transports, format } from 'winston'
+const { combine } = format
+import LogzioWinstonTransport from 'winston-logzio'
 
 const logzioWinstonTransport = new LogzioWinstonTransport({
   level: 'info',
   name: 'winston_logzio',
-  token: 'DyFkIIiuopcGMWYOyKhBMEZgOOQhMxuc',
+  token: process.env.LOGZIO_TOKEN,
   host: 'listener-eu.logz.io',
-});
+})
 
-const logger = winston.createLogger({
-  format: winston.format.simple(),
-  transports: [logzioWinstonTransport],
-});
+const logger = createLogger({
+  format: combine(
+    format.splat(),
+    format.simple()
+  ),
+  transports: [new transports.Console(), logzioWinstonTransport],
+})
 
-manager.on('shardCreate', shard => logger.log('error', `Launched shard ${shard.id}`))
+manager.on('shardCreate', shard => logger.log('info', `Launched shard ${shard.id}`))
 manager.spawn().then(() => {
   if (process.env.NODE_ENV != 'development') sendInfo()
-}).catch(console.error)
-
-// function serversStringByDigit(digits) {
-//   if (digits >= 10 && digits <= 20) {
-//     return "серверов"
-//   }
-
-//   switch(digits % 10) {
-//     case 1:
-//       return "сервер"
-//     case 2:
-//     case 3:
-//     case 4:
-//       return "сервера"
-//     default:
-//       return "серверов"
-//   }
-// }
+}).catch(err => logger.log('error', 'Error starting shard', err))
 
 function sendInfo() {
   manager.fetchClientValues('guilds.cache.size')
@@ -68,13 +55,13 @@ function sendInfo() {
       })
         .then(res => {
           if (res.data.status === 'error') {
-            console.log('Ошибка отправки статистики на метрику. (Ошибка сервера)', res.data.message)
+            logger.log('error', 'Ошибка отправки статистики на метрику. (Ошибка сервера) %s', res.data.message)
           } else {
-            console.log('Статистика отправлена на метрику.')
+            logger.log('info', 'Статистика отправлена на метрику.')
           }
         })
         .catch((e) => {
-          console.log('Ошибка отправки статистики на метрику. (Ошибка подключения)', e.response.data)
+          logger.log('error', 'Ошибка отправки статистики на метрику. (Ошибка подключения) %O', e.response.data)
         })
 
       manager.fetchClientValues('user.id')
@@ -92,18 +79,18 @@ function sendInfo() {
           })
             .then(res => {
               if (res.data.error) {
-                console.log('Ошибка отправки статистики на мониторинг. (Ошибка сервера)', res.data.error)
+                logger.log('error', 'Ошибка отправки статистики на мониторинг. (Ошибка сервера) %s', res.data.error)
               } else {
-                console.log('Статистика отправлена на мониторинг.')
+                logger.log('info', 'Статистика отправлена на мониторинг.')
               }
             })
             .catch(() => {
-              console.log('Ошибка отправки статистики на мониторинг. (Ошибка подключения)')
+              logger.log('error', 'Ошибка отправки статистики на мониторинг. (Ошибка подключения)')
             })
         })
     })
   .catch(err => {
-    console.error('send stat err: ', err)
+    logger.error('error', 'Send stat error %O', err)
   })
 }
 
