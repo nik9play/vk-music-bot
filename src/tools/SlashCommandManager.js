@@ -247,7 +247,8 @@ export default class {
         client: this.client,
         args,
         respond,
-        send
+        send,
+        message
       }).catch(err => logger.log('error', 'Error executing command: %O', err))
     }
   }
