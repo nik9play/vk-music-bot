@@ -111,7 +111,8 @@ export default class {
         if (this.client.captcha.has(guild.id) && (command.name === 'play' || command.name === 'search')) {
           const captcha = this.client.captcha.get(guild.id)
           const embed = {
-            description: 'Ошибка! Требуется капча. Введите команду `/captcha`, а после код с картинки.',
+            description: 'Ошибка! Ожидается команда, для которой не введена капча. Введите команду `/captcha`, а после код с картинки.' +
+            `Если картинки не видно, перейдите по [ссылке](${captcha.url})`,
             color: 0x5181b8,
             image: {
               url: captcha.url
@@ -228,7 +229,8 @@ export default class {
          (command.name === 'play' || command.name === 'search')) {
         const captcha = this.client.captcha.get(guild.id)
         const embed = {
-          description: `Ошибка! Требуется капча. Введите команду \`${await this.client.db.getPrefix(guild.id)}captcha\`, а после код с картинки.`,
+          description: `Ошибка! Ожидается команда, для которой не введена капча. Введите команду \`${await this.client.db.getPrefix(guild.id)}captcha\`, а после код с картинки.` +
+          `Если картинки не видно, перейдите по [ссылке](${captcha.url})`,
           color: 0x5181b8,
           image: {
             url: captcha.url
