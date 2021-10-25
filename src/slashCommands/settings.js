@@ -5,7 +5,7 @@ export default {
   name: 'settings',
   cooldown: 5,
   adminOnly: true,
-  execute: async ({ guild, client, args, respond }) => {
+  execute: async ({ guild, client, args, respond, message }) => {
     if (args.length == 0) {
       const embed = {
         title: '⚙ Настройки',
@@ -43,17 +43,29 @@ export default {
       case 'djrole':
         let roleName = args.slice(1).join(' ')
 
+        if (message.mentions.users.size) {
+          return respond({embeds: [generateErrorMessage('Неверное имя роли.')]})
+        }
+
+        if (message.mentions.roles.size) {
+          const role = message.mentions.roles.first()
+
+          client.db.setAccessRole(role.name, guild.id).then(() => respond({embeds: [generateErrorMessage(`DJ роль \`${role.name}\` установлена.`, 'notitle')]}))
+          return
+        }
+
         if (!roleName)
           return respond({embeds: [generateErrorMessage('Неверное имя роли.')]})
 
-        client.db.setAccessRole(roleName, guild.id).then(() => respond({embeds: [generateErrorMessage('DJ роль установлена.', 'notitle')]}))
+        client.db.setAccessRole(roleName, guild.id).then(() => respond({embeds: [generateErrorMessage(`DJ роль \`${roleName.name}\` установлена.`, 'notitle')]}))
         break
       case 'dj':
         if (!args[1] || (args[1] !== 'on' && args[1] !== 'off'))
           return respond({embeds: [generateErrorMessage('Используйте `on`/`off`.')]})
 
         if (args[1] === 'on')
-          client.db.setAccessRoleEnabled(true, guild.id).then(() => respond({embeds: [generateErrorMessage('DJ режим включён.', 'notitle')]}))
+          client.db.setAccessRoleEnabled(true, guild.id).then(async () => respond({embeds: [generateErrorMessage('DJ режим включён.' +
+          `\nПри включенном DJ режиме **бот будет работать** только у пользователей с ролью \`${await client.db.getAccessRole()}\`.`, 'notitle')]}))
         else if (args[1] === 'off')
           client.db.setAccessRoleEnabled(false, guild.id).then(() => respond({embeds: [generateErrorMessage('DJ режим выключён.', 'notitle')]}))
         break

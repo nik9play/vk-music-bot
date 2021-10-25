@@ -15,11 +15,12 @@ export default {
     } else if (type === 'dj') {
       const enable = interaction.options.get('включен')
 
-      client.db.setAccessRoleEnabled(enable.value, guild.id).then(() => respond({embeds: [generateErrorMessage('DJ режим ' + (enable.value ? 'включён.' : 'выключён.'), 'notitle')]}))
+      client.db.setAccessRoleEnabled(enable.value, guild.id).then(async () => respond({embeds: [generateErrorMessage('**DJ режим ' + (enable.value ? 'включён.**' +
+        `\nПри включенном DJ режиме **бот будет работать** только у пользователей с ролью \`${await client.db.getAccessRole()}\`.` : 'выключён.**'), 'notitle')]}))
     } else if (type === 'djrole') {
       const role = interaction.options.get('роль')
       
-      client.db.setAccessRole(role.role.name, guild.id).then(() => respond({embeds: [generateErrorMessage('DJ роль установлена.', 'notitle')]}))
+      client.db.setAccessRole(role.role.name, guild.id).then(() => respond({embeds: [generateErrorMessage(`DJ роль \`${role.role.name}\` установлена.`, 'notitle')]}))
     } else if (type === 'announcements') {
       const enable = interaction.options.get('включены')
 
