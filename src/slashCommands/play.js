@@ -4,17 +4,19 @@ import VK from '../apis/VK'
 import detectArgType from '../tools/detectArgType'
 import declOfNum from '../tools/declOfNum'
 import generateErrorMessage from '../tools/generateErrorMessage'
-import logger from '../tools/logger'
 
 import { Duration } from 'luxon'
 import { TrackUtils } from 'erela.js-vk'
+import generateRandomCaptchaString from '../tools/generateRandomCaptchaString'
+
+import logger from '../tools/logger'
 
 export default {
   name: 'play',
   aliases: ['p', 'pl'],
   djOnly: true,
   cooldown: 2,
-  execute: async ({ guild, voice, text, client, args, captcha, respond, send }) => {
+  execute: async ({ guild, voice, text, client, args, captcha, respond, send, meta }) => {
     if (!voice) return respond({ embeds: [generateErrorMessage('Необходимо находиться в голосовом канале.')], ephemeral: true })
 
     if (!args.length) return respond({ embeds: [generateErrorMessage('Вставьте после команды ссылку на плейлист или альбом, ID пользователя или трека.')], ephemeral: true })
@@ -38,7 +40,7 @@ export default {
       player.connect()
     }
 
-    logger.log('info', 'player info: %s %O %O', player.guild, player.voiceChannel, player.state)
+    logger.log('info', 'player info: %s %O %O', player.guild, player.voiceChannel, player.state, meta)
     //if (channel.id !== player.voiceChannel) return message.reply("вы находитесь не в том голосовом канале.")
 
     // сброс таймера и снятие с паузы при добавлении в очередь
@@ -95,7 +97,7 @@ export default {
     }
 
     if (req.status === 'error') {
-      logger.log('warning', 'VK Request error: %O', req)
+      logger.log('warning', 'VK Request error: %O', req, meta)
       if (req.type === 'captcha') {
         client.captcha.set(guild.id, {
           args,
@@ -110,7 +112,7 @@ export default {
           `Если картинки не видно, перейдите по [ссылке](${captcha.url})`,
           color: 0x5181b8,
           image: {
-            url: captcha.url
+            url: captcha.url + generateRandomCaptchaString()
           }
         }
 

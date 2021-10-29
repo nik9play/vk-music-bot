@@ -45,7 +45,7 @@ client.manager = new Manager({
   }
 })
   .on('nodeConnect', node => logger.log('info', `Node "${node.options.identifier}" connected.`))
-  .on('nodeError', (node, error) => logger.log('info', 
+  .on('nodeError', (node, error) => logger.log('error', 
     `Node "${node.options.identifier}" encountered an error: ${error.message}.`
   ))
   .on('trackStart', async (player, track) => {
@@ -78,7 +78,7 @@ client.manager = new Manager({
   //     }
   // })
   .on('queueEnd', async (player) => {
-    logger.log('info', 'end of queue %s', player.guild)
+    logger.log('info', 'end of queue', player.guild)
     if (!await client.db.get247(player.guild))
       if (player) {
         logger.log('info', 'set timeout %s', player.guild)

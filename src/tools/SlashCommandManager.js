@@ -1,12 +1,14 @@
 import generateErrorMessage from './generateErrorMessage'
 import { readdirSync } from 'fs'
 import { Permissions } from 'discord.js'
+import generateRandomCaptchaString from './generateRandomCaptchaString'
 import logger from './logger'
 
 export default class {
   constructor(client) {
     this.client = client
 
+    logger.log('info', 'Loading commands...')
     const commandFiles = readdirSync('./src/slashCommands').filter(file => file.endsWith('.js'))
 
     for (const file of commandFiles) {
@@ -20,6 +22,7 @@ export default class {
       })
     }
 
+    logger.log('info', 'Loading commands overwrites...')
     const slashOverwrites = readdirSync('./src/slashOverwrites').filter(file => file.endsWith('.js'))
 
     for (const file of slashOverwrites) {
@@ -52,6 +55,13 @@ export default class {
       const member = interaction.member
       const text = interaction.channel
       
+      const meta = {
+        metadata: {
+          shard: this.client.shard.ids[0],
+          guild_id: guild.id
+        }
+      }
+
       let command
       if (this.client.slashOverwrites.has(interaction.commandName)) {
         command = this.client.slashOverwrites.get(interaction.commandName)
@@ -60,20 +70,20 @@ export default class {
       }
 
       const respond = (data, timeout) => {
-        interaction.reply(data).catch(err => logger.log('error', 'Can\'t send reply: %O', err))
+        interaction.reply(data).catch(err => logger.log('error', 'Can\'t send reply: %O', err, meta))
         
         if (timeout)
           setTimeout(() => {
-            interaction.deleteReply().catch(err => logger.log('error', err))
+            interaction.deleteReply().catch(err => logger.log('Error deleting reply %O', err, meta))
           }, timeout)
       }
 
       const send = async (data, timeout) => {
-        const message = await text.send(data).catch(err => logger.log('error', 'Can\'t send message: %O', err))
+        const message = await text.send(data).catch(err => logger.log('error', 'Can\'t send message: %O', err, meta))
 
         if (timeout)
           setTimeout(() => {
-            message.delete().catch(err => logger.log('error', 'Can\'t delete message: %O', err))
+            message.delete().catch(err => logger.log('error', 'Can\'t delete message: %O', err, meta))
           }, timeout)
       }
 
@@ -106,7 +116,7 @@ export default class {
           return el?.value
         }) ?? []
         
-        logger.log('info', `${guild.shardId}/${guild.id} выполнил ${command.name} с аргументами %O`, args)
+        logger.log('info', `Executed command ${command.name} with arguments %O`, args, meta)
 
         if (this.client.captcha.has(guild.id) && (command.name === 'play' || command.name === 'search')) {
           const captcha = this.client.captcha.get(guild.id)
@@ -115,11 +125,12 @@ export default class {
             `Если картинки не видно, перейдите по [ссылке](${captcha.url})`,
             color: 0x5181b8,
             image: {
-              url: captcha.url
+              url: captcha.url + generateRandomCaptchaString()
             }
           }
   
-          return respond({ embeds: [embed], ephemeral: true })
+          respond({ embeds: [embed], ephemeral: true })
+          return
         }
 
         command.execute({ 
@@ -131,12 +142,15 @@ export default class {
           args,
           interaction,
           respond,
-          send
-        }).catch(err => logger.log('error', 'Error executing command: %O', err))
+          send,
+          meta
+        }).catch(err => logger.log('error', 'Error executing command: %O', err, meta))
       }
 
       if (interaction.isButton()) {
         if (interaction?.customId.startsWith('search')) {
+        logger.log('info', 'Нажата кнопка', meta)
+
           const id = interaction.customId.split(',')[1]
 
           if (id) {
@@ -150,7 +164,8 @@ export default class {
               client: this.client,
               args: [id],
               respond,
-              send
+              send,
+              meta
             }).catch(err => logger.log('error', 'Error executing command: %O', err))
           }
         }
@@ -182,10 +197,17 @@ export default class {
     let args = message.content.slice(prefix.length).split(/ +/)
     const commandName = args.shift().toLowerCase()
     
-    if (this.client.commands.has(commandName)) {      
-      logger.log('info', `${message.guild.shardId}/${message.guild.id} выполнил ${commandName} с аргументами %O`, args)
-
+    if (this.client.commands.has(commandName)) {
       const { guild, member, channel } = message
+
+      const meta = {
+        metadata: {
+          shard: this.client.shard.ids[0],
+          guild_id: guild.id
+        }
+      }
+
+      logger.log('info', `Executed command ${commandName} with arguments %O`, args, meta)
       
       const respond = async (data, timeout) => {
         const message = await channel.send(data).catch(err => logger.log('error', 'Can\'t send message: %O', err))
@@ -233,7 +255,7 @@ export default class {
           `Если картинки не видно, перейдите по [ссылке](${captcha.url})`,
           color: 0x5181b8,
           image: {
-            url: captcha.url
+            url: captcha.url + generateRandomCaptchaString()
           }
         }
 
@@ -250,7 +272,8 @@ export default class {
         args,
         respond,
         send,
-        message
+        message,
+        meta
       }).catch(err => logger.log('error', 'Error executing command: %O', err))
     }
   }

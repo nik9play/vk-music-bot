@@ -1,12 +1,19 @@
 import { createLogger, transports, format } from 'winston'
-import LogzioWinstonTransport from 'winston-logzio'
+// import LogzioWinstonTransport from 'winston-logzio'
+import mongotr from 'winston-mongodb'
+
 const { combine } = format
 
-const logzioWinstonTransport = new LogzioWinstonTransport({
+// const logzioWinstonTransport = new LogzioWinstonTransport({
+//   level: 'info',
+//   name: 'winston_logzio',
+//   token: process.env.LOGZIO_TOKEN,
+//   host: 'listener-eu.logz.io',
+// })
+
+const mongoTransport = new mongotr.MongoDB({
   level: 'info',
-  name: 'winston_logzio',
-  token: process.env.LOGZIO_TOKEN,
-  host: 'listener-eu.logz.io',
+  db: process.env.MONGO_URL
 })
 
 const logger = createLogger({
@@ -14,7 +21,7 @@ const logger = createLogger({
     format.splat(),
     format.simple()
   ),
-  transports: [new transports.Console(), logzioWinstonTransport],
+  transports: [new transports.Console(), mongoTransport],
 })
 
 export default logger

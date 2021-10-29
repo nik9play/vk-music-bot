@@ -1,13 +1,14 @@
 import VK from '../apis/VK'
 import generateErrorMessage from '../tools/generateErrorMessage'
 import { MessageActionRow, MessageButton } from 'discord.js'
+import generateRandomCaptchaString from '../tools/generateRandomCaptchaString'
 import logger from '../tools/logger'
 
 export default {
   name: 'search',
   djOnly: true,
   cooldown: 5,
-  execute: async function ({ guild, client, args, captcha, respond }) {
+  execute: async function ({ guild, client, args, captcha, respond, meta }) {
     const search = args.join(' ')
 
     const query = {}
@@ -25,7 +26,7 @@ export default {
     })
 
     if (req.status === 'error') {
-      logger.log('info', 'VK Request error: %O', req)
+      logger.log('info', 'VK Request error: %O', req, meta)
       if (req.type === 'captcha') {
         client.captcha.set(guild.id, {
           type: 'search',
@@ -41,7 +42,7 @@ export default {
           `Если картинки не видно, перейдите по [ссылке](${captcha.url})`,
           color: 0x5181b8,
           image: {
-            url: captcha.url
+            url: captcha.url + generateRandomCaptchaString()
           }
         }
 
