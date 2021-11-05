@@ -1,7 +1,7 @@
 if (process.env.NODE_ENV == 'development') require('dotenv').config()
 
 import { ShardingManager } from 'discord.js'
-const manager = new ShardingManager('./dist/index.js', { token: process.env.DISCORD_TOKEN, mode: 'worker' })
+const manager = new ShardingManager('./dist/index.js', { token: process.env.DISCORD_TOKEN, mode: 'worker', respawn: true })
 import axios from 'axios'
 import logger from './src/tools/logger'
 
