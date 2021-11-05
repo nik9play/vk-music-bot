@@ -44,7 +44,7 @@ client.manager = new Manager({
     if (guild) guild.shard.send(payload)
   }
 })
-  .on('nodeConnect', node => logger.log('info', `Node "${node.options.identifier}" connected.`))
+  .on('nodeConnect', node => logger.log('info', `Node "${node.options.identifier}" connected.`, {metadata: {shard: client.shard.ids[0]}}))
   .on('nodeError', (node, error) => logger.log('error', 
     `Node "${node.options.identifier}" encountered an error: ${error.message}.`
   ))
@@ -78,16 +78,15 @@ client.manager = new Manager({
   //     }
   // })
   .on('queueEnd', async (player) => {
-    logger.log('info', 'end of queue', player.guild)
+    logger.log('info', 'end of queue', {metadata:{guild_id: player.guild, shard: client.shard.ids[0]}})
     if (!await client.db.get247(player.guild))
       if (player) {
-        logger.log('info', 'set timeout %s', player.guild)
+        logger.log('info', 'set timeout', {metadata:{guild_id: player.guild, shard: client.shard.ids[0]}})
         client.timers.set(player.guild, getExitTimeout(player, client))
       }
-
   })
   .on('playerMove', (player, initChannel, newChannel) => {
-    logger.log('info', newChannel ? `${player.guild} moved player` : `${player.guild} disconnected`)
+    logger.log('info', newChannel ? 'moved player' : 'disconnected', {metadata:{guild_id: player.guild, shard: client.shard.ids[0]}})
     if (!newChannel) { 
       if (client.timers.has(player.guild.id))
         clearTimeout(client.timers.get(player.guild.id))
@@ -96,12 +95,12 @@ client.manager = new Manager({
     setTimeout(() =>  player.pause(false), 2000)
   })
   .on('playerDestroy', (player) => {
-    logger.log('info', `${player.guild} player destroyed`)
+    logger.log('info', 'player destroyed', {metadata:{guild_id: player.guild, shard: client.shard.ids[0]}})
   })
   .on('socketClosed', async (player, socket) => {
     // reconnect on "Abnormal closure"
     if (socket.code == 1006) {
-      logger.log('notice', 'caught Abnormal closure, trying to reconnect...')
+      logger.log('notice', 'caught Abnormal closure, trying to reconnect...', {metadata:{guild_id: player.guild, shard: client.shard.ids[0]}})
       const voiceChannel = player.voiceChannel
       const textChannel = player.textChannel
 
@@ -125,7 +124,7 @@ client.manager = new Manager({
     logger.log('debug', 'socket closed. info: %O, %s', socket, player.guild)
   })
   .on('trackStuck', (guildId) => {
-    logger.log('notice', `${guildId} track stuck`)
+    logger.log('notice', 'track stuck', {metadata:{guild_id: guildId, shard: client.shard.ids[0]}})
   })
   .on('trackError', (player, track) => {
     // const channel = client.channels.cache.get(player.textChannel)
@@ -133,19 +132,19 @@ client.manager = new Manager({
     //   description: `С треком **${track.author} — ${track.title}** произошла проблема, поэтому он был пропущен.`,
     //   color: 0x5181b8
     // }}).then(msg => msg.delete({timeout: 30000}).catch(console.error)).catch(console.error)
-    logger.log('warning', 'Track error: %O, %O', player, track)
+    logger.log('warn', 'Track error: %O, %O', player, track, {metadata:{guild_id: player.guild, shard: client.shard.ids[0]}})
   })
 
 
 client.once('ready', () => {
   client.manager.init(client.user.id)
-  logger.log('info', `Logged in as ${client.user.tag}`)
+  logger.log('info', `Logged in as ${client.user.tag}`, {metadata:{shard: client.shard.ids[0]}})
 })
 
 client.on('raw', d => client.manager.updateVoiceState(d))
 
 client.on('guildDelete', (guild) => {
-  logger.log('info', `${guild.id} leaves`)
+  logger.log('info', 'bot leaves', {metadata:{guild_id: guild.id, shard: client.shard.ids[0]}})
   const player = client.manager.get(guild.id)
 
   if (player) player.destroy()

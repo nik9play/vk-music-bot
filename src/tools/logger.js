@@ -1,3 +1,5 @@
+if (process.env.NODE_ENV == 'development') require('dotenv').config()
+
 import { createLogger, transports, format } from 'winston'
 // import LogzioWinstonTransport from 'winston-logzio'
 import mongotr from 'winston-mongodb'
@@ -13,7 +15,10 @@ const { combine } = format
 
 const mongoTransport = new mongotr.MongoDB({
   level: 'info',
-  db: process.env.MONGO_URL
+  db: process.env.MONGO_URL,
+  options: {
+    useUnifiedTopology: true
+  }
 })
 
 const logger = createLogger({

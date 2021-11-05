@@ -97,7 +97,7 @@ export default {
     }
 
     if (req.status === 'error') {
-      logger.log('warning', 'VK Request error: %O', req, meta)
+      logger.log('warn', 'VK Request error: %O', req, meta)
       if (req.type === 'captcha') {
         client.captcha.set(guild.id, {
           args,
