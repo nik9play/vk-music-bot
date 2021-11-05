@@ -61,11 +61,11 @@ export default class db {
     const server = await this.collection.findOne(query)
 
     if (!server) {
-      this.redisSet(`${guild_id}/${property}`, JSON.stringify({ value: defaultValue }), 'EX', 86400)
+      this.redisSet(`${guild_id}/${property}`, JSON.stringify({ value: defaultValue }), 'EX', 259200)
       return defaultValue
     }
     else {
-      this.redisSet(`${guild_id}/${property}`, JSON.stringify({ value: server[property] }), 'EX', 86400)
+      this.redisSet(`${guild_id}/${property}`, JSON.stringify({ value: server[property] }), 'EX', 259200)
       return server[property]
     }
   }
