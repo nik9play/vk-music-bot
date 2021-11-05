@@ -38,6 +38,12 @@ export default function(arg) {
 
       const parsedURL = parsePlaylistURL(url)
 
+      if (!parsedURL.id) {
+        return {
+          type: 'unknown'
+        }
+      }
+
       return {
         type: 'playlist',
         parsedURL

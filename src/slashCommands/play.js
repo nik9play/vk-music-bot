@@ -96,6 +96,11 @@ export default {
         break
     }
 
+    if (arg.type === 'unknown') {
+      respond({embeds: [generateErrorMessage('Неизвестный тип ссылки', 'error')]})
+      return
+    }
+
     if (req.status === 'error') {
       logger.log('warn', 'VK Request error: %O', req, meta)
       if (req.type === 'captcha') {
