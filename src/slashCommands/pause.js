@@ -21,7 +21,7 @@ export default {
       return player.pause(false)
     }
 
-    if (!await client.db.get247(guild.id))
+    if (!(await client.db.get247(guild.id)))
       client.timers.set(guild.id, getExitTimeout(player, client))
 
     respond({ embeds: [generateErrorMessage('⏸️ Пауза поставлена.', 'notitle')]})
