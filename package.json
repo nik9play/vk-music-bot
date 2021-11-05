@@ -1,25 +1,31 @@
 {
   "name": "vk-music-bot-next",
-  "version": "2.1.0",
+  "version": "3.0.0-dev",
   "main": "index.js",
   "author": "nik9",
   "license": "MIT",
+  "engines": {
+    "node": ">=16.6.0"
+  },
   "scripts": {
     "start": "node shardStart.js",
     "build": "rollup -c",
-    "dev": "rollup -c && cross-env NODE_ENV=development node --inspect shardStart.js"
+    "dev": "rollup -c && cross-env NODE_ENV=development node --inspect dist/shardStart.js"
   },
   "dependencies": {
     "axios": "^0.21.1",
     "axios-rate-limit": "^1.3.0",
     "bufferutil": "^4.0.3",
     "colors": "^1.4.0",
-    "discord.js": "^12.5.1",
+    "discord.js": "^13.0.1",
     "dotenv": "^8.2.0",
     "erela.js-vk": "^2.3.3-vk-5",
     "luxon": "^1.25.0",
     "mongodb": "^3.6.3",
-    "utf-8-validate": "^5.0.4"
+    "redis": "^3.1.2",
+    "utf-8-validate": "^5.0.4",
+    "winston": "^3.3.3",
+    "winston-mongodb": "^5.0.7"
   },
   "devDependencies": {
     "@rollup/plugin-dynamic-import-vars": "^1.1.1",

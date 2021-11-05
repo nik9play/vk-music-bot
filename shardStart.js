@@ -1,57 +1,70 @@
-if (process.env.NODE_ENV == "development") require('dotenv').config()
+if (process.env.NODE_ENV == 'development') require('dotenv').config()
 
-const { ShardingManager } = require('discord.js')
-const manager = new ShardingManager('./dist/index.js', { token: process.env.DISCORD_TOKEN })
-const axios = require('axios').default
+import { ShardingManager } from 'discord.js'
+const manager = new ShardingManager('./dist/index.js', { token: process.env.DISCORD_TOKEN, mode: 'worker' })
+import axios from 'axios'
 
-manager.on("shardCreate", shard => console.log(`Launched shard ${shard.id}`))
-manager.spawn().then(() => {
-  if (process.env.NODE_ENV != "development") sendInfo()
+import { createLogger, transports, format } from 'winston'
+const { combine } = format
+import LogzioWinstonTransport from 'winston-logzio'
+
+const logzioWinstonTransport = new LogzioWinstonTransport({
+  level: 'info',
+  name: 'winston_logzio',
+  token: process.env.LOGZIO_TOKEN,
+  host: 'listener-eu.logz.io',
 })
 
-// function serversStringByDigit(digits) {
-//   if (digits >= 10 && digits <= 20) {
-//     return "серверов"
-//   }
+const logger = createLogger({
+  format: combine(
+    format.splat(),
+    format.simple()
+  ),
+  transports: [new transports.Console(), logzioWinstonTransport],
+})
 
-//   switch(digits % 10) {
-//     case 1:
-//       return "сервер"
-//     case 2:
-//     case 3:
-//     case 4:
-//       return "сервера"
-//     default:
-//       return "серверов"
-//   }
-// }
+manager.on('shardCreate', shard => logger.log('info', `Launched shard ${shard.id}`))
+manager.spawn().then(() => {
+  if (process.env.NODE_ENV != 'development') sendInfo()
+}).catch(err => logger.log('error', 'Error starting shard', err))
 
 function sendInfo() {
-  manager.fetchClientValues("guilds.cache.size")
-    .then(results => {
+  manager.fetchClientValues('guilds.cache.size')
+    .then(async results => {
       const serverSize = results.reduce((acc, guildCount) => acc + guildCount, 0)
 
       manager.broadcastEval(`this.user.setPresence({activity: {name: '-vh | ${(serverSize/1000).toFixed(1)}k серверов', type: 2}})`)
 
-      axios.post("https://vk-api-v2.megaworld.space/metrics", {
+      const lavalinkInfo = manager.broadcastEval(c => {
+        const info = {
+          playingPlayers: 0
+        }
+        c.manager.nodes.each(e => {
+          info.playingPlayers += e.stats.playingPlayers
+        })
+        return info
+      })
+
+      axios.post('https://vk-api-v2.megaworld.space/metrics', {
         token: process.env.API_TOKEN,
         metrics: {
           servers: serverSize,
-          serverShards: results
+          serverShards: results,
+          lavalinkInfo
         }
       })
         .then(res => {
-          if (res.data.status === "error") {
-            console.log("Ошибка отправки статистики на метрику. (Ошибка сервера)", res.data.message)
+          if (res.data.status === 'error') {
+            logger.log('error', 'Ошибка отправки статистики на метрику. (Ошибка сервера) %s', res.data.message)
           } else {
-            console.log("Статистика отправлена на метрику.")
+            logger.log('info', 'Статистика отправлена на метрику.')
           }
         })
         .catch((e) => {
-          console.log("Ошибка отправки статистики на метрику. (Ошибка подключения)", e.response.data)
+          logger.log('error', 'Ошибка отправки статистики на метрику. (Ошибка подключения) %O', e.response.data)
         })
 
-      manager.fetchClientValues("user.id")
+      manager.fetchClientValues('user.id')
         .then(results => {
           const id = results[0]
 
@@ -61,27 +74,27 @@ function sendInfo() {
           },
           {
             headers: {
-              "Authorization": "SDC " + process.env.SDC_TOKEN
+              'Authorization': 'SDC ' + process.env.SDC_TOKEN
             }
           })
             .then(res => {
               if (res.data.error) {
-                console.log("Ошибка отправки статистики на мониторинг. (Ошибка сервера)", res.data.error)
+                logger.log('error', 'Ошибка отправки статистики на мониторинг. (Ошибка сервера) %s', res.data.error)
               } else {
-                console.log("Статистика отправлена на мониторинг.")
+                logger.log('info', 'Статистика отправлена на мониторинг.')
               }
             })
             .catch(() => {
-              console.log("Ошибка отправки статистики на мониторинг. (Ошибка подключения)")
+              logger.log('error', 'Ошибка отправки статистики на мониторинг. (Ошибка подключения)')
             })
         })
     })
   .catch(err => {
-    console.error("send stat err: ", err)
+    logger.error('error', 'Send stat error %O', err)
   })
 }
 
-if (process.env.NODE_ENV != "development") setInterval(() => {
+if (process.env.NODE_ENV != 'development') setInterval(() => {
   sendInfo()
 }, 300000)
 

@@ -1,0 +1,186 @@
+[
+  {
+    "name": "play",
+    "description": "Добавляет в очередь трек/треки",
+    "options": [
+      {
+        "type": 3,
+        "name": "название",
+        "description": "Название трека или ссылка на плейлист/пользователя",
+        "required": true
+      },
+      {
+        "type": 4,
+        "name": "количество",
+        "description": "Количество треков, которые добавить",
+        "required": false
+      },
+      {
+        "type": 4,
+        "name": "отступ",
+        "description": "Отступ от начала списка треков",
+        "required": false
+      }
+    ]
+  },
+  {
+    "name": "queue",
+    "description": "Вывод очереди",
+    "options": [
+      {
+        "type": 4,
+        "name": "страница",
+        "description": "Страница с очередью",
+        "required": false
+      }
+    ]
+  },
+  {
+    "name": "remove",
+    "description": "Удаление треков из очереди",
+    "options": [
+      {
+        "type": 3,
+        "name": "треки",
+        "description": "Номер трека или треков в формате 1-5",
+        "required": true
+      }
+    ]
+  },
+  {
+    "name": "search",
+    "description": "Поиск по базе вк",
+    "options": [
+      {
+        "type": 3,
+        "name": "запрос",
+        "description": "Поисковой запрос",
+        "required": true
+      }
+    ]
+  },
+  {
+    "name": "skip",
+    "description": "Пропуск текущего трека"
+  },
+  {
+    "name": "pause",
+    "description": "Пауза/снятие с паузы"
+  },
+  {
+    "name": "shuffle",
+    "description": "Перемешивание текущей очереди"
+  },
+  {
+    "name": "help",
+    "description": "Вывод справки"
+  },
+  {
+    "name": "repeat",
+    "description": "Повтор трека или очереди",
+    "options": [
+      {
+        "type": 3,
+        "name": "режим",
+        "description": "Режим повтора",
+        "required": false,
+        "choices": [
+          {
+            "name": "выкл",
+            "value": "выкл"
+          },
+          {
+            "name": "трек",
+            "value": "трек"
+          },
+          {
+            "name": "очередь",
+            "value": "очередь"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "stop",
+    "description": "Очистка очереди и остановка воспроизведения"
+  },
+  {
+    "name": "leave",
+    "description": "Выход из голосового канала"
+  },
+  {
+    "name": "247",
+    "description": "Переключение режима 24/7",
+    "options": [
+      {
+        "type": 5,
+        "name": "состояние",
+        "description": "Состояние режима",
+        "required": true
+      }
+    ]
+  },
+  {
+    "name": "info",
+    "description": "Вывод информации о боте"
+  },
+  {
+    "name": "fix",
+    "description": "Исправляет бота, если что-то пошло не так"
+  },
+  {
+    "name": "donate",
+    "description": "Вывод информации о донате и премиуме"
+  },
+  {
+    "name": "gachi",
+    "description": "Добавление в очередь случайного гачи ремикса"
+  },
+  {
+    "name": "mashup",
+    "description": "Добавление в очередь случайного мэшапа"
+  },
+  {
+    "name": "bass",
+    "description": "Переключение бас буста",
+    "options": [
+      {
+        "type": 3,
+        "name": "режим",
+        "description": "Режим бас буста",
+        "required": true,
+        "choices": [
+          {
+            "name": "выкл",
+            "value": "выкл"
+          },
+          {
+            "name": "слабый",
+            "value": "слабый"
+          },
+          {
+            "name": "средний",
+            "value": "средний"
+          },
+          {
+            "name": "мощный",
+            "value": "мощный"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "captcha",
+    "description": "Ввод капчи",
+    "options": [
+      {
+        "type": 3,
+        "name": "код",
+        "description": "Код с капчи",
+        "required": true
+      }
+    ]
+  }
+]

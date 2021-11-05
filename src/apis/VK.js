@@ -1,93 +1,92 @@
 import axios from 'axios'
-import convertMP3 from '../tools/convertMP3'
 
 export default class VK {
-  constructor (accessToken = process.env.VK_TOKEN,
-              version = "5.116",
-              //userAgent = "VKAndroidApp/5.52-4543 (Android 5.1.1; SDK 22; x86_64; unknown Android SDK built for x86_64; en; 320x240)"
-              userAgent = "KateMobileAndroid/56 lite-460 (Android 4.4.2; SDK 19; x86; unknown Android SDK built for x86; en)"
-              )
-  {
-    this.accessToken = accessToken
-    this.version = version
-    this.userAgent = userAgent
-  }
+  // constructor (//accessToken = process.env.VK_TOKEN,
+  //             //version = '5.116',
+  //             //userAgent = "VKAndroidApp/5.52-4543 (Android 5.1.1; SDK 22; x86_64; unknown Android SDK built for x86_64; en; 320x240)"
+  //             //userAgent = 'KateMobileAndroid/56 lite-460 (Android 4.4.2; SDK 19; x86; unknown Android SDK built for x86; en)'
+  //             )
+  // {
+  //   // this.accessToken = accessToken
+  //   // this.version = version
+  //   // this.userAgent = userAgent
+  // }
 
-  async sendRequest(path, opts) {
+  static async sendRequest(path, opts) {
     let urlParams = new URLSearchParams()
-    urlParams.append("v", this.version)
-    urlParams.append("access_token", this.accessToken)
+    // urlParams.append('v', this.version)
+    // urlParams.append('access_token', this.accessToken)
 
     for (const [key, value] of Object.entries(opts)) {
       urlParams.append(key, value)
     }
 
     try {
-      const res = await axios.get(`https://api.vk.com/method/${path}`, {
-        headers: {
-          "User-Agent": this.userAgent
-        },
+      const res = await axios.get(`https://vkproxy.megaworld.space/${path}`, {
         params: urlParams
       })
 
-      if (res.data.error) {
-        if (res.data.error.error_code == 14) {
-          return {
-            status: "error",
-            type: "captcha",
-            data: res.data.error
-          }
+      if (res.data.status === 'error') {
+        switch(res.data.error.code) {
+          case 14:
+            return {
+              status: 'error',
+              type: 'captcha',
+              error: res.data.error
+            }
+          case 201:
+            return {
+              status: 'error',
+              type: 'access_denied'
+            }
+          case 113:
+            return {
+              status: 'error',
+              type: 'empty'
+            }
         }
 
         return {
-          status: "error",
-          type: "api"
+          status: 'error',
+          type: 'api',
+          error: res.data.error
         }
-      } else if (res.data.execute_errors)
-        return {
-          status: "error",
-          type: "api"
-        }
-
-      return {
-        status: "success",
-        data: res.data
       }
-    } catch {
+
       return {
-        status: "error",
-        type: "request"
+        status: 'success',
+        data: res.data.data
+      }
+    } catch (ex) {
+      return {
+        status: 'error',
+        type: 'request'
       }
     }
   }
 
-  async tryID(opts) {
-    const captchaQuery = {}
+  static async tryID(opts) {
+    opts.audios = opts.q
 
-    if (opts.captcha_sid && opts.captcha_key) {
-      captchaQuery.captcha_sid = opts.captcha_sid
-      captchaQuery.captcha_key = opts.captcha_key
-    }
+    const res = await this.sendRequest('getAudiosById', opts)
 
-    opts = {...captchaQuery, audios: opts.q}
-    const res = await this.sendRequest("audio.getById", opts)
-
-    if (res.status === "error") {
+    if (res.status === 'error') {
       return res
+    } else if (res.data.length === 0) {
+      return {
+        status: 'error',
+        type: 'empty'
+      }
     } else {
-      let thumb = null
-
-      if (res.data.response[0].album) 
-        if (res.data.response[0].album.thumb)
-          thumb = res.data.response[0].album.thumb.photo_300
+      const song = res.data[0]
 
       return {
-        status: "success",
-        author: res.data.response[0].artist,
-        title: res.data.response[0].title,
-        url: convertMP3(res.data.response[0].url),
-        duration: res.data.response[0].duration,
-        thumb
+        status: 'success',
+        author: song.artist,
+        title: song.title,
+        url: song.stream,
+        duration: song.duration,
+        thumb: song?.cover_url_small
       }
     }
   }
@@ -97,36 +96,32 @@ export default class VK {
    * @param {Object} opts Параметры запроса
    * @returns {Object[]} Трек
    */
-  async GetOne(opts) {
+   static async GetOne(opts) {
     if (/^-?[0-9]+_[0-9]+$/g.test(opts.q)) {
       return await this.tryID(opts)
     }
 
     opts.count = 1
 
-    const res = await this.sendRequest("audio.search", opts)
+    const res = await this.sendRequest('search', opts)
 
-    if (res.status === "error") {
+    if (res.status === 'error') {
       return res
-    } else if (res.data.response.items.length === 0) {
+    } else if (res.data.length === 0) {
       return {
-        status: "error",
-        type: "empty"
+        status: 'error',
+        type: 'empty'
       }
     } else {
-      let thumb = null
-
-      if (res.data.response.items[0].album) 
-        if (res.data.response.items[0].album.thumb)
-          thumb = res.data.response.items[0].album.thumb.photo_300
+      const song = res.data[0]
 
       return {
-        status: "success",
-        author: res.data.response.items[0].artist,
-        title: res.data.response.items[0].title,
-        url: convertMP3(res.data.response.items[0].url),
-        duration: res.data.response.items[0].duration,
-        thumb
+        status: 'success',
+        author: song.artist,
+        title: song.title,
+        url: song.stream,
+        duration: song.duration,
+        thumb: song?.cover_url_small
       }
     }
   }
@@ -136,61 +131,28 @@ export default class VK {
    * @param {Object} opts Параметры запроса 
    * @returns {Object[]} Массив треков
    */
-  async GetPlaylist(opts) {
-    const code = `var playlistInfoAPI = API.audio.getPlaylistById({
-      owner_id: ${opts.owner_id},
-      playlist_id: ${opts.album_id},
-      ${opts.access_key ? `access_key: '${opts.access_key}',` : ""}
-    });
-    
-    var playlistListAPI = API.audio.get({
-      owner_id: ${opts.owner_id},
-      playlist_id: ${opts.album_id},
-      ${opts.access_key ? `access_key: '${opts.access_key}',` : ""}
-      ${opts.offset ? `offset: ${opts.offset},` : ""}
-      ${opts.count ? `count: ${opts.count},` : ""}
-    });
-    
-    var data = {
-      'info': playlistInfoAPI,
-      'list': playlistListAPI
-    };
-    return data;`
-
-    const captchaQuery = {}
-
-    if (opts.captcha_sid && opts.captcha_key) {
-      captchaQuery.captcha_sid = opts.captcha_sid
-      captchaQuery.captcha_key = opts.captcha_key
-    }
-
-    const res = await this.sendRequest("execute", {...captchaQuery, code })
-    if (res.status === "error") {
+  static async GetPlaylist(opts) {
+    const res = await this.sendRequest(`albums/${opts.album_id}`, opts)
+    if (res.status === 'error') {
       return res
     } else {
-      const info = res.data.response.info
-      const list = res.data.response.list
+      const info = res.data.additionalData
+      const list = res.data.data
 
-      if (list.items.length == 0) {
+      if (list.length == 0) {
         return {
-          status: "error",
-          type: "empty"
+          status: 'error',
+          type: 'empty'
         }
       }
 
-      const newArray = list.items.map(e => {
-        let thumb = null
-
-        if (e.album) 
-          if (e.album.thumb.photo_300)
-            thumb = e.album.thumb.photo_300
-
+      const newArray = list.map(e => {
         return {
           title: e.title,
           author: e.artist,
-          url: convertMP3(e.url),
+          url: e.stream,
           duration: e.duration,
-          thumb
+          thumb: e?.cover_url_small
         }
       })
 
@@ -202,11 +164,11 @@ export default class VK {
       }
 
       return {
-        status: "success",
+        status: 'success',
         info: {
           title: info.title,
           description: info.description,
-          count: list.count,
+          count: info.count,
           imgUrl
         },
         newArray
@@ -219,101 +181,56 @@ export default class VK {
    * @param {Object} opts Параметры запроса 
    * @returns {Object[]} Массив треков
    */
-  async GetUser(opts) {
-    let code = ""
+   static async GetUser(opts) {
+    let res = null
 
-    if (opts.owner_id.startsWith("-")) {
-      code = `var groupInfoAPI = API.groups.getById({
-        group_ids: "${opts.owner_id.slice(1)}",
-        fields: "description"
-      })[0];
-      
-      var listAPI = API.audio.get({
-        owner_id: ${opts.owner_id},
-        count: ${opts.count},
-        offset: ${opts.offset}
-      });
-      
-      var data = {
-        'info': groupInfoAPI,
-        'list': listAPI
-      };
-      return data;`
+    if (opts.owner_id.startsWith('-')) {
+      res = await this.sendRequest(`group/${opts.owner_id.substring(1)}`, opts)
     } else {
-      code = `var userInfoAPI = API.users.get({
-        user_ids: "${opts.owner_id}",
-        fields: "photo_200"
-      })[0];
-      
-      var listAPI = API.audio.get({
-        owner_id: userInfoAPI["id"],
-        count: ${opts.count},
-        offset: ${opts.offset}
-      });
-      
-      var data = {
-        'info': userInfoAPI,
-        'list': listAPI
-      };
-      return data;`
+      res = await this.sendRequest(`user/${opts.owner_id}`, opts)
     }
 
-    const captchaQuery = {}
-
-    if (opts.captcha_sid && opts.captcha_key) {
-      captchaQuery.captcha_sid = opts.captcha_sid
-      captchaQuery.captcha_key = opts.captcha_key
-    }
-
-    const res = await this.sendRequest("execute", {...captchaQuery, code })
-
-    if (res.status === "error") {
+    if (res.status === 'error') {
       return res
     } else {
-      let info = res.data.response.info
+      let info = res.data.additionalData
 
-      if (opts.owner_id.startsWith("-")) {
+      if (opts.owner_id.startsWith('-')) {
         info = {
-          type: "group",
+          type: 'group',
           name: info.name,
           description: info.description,
           img: info.photo_200
         }
       } else {
         info = {
-          type: "user",
+          type: 'user',
           name: `${info.first_name} ${info.last_name}`,
           img: info.photo_200
         }
       }
 
-      const list = res.data.response.list
+      const list = res.data.data
 
-      if (list.items.length == 0) {
+      if (list.length == 0) {
         return {
-          status: "error",
-          type: "empty"
+          status: 'error',
+          type: 'empty'
         }
       }
 
-      const newArray = list.items.map(e => {
-        let thumb = null
-
-        if (e.album) 
-          if (e.album.thumb.photo_300)
-            thumb = e.album.thumb.photo_300
-
+      const newArray = list.map(e => {
         return {
           title: e.title,
           author: e.artist,
-          url: convertMP3(e.url),
+          url: e.stream,
           duration: e.duration,
-          thumb
+          thumb: e?.cover_url_small
         }
       })
 
       return {
-        status: "success",
+        status: 'success',
         info,
         newArray
       }
@@ -325,54 +242,49 @@ export default class VK {
    * @param {Object} opts Параметры запроса 
    * @returns {Object[]} Массив треков
    */
-  async GetMany(opts) {
+   static async GetMany(opts) {
     opts.count = 5
 
-    const res = await this.sendRequest("audio.search", opts)
+    const res = await this.sendRequest('search', opts)
 
-    if (res.status === "error") {
+    if (res.status === 'error') {
       return res
-    } else if (res.data.response.items.length === 0) {
+    } else if (res.data.length === 0) {
       return {
-        status: "error",
-        type: "empty"
+        status: 'error',
+        type: 'empty'
       }
     } else {
       return {
-        status: "success",
-        tracks: res.data.response.items.map((e) => {
-          let thumb = null
-
-          if (e.album) 
-            if (e.album.thumb.photo_300)
-              thumb = e.album.thumb.photo_300
-
+        status: 'success',
+        tracks: res.data.map((e) => {
           return {
             author: e.artist,
             title: e.title,
-            url: convertMP3(e.url),
+            url: e.stream,
             duration: e.duration,
-            thumb
+            thumb: e?.cover_url_small,
+            id: e.source_id
           }
         })
       }
     }
   }
 
-  async GetWall(opts) {
-    const res = await this.sendRequest("wall.getById", opts)
+  static async GetWall(opts) {
+    const res = await this.sendRequest('wall.getById', opts)
 
-    if (res.status === "error") {
+    if (res.status === 'error') {
       return res
     } else if (res.data.response.items.length === 0 || !res.data.response.items[0].attachments) {
       return {
-        status: "error",
-        type: "empty"
+        status: 'error',
+        type: 'empty'
       }
     } else {
       const attachments = res.data.response.items[0].attachments
       return {
-        status: "success",
+        status: 'success',
         tracks: attachments.map()
       }
     }
