@@ -35,13 +35,13 @@ export default class {
     this.client.on('interactionCreate', async interaction => {
       //console.log(interaction.options.data)
       
-      this.executeSlash(interaction)
+      this.executeSlash(interaction).catch((e) => logger.log('error', 'executeSlash ' + e.message, {metadata: { shard: this.client.shard.ids[0] }}))
     })
 
     // обычные команды с префиксом
     this.client.on('messageCreate', async message => {
       //console.log(message)
-      this.executePrefix(message)
+      this.executePrefix(message).catch((e) => logger.log('error', 'executePrefix ' + e.message, {metadata: { shard: this.client.shard.ids[0] }}))
     })
   }
 
