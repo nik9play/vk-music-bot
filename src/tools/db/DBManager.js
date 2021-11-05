@@ -43,7 +43,7 @@ export default class db {
     const update = {$set: {}}
     update.$set[property] = value
 
-    this.redisSet(`${guild_id}/${property}`, JSON.stringify({ value }), 'EX', 86400) // удалить ключ через сутки
+    this.redisSet(`${guild_id}/${property}`, JSON.stringify({ value }), 'EX', 259200) // удалить ключ через трое суток
     await this.collection.updateOne(query, update, {upsert: true})
   }
 
