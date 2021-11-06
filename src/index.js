@@ -57,13 +57,16 @@ client.manager = new Manager({
           description: `Сейчас играет **${track.author} — ${track.title}**.`,
           color: 0x5181b8
         }]}).catch(err => logger.log('error', 'Can\'t send message: %O', err))
-        try {
-          setTimeout(() => {
-            message.delete().catch(err => logger.log('error', 'Can\'t delete message: %O', err))
-          }, track.duration)
+        if (message) {
+          try {
+            setTimeout(() => {
+              message?.delete().catch(err => logger.log('error', 'Can\'t delete message: %O', err))
+            }, track.duration)
+          }
+          catch { // 
+          }
         }
-        catch { // 
-        }
+
       }
     }
   })
