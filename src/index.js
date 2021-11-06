@@ -140,7 +140,7 @@ client.manager = new Manager({
     //   description: `С треком **${track.author} — ${track.title}** произошла проблема, поэтому он был пропущен.`,
     //   color: 0x5181b8
     // }}).then(msg => msg.delete({timeout: 30000}).catch(console.error)).catch(console.error)
-    logger.log('warn', 'Track error: %O, %O', player, track, {metadata:{guild_id: player.guild, shard: client.shard.ids[0]}})
+    logger.log('warn', 'Track error: %O, %O', player.guild, track, {metadata:{guild_id: player.guild, shard: client.shard.ids[0]}})
   })
 
 
