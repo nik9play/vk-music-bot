@@ -156,7 +156,7 @@ client.on('guildDelete', (guild) => {
 client.login(process.env.DISCORD_TOKEN)
 
 // подключение к дб
-client.db = new db(process.env.MONGO_URL)
+client.db = new db(process.env.MONGO_URL, process.env.REDIS_URL)
 client.db.init()
 
 // client.on("message", async message => {
