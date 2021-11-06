@@ -7,32 +7,40 @@ import logger from './src/tools/logger'
 
 manager.on('shardCreate', shard => logger.log('info', `Launched shard ${shard.id}`))
 manager.spawn().then(() => {
-  if (process.env.NODE_ENV != 'development') sendInfo()
+   sendInfo()
 }).catch(err => logger.log('error', 'Error starting shard %O', err))
 
 function sendInfo() {
   manager.fetchClientValues('guilds.cache.size')
     .then(async results => {
+      console.log(results)
       const serverSize = results.reduce((acc, guildCount) => acc + guildCount, 0)
+      console.log(serverSize)
 
-      manager.broadcastEval(`this.user.setPresence({activity: {name: '-vh | ${(serverSize/1000).toFixed(1)}k серверов', type: 2}})`)
+      // manager.broadcastEval((c,serverSize) => {
+      //   c.user.setPresence({
+      //     activity: {name: `-vh | ${(serverSize/1000).toFixed(1)}k серверов`, type: 2}
+      //   })
+      // })
 
-      const lavalinkInfo = manager.broadcastEval(c => {
-        const info = {
-          playingPlayers: 0
-        }
-        c.manager.nodes.each(e => {
-          info.playingPlayers += e.stats.playingPlayers
-        })
-        return info
-      })
+      // manager.shards.get(0).
+
+      // const lavalinkInfo = manager.broadcastEval(c => {
+      //   const info = {
+      //     playingPlayers: 0
+      //   }
+      //   c.manager.nodes.each(e => {
+      //     info.playingPlayers += e.stats.playingPlayers
+      //   })
+      //   return info
+      // })
 
       axios.post('https://vk-api-v2.megaworld.space/metrics', {
         token: process.env.API_TOKEN,
         metrics: {
           servers: serverSize,
           serverShards: results,
-          lavalinkInfo
+          //lavalinkInfo
         }
       })
         .then(res => {
