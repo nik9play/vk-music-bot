@@ -18,7 +18,7 @@ export default {
       }
       if (args[0] === 'трек') {
         player.setTrackRepeat(true)
-        respond({ embeds: [generateErrorMessage('🔁 Включен повтор очереди.', 'notitle')] })
+        respond({ embeds: [generateErrorMessage('🔁 Включен повтор трека.', 'notitle')] })
         return
       }
       if (args[0] === 'выкл') {
