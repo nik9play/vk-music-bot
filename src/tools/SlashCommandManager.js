@@ -3,6 +3,7 @@ import { readdirSync } from 'fs'
 import { Permissions } from 'discord.js'
 import generateRandomCaptchaString from './generateRandomCaptchaString'
 import logger from './logger'
+import Collection from '@discordjs/collection'
 
 export default class {
   constructor(client) {
@@ -263,6 +264,30 @@ export default class {
         return
       }
 
+      //проверка кулдауна
+      if (!this.client.cooldowns.has(command.name)) {
+        this.client.cooldowns.set(command.name, new Collection())
+      }
+
+      const now = Date.now()
+      const timestamps = this.client.cooldowns.get(command.name)
+      const cooldownAmount = (command.cooldown || 3) * 1000
+
+      if (timestamps.has(member.user.id)) {
+        const expirationTime = timestamps.get(member.id) + cooldownAmount
+
+        if (now < expirationTime) {
+          const timeLeft = (expirationTime - now) / 1000
+
+          respond({ embeds: [generateErrorMessage(`Пожалуйста, подождите еще ${timeLeft.toFixed(2)} секунд перед тем как использовать \`${command.name}\`!`)]}, 
+            timeLeft * 1000 + 1000)
+          return
+        }
+      } else {
+        timestamps.set(member.id, now)
+        setTimeout(() => timestamps.delete(member.id), cooldownAmount)
+      }
+
       command.execute({ 
         guild,
         user: member.user,
@@ -274,7 +299,7 @@ export default class {
         send,
         message,
         meta
-      }).catch(err => logger.log('error', 'Error executing command: %O', err))
+      }).catch(err => logger.log('error', 'Error executing command: %O', err, meta))
     }
   }
 
