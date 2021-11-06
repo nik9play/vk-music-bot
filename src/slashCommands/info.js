@@ -84,6 +84,6 @@ export default {
       ]
     }
 
-    respond({embeds: [embed]})
+    respond({embeds: [embed], ephemeral: true})
   }
 }
