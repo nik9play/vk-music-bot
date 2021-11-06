@@ -279,7 +279,7 @@ export default class {
         if (now < expirationTime) {
           const timeLeft = (expirationTime - now) / 1000
 
-          respond({ embeds: [generateErrorMessage(`Пожалуйста, подождите еще ${timeLeft.toFixed(2)} секунд перед тем как использовать \`${command.name}\`!`)]}, 
+          respond({ embeds: [generateErrorMessage(`Пожалуйста, подождите еще ${timeLeft.toFixed(2)} секунд перед тем как использовать \`${command.name}\`!`, 'warning')]}, 
             timeLeft * 1000 + 1000)
           return
         }
