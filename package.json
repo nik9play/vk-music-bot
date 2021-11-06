@@ -1,6 +1,6 @@
 {
   "name": "vk-music-bot-next",
-  "version": "3.0.0-dev",
+  "version": "3.0.0",
   "main": "index.js",
   "author": "nik9",
   "license": "MIT",
