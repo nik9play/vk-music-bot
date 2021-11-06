@@ -8,7 +8,7 @@
     "node": ">=16.6.0"
   },
   "scripts": {
-    "start": "node shardStart.js",
+    "start": "node dist/shardStart.js",
     "build": "rollup -c",
     "dev": "rollup -c && cross-env NODE_ENV=development node --inspect dist/shardStart.js"
   },
