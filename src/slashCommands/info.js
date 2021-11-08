@@ -63,7 +63,7 @@ export default {
         },
         {
           'name': 'Номер шарда',
-          'value': `\`\`\`js\n${guild.shardID}\`\`\``,
+          'value': `\`\`\`js\n${guild.shardId}\`\`\``,
           'inline': true
         },
         {
