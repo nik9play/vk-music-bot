@@ -108,7 +108,7 @@ client.manager = new Manager({
   .on('socketClosed', async (player, socket) => {
     // reconnect on "Abnormal closure"
     if (socket.code == 1006) {
-      logger.log('notice', 'caught Abnormal closure, trying to reconnect...', {metadata:{guild_id: player.guild, shard: client.shard.ids[0]}})
+      logger.log('warning', 'caught Abnormal closure, trying to reconnect...', {metadata:{guild_id: player.guild, shard: client.shard.ids[0]}})
       const voiceChannel = player.voiceChannel
       const textChannel = player.textChannel
 
@@ -132,7 +132,7 @@ client.manager = new Manager({
     logger.log('debug', 'socket closed. info: %O, %s', socket, player.guild)
   })
   .on('trackStuck', (guildId) => {
-    logger.log('notice', 'track stuck', {metadata:{guild_id: guildId, shard: client.shard.ids[0]}})
+    logger.log('warning', 'track stuck', {metadata:{guild_id: guildId, shard: client.shard.ids[0]}})
   })
   .on('trackError', (player, track) => {
     // const channel = client.channels.cache.get(player.textChannel)
