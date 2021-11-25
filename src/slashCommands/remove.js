@@ -22,7 +22,7 @@ export default {
       if (last && first && last > first) removedTracks = [...removedTracks, ...queue.remove(first-1, last)]
     } else {
       const inta = parseInt(a)
-      if (inta > 1) removedTracks = [...removedTracks, ...queue.remove(inta-1)]
+      if (inta >= 1) removedTracks = [...removedTracks, ...queue.remove(inta-1)]
     }
 
     respond({embeds: [generateErrorMessage(`🗑️ Удалено треков: ${removedTracks.length}.`, 'notitle')]})
