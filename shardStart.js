@@ -13,15 +13,15 @@ manager.spawn().then(() => {
 function sendInfo() {
   manager.fetchClientValues('guilds.cache.size')
     .then(async results => {
-      console.log(results)
       const serverSize = results.reduce((acc, guildCount) => acc + guildCount, 0)
-      console.log(serverSize)
 
-      // manager.broadcastEval((c,serverSize) => {
-      //   c.user.setPresence({
-      //     activity: {name: `-vh | ${(serverSize/1000).toFixed(1)}k серверов`, type: 2}
-      //   })
-      // })
+      function setPr (c, { servers }) {
+        c.user.setPresence({
+          activities: [{name: `/help | ${(servers/1000).toFixed(1)}k серверов`, type: 2}]
+        })
+      }
+
+      manager.broadcastEval(setPr, { context: { servers: serverSize }})
 
       // manager.shards.get(0).
 
