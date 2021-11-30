@@ -1,3 +1,4 @@
+import escapeFormat from '../tools/escapeFormat';
 import generateErrorMessage from '../tools/generateErrorMessage';
 
 export default {
@@ -17,7 +18,7 @@ export default {
 
     player.stop()
     return respond({embeds: [{
-      description: `**${author} — ${title}** пропущен.`,
+      description: `**${escapeFormat(author)} — ${escapeFormat(title)}** пропущен.`,
       color: 0x5181b8
     }]}, 20000)
   }

@@ -1,6 +1,7 @@
 import { Duration } from 'luxon'
 import { MessageEmbed } from 'discord.js'
 import generateErrorMessage from '../tools/generateErrorMessage'
+import escapeFormat from '../tools/escapeFormat'
 
 export default {
   name: 'queue',
@@ -31,7 +32,7 @@ export default {
     //console.log(queue.current)
 
     if (!tracks.length) embed.setDescription(`Нет треков на странице \`${page}\`.`)
-    else embed.setDescription(tracks.map((track, i) => `${start + (++i)}. ${track.author} — ${track.title}`).join('\n'))
+    else embed.setDescription(tracks.map((track, i) => `${start + (++i)}. ${escapeFormat(track.author)} — ${escapeFormat(track.title)}`).join('\n'))
 
     const maxPages = Math.ceil(queue.length / multiple)
 

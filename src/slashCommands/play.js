@@ -10,6 +10,7 @@ import { TrackUtils } from 'erela.js-vk'
 import generateRandomCaptchaString from '../tools/generateRandomCaptchaString'
 
 import logger from '../tools/logger'
+import escapeFormat from '../tools/escapeFormat'
 
 export default {
   name: 'play',
@@ -141,14 +142,14 @@ export default {
     if (arg.type === 'track') {
       const songEmbed = {
         color: 0x5181b8,
-        title: req.title,
+        title: escapeFormat(req.title),
         author: {
           name: 'Трек добавлен!'
         },
         thumbnail: {
           url: req.thumb
         },
-        description: req.author,
+        description: escapeFormat(req.author),
         fields: [
           {
             name: 'Длительность',
@@ -188,8 +189,8 @@ export default {
       const newArray = req.newArray
 
       const playlistEmbed = {
-        title: req.info.title,
-        description: req.info.description,
+        title: escapeFormat(req.info.title),
+        description: escapeFormat(req.info.description),
         color: 0x5181b8,
         thumbnail: {
           url: req.info.imgUrl
@@ -234,7 +235,7 @@ export default {
       const newArray = req.newArray
 
       const playlistEmbed = {
-        title: req.info.name,
+        title: escapeFormat(req.info.name),
         thumbnail: {
           url: req.info.img
         },
@@ -273,8 +274,8 @@ export default {
       const newArray = req.newArray
 
       const playlistEmbed = {
-        title: req.info.name,
-        description: req.info.description,
+        title: escapeFormat(req.info.name),
+        description: escapeFormat(req.info.description),
         thumbnail: {
           url: req.info.img
         },
@@ -309,7 +310,7 @@ export default {
 
     if (wrongTracks.length > 0) {
       let desc = wrongTracks.slice(0, 5).map(e => {
-        return `${e.author} - ${e.title}`
+        return escapeFormat(`${e.author} - ${e.title}`)
       }).join('\n')
 
       desc = `${desc}\n${wrongTracks.length > 5 ? `...\nи еще ${wrongTracks.length - 5} ${declOfNum(wrongTracks.length - 5, ['трек', 'трека', 'треков'])}.` : ''}`

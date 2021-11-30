@@ -5,6 +5,7 @@ import db from './tools/db/DBManager'
 import getExitTimeout from './tools/getExitTimeout'
 import SlashCommandManager from './tools/SlashCommandManager'
 import logger from './tools/logger'
+import escapeFormat from './tools/escapeFormat'
 
 const client = new Client({
   makeCache: Options.cacheWithLimits({
@@ -54,7 +55,7 @@ client.manager = new Manager({
 
       if (channel) {
         const message = await channel.send({embeds: [{
-          description: `Сейчас играет **${track.author} — ${track.title}**.`,
+          description: `Сейчас играет **${escapeFormat(track.author)} — ${escapeFormat(track.title)}**.`,
           color: 0x5181b8
         }]}).catch(err => logger.log('error', 'Can\'t send message: %O', err))
         try {

@@ -1,4 +1,6 @@
-export default function(message, type='error') {
+import escapeFormat from './escapeFormat'
+
+export default function(message, type='error', escapeFormatting=false) {
   let title
   let color
   
@@ -20,6 +22,10 @@ export default function(message, type='error') {
       color = 0x5181b8
   }
   
+  if (escapeFormatting) {
+    message = escapeFormat(message)
+  }
+
   const embed = {
     // title: `<:no2:835498572916195368> ${title}`,
     description: `${title}\n${message}`,
