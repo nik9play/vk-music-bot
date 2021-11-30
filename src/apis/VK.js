@@ -22,7 +22,7 @@ export default class VK {
     }
 
     try {
-      const res = await axios.get(`https://vkproxy2.megaworld.space/${path}`, {
+      const res = await axios.get(`${process.env['DATMUSIC_URL']}${path}`, {
         params: urlParams
       })
 
