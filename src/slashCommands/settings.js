@@ -57,7 +57,7 @@ export default {
         if (!roleName)
           return respond({embeds: [generateErrorMessage('Неверное имя роли.')]})
 
-        client.db.setAccessRole(roleName, guild.id).then(() => respond({embeds: [generateErrorMessage(`DJ роль \`${roleName.name}\` установлена.`, 'notitle')]}))
+        client.db.setAccessRole(roleName, guild.id).then(() => respond({embeds: [generateErrorMessage(`DJ роль \`${roleName}\` установлена.`, 'notitle')]}))
         break
       case 'dj':
         if (!args[1] || (args[1] !== 'on' && args[1] !== 'off'))
