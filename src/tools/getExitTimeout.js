@@ -13,7 +13,9 @@ export default function(player, client) {
       }]}).catch(err => logger.log('error', 'Can\'t send message: %O', err))
 
       setTimeout(() => {
-        message.delete().catch(err => logger.log('error', 'Can\'t delete message: %O', err))
+        if (message && typeof message.delete === 'function') {
+          message.delete().catch(err => logger.log('error', 'Can\'t delete message: %O', err))
+        }
       }, 30000)
     }
   }, 1200000)

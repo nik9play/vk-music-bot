@@ -84,7 +84,9 @@ export default class {
 
         if (timeout)
           setTimeout(() => {
-            message.delete().catch(err => logger.log('error', 'Can\'t delete message: %O', err, meta))
+            if (message && typeof message.delete === 'function') {
+              message.delete().catch(err => logger.log('error', 'Can\'t delete message: %O', err, meta))
+            }
           }, timeout)
       }
 
@@ -215,7 +217,9 @@ export default class {
 
         if (timeout)
           setTimeout(() => {
-            message.delete().catch(err => logger.log('error', 'Can\'t delete message: %O', err))
+            if (message && typeof message.delete === 'function') {
+              message.delete().catch(err => logger.log('error', 'Can\'t delete message: %O', err))
+            }
           }, timeout)
       }
 
