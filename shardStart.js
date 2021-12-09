@@ -16,9 +16,11 @@ function sendInfo() {
       const serverSize = results.reduce((acc, guildCount) => acc + guildCount, 0)
 
       function setPr (c, { servers }) {
-        c.user.setPresence({
-          activities: [{name: `/help | ${(servers/1000).toFixed(1)}k серверов`, type: 2}]
-        })
+        if (c.user) {
+          c.user.setPresence({
+            activities: [{name: `/help | ${(servers/1000).toFixed(1)}k серверов`, type: 2}]
+          })
+        }
       }
 
       manager.broadcastEval(setPr, { context: { servers: serverSize }})
