@@ -53,21 +53,16 @@ client.manager = new Manager({
     if (!await client.db.getDisableAnnouncements(player.guild)) {
       const channel = client.channels.cache.get(player.textChannel)
 
-      if (channel) {
+      if (channel && track && track.author && track.title) {
         const message = await channel.send({embeds: [{
           description: `Сейчас играет **${escapeFormat(track.author)} — ${escapeFormat(track.title)}**.`,
           color: 0x5181b8
         }]}).catch(err => logger.log('error', 'Can\'t send message: %O', err))
-        try {
           setTimeout(() => {
             if (message && typeof message.delete === 'function') {
               message.delete().catch(err => logger.log('error', 'Can\'t delete message: %O', err))
             }
           }, track.duration)
-        }
-        catch { // 
-        }
-
       }
     }
   })
