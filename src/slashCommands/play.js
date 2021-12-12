@@ -326,7 +326,7 @@ export default {
 
     if (!await client.db.checkPremium(guild.id)) {
       if (player)
-        if (player.queue.totalSize >= 200) {
+        if (player.queue.totalSize > 200) {
           player.queue.remove(199, player.queue.totalSize - 1)
           return send({embeds: [generateErrorMessage('В очереди было больше 200 треков, поэтому лишние треки были удалены. ' +
           `Хотите больше треков? Приобретите Премиум, подробности: \`${client.db.getPrefix(guild.id)}donate\`.`, 'warning')]})
