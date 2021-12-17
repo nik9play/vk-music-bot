@@ -89,14 +89,18 @@ client.manager = new Manager({
         client.timers.set(player.guild, getExitTimeout(player, client))
       }
   })
-  .on('playerMove', (player, initChannel, newChannel) => {
-    logger.log('info', newChannel ? 'moved player' : 'disconnected', {metadata:{guild_id: player.guild, shard: client.shard.ids[0]}})
-    if (!newChannel) { 
-      if (client.timers.has(player.guild.id))
-        clearTimeout(client.timers.get(player.guild.id))
-      return player.destroy() 
-    }
+  .on('playerMove', (player) => {
+    logger.log('info', 'moved player', {metadata:{guild_id: player.guild, shard: client.shard.ids[0]}})
+    player.pause(true)
     setTimeout(() =>  player.pause(false), 2000)
+  })
+  .on('playerDisconnect', (player) => {
+    logger.log('info', 'player disconnected', {metadata:{guild_id: player.guild, shard: client.shard.ids[0]}})
+
+    if (client.timers.has(player.guild))
+      clearTimeout(client.timers.get(player.guild))
+    
+    player.destroy()
   })
   .on('playerDestroy', (player) => {
     logger.log('info', 'player destroyed', {metadata:{guild_id: player.guild, shard: client.shard.ids[0]}})
