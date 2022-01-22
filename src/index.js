@@ -1,5 +1,6 @@
 import { Client, Collection, Intents, Options } from 'discord.js'
 import { Manager } from 'erela.js-vk'
+import Cluster from 'discord-hybrid-sharding'
 
 import db from './tools/db/DBManager'
 import getExitTimeout from './tools/getExitTimeout'
@@ -16,6 +17,8 @@ const client = new Client({
 		PresenceManager: 0,
     ThreadManager: 0
 	}),
+  shards: Cluster.data.SHARD_LIST,
+  shardCount: Cluster.data.TOTAL_SHARDS,
   intents: [ Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_VOICE_STATES, Intents.FLAGS.GUILD_MESSAGES ]
 })
 
@@ -26,6 +29,7 @@ client.commands = new Collection()
 client.slashOverwrites = new Collection() 
 client.captcha = new Collection()
 client.timers = new Collection()
+client.cluster = new Cluster.Client(client)
 
 const LavalinkServersString = process.env.LAVALINK_NODES
 const nodes = LavalinkServersString.split(';').map(val => {
@@ -45,7 +49,7 @@ client.manager = new Manager({
     if (guild) guild.shard.send(payload)
   }
 })
-  .on('nodeConnect', node => logger.log('info', `Node "${node.options.identifier}" connected.`, {metadata: {shard: client.shard.ids[0]}}))
+  .on('nodeConnect', node => logger.log('info', `Node "${node.options.identifier}" connected.`, {metadata: {shard: client.cluster.id}}))
   .on('nodeError', (node, error) => logger.log('error', 
     `Node "${node.options.identifier}" encountered an error: ${error.message}.`
   ))
@@ -148,13 +152,13 @@ client.manager = new Manager({
 
 client.once('ready', () => {
   client.manager.init(client.user.id)
-  logger.log('info', `Logged in as ${client.user.tag}`, {metadata:{shard: client.shard.ids[0]}})
+  logger.log('info', `Logged in as ${client.user.tag}`, {metadata:{shard: client.cluster.id}})
 })
 
 client.on('raw', d => client.manager.updateVoiceState(d))
 
 client.on('guildDelete', (guild) => {
-  logger.log('info', 'bot leaves', {metadata:{guild_id: guild.id, shard: client.shard.ids[0]}})
+  logger.log('info', 'bot leaves', {metadata:{guild_id: guild.id, shard: client.cluster.id}})
   const player = client.manager.get(guild.id)
 
   if (player) player.destroy()
