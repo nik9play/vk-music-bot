@@ -3,7 +3,7 @@ export default {
   adminOnly: true,
   cooldown: 10,
   execute: async function({client, respond, guild}) {
-    let totalServers = await client.shard.fetchClientValues('guilds.cache.size')
+    let totalServers = await client.cluster.fetchClientValues('guilds.cache.size')
     totalServers = totalServers.reduce((acc, guildCount) => acc + guildCount, 0)
 
     let totalPlayers = 0
@@ -58,7 +58,7 @@ export default {
         },
         {
           'name': 'Кол-во шардов',
-          'value': `\`\`\`js\n${client.shard.count}\`\`\``,
+          'value': `\`\`\`js\n${client.cluster.count}\`\`\``,
           'inline': true
         },
         {
