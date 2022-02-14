@@ -36,13 +36,13 @@ export default class {
     this.client.on('interactionCreate', async interaction => {
       //console.log(interaction.options.data)
       
-      this.executeSlash(interaction).catch((e) => logger.log('error', 'executeSlash ' + e.message, {metadata: { shard: this.client.shard.ids[0] }}))
+      this.executeSlash(interaction).catch((e) => logger.log('error', 'executeSlash ' + e.message, {metadata: { shard: this.client.cluster.id }}))
     })
 
     // обычные команды с префиксом
     this.client.on('messageCreate', async message => {
       //console.log(message)
-      this.executePrefix(message).catch((e) => logger.log('error', 'executePrefix ' + e.message, {metadata: { shard: this.client.shard.ids[0] }}))
+      this.executePrefix(message).catch((e) => logger.log('error', 'executePrefix ' + e.message, {metadata: { shard: this.client.cluster.id }}))
     })
   }
 
@@ -58,7 +58,7 @@ export default class {
       
       const meta = {
         metadata: {
-          shard: this.client.shard.ids[0],
+          shard: this.client.cluster.id,
           guild_id: guild.id
         }
       }
@@ -205,7 +205,7 @@ export default class {
 
       const meta = {
         metadata: {
-          shard: this.client.shard.ids[0],
+          shard: this.client.cluster.id,
           guild_id: guild.id
         }
       }
