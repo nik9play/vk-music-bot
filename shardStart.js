@@ -6,7 +6,7 @@ if (process.env.NODE_ENV == 'development') require('dotenv').config()
 import Cluster from 'discord-hybrid-sharding'
 const manager = new Cluster.Manager('./dist/index.js', {
   totalShards: 'auto',
-  shardsPerClusters: 3,
+  shardsPerClusters: 2,
   mode: 'process',
   token: process.env.DISCORD_TOKEN
 })
@@ -20,10 +20,11 @@ manager.on('clusterCreate', cluster => {
 
 manager.on('debug', msg => logger.log('info', msg))
 
-manager.spawn({timeout: -1}).then(() => {
-  console.log(manager.totalClusters)
-  console.log(manager.totalShards)
-  sendInfo()
+manager.spawn({timeout: 60000}).then(() => {
+  logger.log('info', `Manager finished spawning clusters. Total clusters: ${manager.totalClusters}`)
+  setTimeout(() => {
+    sendInfo()
+  }, 60000)
 })
 
 // manager.on('shardCreate', shard => logger.log('info', `Launched shard ${shard.id}`))
@@ -31,98 +32,80 @@ manager.spawn({timeout: -1}).then(() => {
 //    sendInfo()
 // }).catch(err => logger.log('error', 'Error starting shard %O', err))
 
-// function sendInfo() {
-//   manager.fetchClientValues('guilds.cache.size')
-//     .then(async results => {
-//       const serverSize = results.reduce((acc, guildCount) => acc + guildCount, 0)
-
-//       function setPr (c, { servers }) {
-//         if (c.user) {
-//           c.user.setPresence({
-//             activities: [{name: `/help | ${(servers/1000).toFixed(1)}k серверов`, type: 2}]
-//           })
-//         }
-//       }
-
-//       manager.broadcastEval(setPr, { context: { servers: serverSize }})
-
-//       // manager.shards.get(0).
-
-//       // const lavalinkInfo = manager.broadcastEval(c => {
-//       //   const info = {
-//       //     playingPlayers: 0
-//       //   }
-//       //   c.manager.nodes.each(e => {
-//       //     info.playingPlayers += e.stats.playingPlayers
-//       //   })
-//       //   return info
-//       // })
-
-//       axios.post('https://vk-api-v2.megaworld.space/metrics', {
-//         token: process.env.API_TOKEN,
-//         metrics: {
-//           servers: serverSize,
-//           serverShards: results,
-//           //lavalinkInfo
-//         }
-//       })
-//         .then(res => {
-//           if (res.data.status === 'error') {
-//             logger.log('error', 'Ошибка отправки статистики на метрику. (Ошибка сервера) %s', res.data.message)
-//           } else {
-//             logger.log('info', 'Статистика отправлена на метрику.')
-//           }
-//         })
-//         .catch((e) => {
-//           logger.log('error', 'Ошибка отправки статистики на метрику. (Ошибка подключения) %O', e.response.data)
-//         })
-
-//       manager.fetchClientValues('user.id')
-//         .then(results => {
-//           const id = results[0]
-
-//           axios.post(`https://api.server-discord.com/v2/bots/${id}/stats`, {
-//             servers: serverSize,
-//             shards: manager.totalShards
-//           },
-//           {
-//             headers: {
-//               'Authorization': 'SDC ' + process.env.SDC_TOKEN
-//             }
-//           })
-//             .then(res => {
-//               if (res.data.error) {
-//                 logger.log('error', 'Ошибка отправки статистики на мониторинг. (Ошибка сервера) %s', res.data.error)
-//               } else {
-//                 logger.log('info', 'Статистика отправлена на мониторинг.')
-//               }
-//             })
-//             .catch(() => {
-//               logger.log('error', 'Ошибка отправки статистики на мониторинг. (Ошибка подключения)')
-//             })
-//         })
-//     })
-//   .catch(err => {
-//     logger.error('error', 'Send stat error %O', err)
-//   })
-// }
-
 function sendInfo() {
-    // manager.fetchClientValues('guilds.cache.size')
-    // .then(async results => {
-    //   const serverSize = results.reduce((acc, guildCount) => acc + guildCount, 0)
+  manager.fetchClientValues('guilds.cache.size')
+    .then(async results => {
+      const serverSize = results.reduce((acc, guildCount) => acc + guildCount, 0)
 
-    //   // function setPr (c, { servers }) {
-    //   //   if (c.user) {
-    //   //     c.user.setPresence({
-    //   //       activities: [{name: `/help | ${(servers/1000).toFixed(1)}k серверов`, type: 2}]
-    //   //     })
-    //   //   }
-    //   // }
+      function setPr (c, { servers }) {
+        if (c.user) {
+          c.user.setPresence({
+            activities: [{name: `/help | ${(servers/1000).toFixed(1)}k серверов`, type: 2}]
+          })
+        }
+      }
 
-    //   // manager.broadcastEval(setPr, { context: { servers: serverSize }})
-    //   console.log(serverSize)
-    // })
+      manager.broadcastEval(setPr, { context: { servers: serverSize }})
+
+      // manager.shards.get(0).
+
+      // const lavalinkInfo = manager.broadcastEval(c => {
+      //   const info = {
+      //     playingPlayers: 0
+      //   }
+      //   c.manager.nodes.each(e => {
+      //     info.playingPlayers += e.stats.playingPlayers
+      //   })
+      //   return info
+      // })
+
+      axios.post('https://vk-api-v2.megaworld.space/metrics', {
+        token: process.env.API_TOKEN,
+        metrics: {
+          servers: serverSize,
+          serverShards: results,
+          //lavalinkInfo
+        }
+      })
+        .then(res => {
+          if (res.data.status === 'error') {
+            logger.log('error', 'Ошибка отправки статистики на метрику. (Ошибка сервера) %s', res.data.message)
+          } else {
+            logger.log('info', 'Статистика отправлена на метрику.')
+          }
+        })
+        .catch((e) => {
+          logger.log('error', 'Ошибка отправки статистики на метрику. (Ошибка подключения) %O', e.response.data)
+        })
+
+      manager.fetchClientValues('user.id')
+        .then(results => {
+          const id = results[0]
+
+          axios.post(`https://api.server-discord.com/v2/bots/${id}/stats`, {
+            servers: serverSize,
+            shards: manager.totalShards
+          },
+          {
+            headers: {
+              'Authorization': 'SDC ' + process.env.SDC_TOKEN
+            }
+          })
+            .then(res => {
+              if (res.data.error) {
+                logger.log('error', 'Ошибка отправки статистики на мониторинг. (Ошибка сервера) %s', res.data.error)
+              } else {
+                logger.log('info', 'Статистика отправлена на мониторинг.')
+              }
+            })
+            .catch(() => {
+              logger.log('error', 'Ошибка отправки статистики на мониторинг. (Ошибка подключения)')
+            })
+        })
+    })
+  .catch(err => {
+    logger.error('error', 'Send stat error %O', err)
+  })
 }
 
 if (process.env.NODE_ENV != 'development') setInterval(() => {
