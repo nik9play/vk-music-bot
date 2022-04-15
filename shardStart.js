@@ -69,13 +69,13 @@ function sendInfo() {
       })
         .then(res => {
           if (res.data.status === 'error') {
-            logger.log('error', 'Ошибка отправки статистики на метрику. (Ошибка сервера) %s', res.data.message)
+            logger.log('error', 'Ошибка отправки статистики на метрику. (Ошибка сервера)')
           } else {
             logger.log('info', 'Статистика отправлена на метрику.')
           }
         })
-        .catch((e) => {
-          logger.log('error', 'Ошибка отправки статистики на метрику. (Ошибка подключения) %O', e.response.data)
+        .catch(() => {
+          logger.log('error', 'Ошибка отправки статистики на метрику. (Ошибка подключения)')
         })
 
       manager.fetchClientValues('user.id')
@@ -93,7 +93,7 @@ function sendInfo() {
           })
             .then(res => {
               if (res.data.error) {
-                logger.log('error', 'Ошибка отправки статистики на мониторинг. (Ошибка сервера) %s', res.data.error)
+                logger.log('error', 'Ошибка отправки статистики на мониторинг. (Ошибка сервера)')
               } else {
                 logger.log('info', 'Статистика отправлена на мониторинг.')
               }
