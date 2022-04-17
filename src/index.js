@@ -55,15 +55,21 @@ client.manager = new Manager({
       const channel = client.channels.cache.get(player.textChannel)
 
       if (channel && track && track.author && track.title) {
-        const message = await channel.send({embeds: [{
-          description: `Сейчас играет **${escapeFormat(track.author)} — ${escapeFormat(track.title)}**.`,
-          color: 0x5181b8
-        }]}).catch(err => logger.log('error', 'Can\'t send message: %O', err))
+        try {
+          const message = await channel.send({embeds: [{
+            description: `Сейчас играет **${escapeFormat(track.author)} — ${escapeFormat(track.title)}**.`,
+            color: 0x5181b8
+          }]})
+
           setTimeout(() => {
             if (message && typeof message.delete === 'function') {
               message.delete().catch(err => logger.log('error', 'Can\'t delete message: %O', err))
             }
           }, track.duration)
+        } catch {
+          logger.error('Can\'t send message')
+        }
+
       }
     }
   })
