@@ -49,8 +49,9 @@ client.on('guildDelete', (guild) => {
 
   if (player) player.destroy()
 
-  if (client.timers.has(guild.id))
-    clearTimeout(client.timers.get(guild.id))
+  const timer = client.timers.get(guild.id)
+  if (timer)
+    clearTimeout(timer)
 })
 
 client.login(process.env.DISCORD_TOKEN)

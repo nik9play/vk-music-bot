@@ -15,8 +15,9 @@ export default new Command({
     //if (channel.id !== player.voiceChannel) return message.reply("вы находитесь не в том голосовом канале.")
 
     if (player.paused) {
-      if (client.timers.has(guild.id))
-        clearTimeout(client.timers.get(guild.id))
+      const timer = client.timers.get(guild.id)
+      if (timer)
+        clearTimeout(timer)
       
       respond({ embeds: [Utils.generateErrorMessage('▶️ Пауза снята.', ErrorMessageType.NoTitle)]})
 

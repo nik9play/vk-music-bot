@@ -77,8 +77,9 @@ export class VkMusicBotClient extends Client {
       .on('playerDisconnect', (player) => {
         logger.info( {guild_id: player.guild, shard_id: this.cluster.id}, 'player disconnected')
 
-        if (this.timers.has(player.guild))
-          clearTimeout(this.timers.get(player.guild))
+        const timer = this.timers.get(player.guild)
+        if (timer)
+          clearTimeout(timer)
 
         player.destroy()
       })
@@ -130,7 +131,7 @@ export class VkMusicBotClient extends Client {
   public commands: Collection<string, CommandType> = new Collection()
   public slashOverwrites: Collection<string, CommandType> = new Collection()
   public captcha: Collection<string, CaptchaInfo> = new Collection()
-  public timers: Collection<string, any> = new Collection()
+  public timers: Collection<string, NodeJS.Timeout> = new Collection()
   public cluster: Cluster.Client = new Cluster.Client(this)
   public db: any;
   

@@ -12,8 +12,9 @@ export default new Command({
     if (!player)
       return
 
-    if (client.timers.has(guild.id))
-      clearTimeout(client.timers.get(guild.id))
+    const timer = client.timers.get(guild.id)
+    if (timer)
+      clearTimeout(timer)
 
     player.destroy()
     

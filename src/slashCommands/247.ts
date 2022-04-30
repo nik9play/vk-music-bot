@@ -8,14 +8,15 @@ export default new Command({
   premium: true,
   djOnly: false,
   execute: async function({ guild, client, respond }) {
-    const player = client.manager.get(guild.id)
-
     if (!await client.db.get247(guild.id)) {
       client.db.set247(true, guild.id).then(() => respond({ embeds: [Utils.generateErrorMessage('Режим 24/7 включён.', ErrorMessageType.NoTitle)], ephemeral: true }))
-      if (client.timers.has(guild.id))
-        clearTimeout(client.timers.get(guild.id))
+
+      const timer = client.timers.get(guild.id)
+      if (timer)
+        clearTimeout(timer)
     } else {
       client.db.set247(false, guild.id).then(() => respond({ embeds: [Utils.generateErrorMessage('Режим 24/7 выключён.', ErrorMessageType.NoTitle)], ephemeral: true }))
+      const player = client.manager.get(guild.id)
       if (player)
         if (player.paused || player.queue.length == 0)
           client.timers.set(guild.id, Utils.getExitTimeout(player, client))

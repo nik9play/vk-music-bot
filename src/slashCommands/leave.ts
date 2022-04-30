@@ -13,9 +13,10 @@ export default new Command({
 
     if (!voice) return respond({ embeds: [Utils.generateErrorMessage('Необходимо находиться в голосовом канале.')], ephemeral: true })
     //if (channel.id !== player.voiceChannel) return message.reply("вы находитесь не в том голосовом канале.")
-    
-    if (client.timers.has(guild.id))
-      clearTimeout(client.timers.get(guild.id))
+
+    const timer = client.timers.get(guild.id)
+    if (timer)
+      clearTimeout(timer)
 
     player.destroy()
     

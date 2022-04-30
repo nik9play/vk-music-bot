@@ -8,6 +8,24 @@ import logger from '../Logger'
 import {Command} from '../SlashCommandManager'
 import Utils, {ErrorMessageType} from '../Utils'
 import {User} from 'discord.js'
+import {Player} from 'erela.js-vk/structures/Player'
+
+async function fillQueue(newArray: OneTrackResponse[], player: Player, wrongTracks: OneTrackResponse[]) {
+  for await (const e of newArray) {
+    if (!e.url) {
+      wrongTracks.push(e)
+      continue
+    }
+
+    const unresolvedTrack = TrackUtils.buildUnresolvedQuery(e.url)
+
+    unresolvedTrack.title = e.title
+    unresolvedTrack.author = e.author
+
+    player.queue.add(unresolvedTrack)
+    if (!player.playing && !player.paused && !player.queue.size) await player.play()
+  }
+}
 
 export default new Command({
   name: 'play',
@@ -54,8 +72,10 @@ export default new Command({
 
     // сброс таймера и снятие с паузы при добавлении в очередь
     if (player.paused) player.pause(false)
-    if (client.timers.has(guild.id))
-      clearTimeout(client.timers.get(guild.id))
+
+    const timer = client.timers.get(guild.id)
+    if (timer)
+      clearTimeout(timer)
 
     const search = args.join(' ')
 
@@ -167,7 +187,7 @@ export default new Command({
       }
     }
 
-    const wrongTracks = []
+    const wrongTracks: OneTrackResponse[] = []
 
     if (arg.type === 'track') {
       req = req as OneTrackResponse
@@ -254,20 +274,7 @@ export default new Command({
         }
       }
 
-      for await (const e of newArray) {
-        if (!e.url) {
-          wrongTracks.push(e)
-          continue
-        }
-
-        const unresolvedTrack = TrackUtils.buildUnresolvedQuery(e.url)
-
-        unresolvedTrack.title = e.title
-        unresolvedTrack.author = e.author
-
-        player.queue.add(unresolvedTrack)
-        if (!player.playing && !player.paused && !player.queue.size) await player.play()
-      }
+      await fillQueue(newArray, player, wrongTracks)
 
       respond({ embeds: [playlistEmbed] })
     } else if (arg.type === 'user') {
@@ -296,19 +303,7 @@ export default new Command({
         }
       }
 
-      for await (const e of newArray) {
-        if (!e.url) {
-          wrongTracks.push(e)
-          continue
-        }
-        const unresolvedTrack = TrackUtils.buildUnresolvedQuery(e.url)
-
-        unresolvedTrack.title = e.title
-        unresolvedTrack.author = e.author
-
-        player.queue.add(unresolvedTrack)
-        if (!player.playing && !player.paused && !player.queue.size) await player.play()
-      }
+      await fillQueue(newArray, player, wrongTracks)
 
       respond({ embeds: [playlistEmbed] })
     } else if (arg.type === 'group') {
@@ -337,15 +332,7 @@ export default new Command({
         }
       }
 
-      for await (const e of newArray) {
-        const unresolvedTrack = TrackUtils.buildUnresolvedQuery(e.url)
-
-        unresolvedTrack.title = e.title
-        unresolvedTrack.author = e.author
-
-        player.queue.add(unresolvedTrack)
-        if (!player.playing && !player.paused && !player.queue.size) await player.play()
-      }
+      await fillQueue(newArray, player, wrongTracks)
 
       respond({ embeds: [playlistEmbed] })
     }
