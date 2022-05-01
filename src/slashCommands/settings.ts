@@ -1,5 +1,5 @@
-import {Command} from '../SlashCommandManager'
-import Utils, {ErrorMessageType} from '../Utils'
+import { Command } from '../SlashCommandManager'
+import Utils, { ErrorMessageType } from '../Utils'
 
 /* eslint-disable no-case-declarations */
 export default new Command({
@@ -36,60 +36,62 @@ export default new Command({
     }
 
     switch (args[0]) {
-    case 'prefix':
-      if (args.length != 2) return respond({embeds: [Utils.generateErrorMessage('Неверное количество аргументов.')]})
-        
-      if (args[1].length < 1 || args[1].length > 5) return respond({embeds: [Utils.generateErrorMessage('Префикс может быть длиной от 1 до 5 символов.')]})
+      case 'prefix':
+        if (args.length != 2) return respond({ embeds: [Utils.generateErrorMessage('Неверное количество аргументов.')] })
 
-      client.db.setPrefix(args[1], guild.id).then(() => respond({embeds: [Utils.generateErrorMessage(`Префикс \`${args[1]}\`успешно установлен.`, ErrorMessageType.NoTitle)]}))
-      break
-    case 'djrole':
-      const roleName = args.slice(1).join(' ')
+        if (args[1].length < 1 || args[1].length > 5) return respond({ embeds: [Utils.generateErrorMessage('Префикс может быть длиной от 1 до 5 символов.')] })
 
-      if (message?.mentions.users.size) {
-        return respond({embeds: [Utils.generateErrorMessage('Неверное имя роли.')]})
-      }
+        client.db.setPrefix(args[1], guild.id).then(() => respond({ embeds: [Utils.generateErrorMessage(`Префикс \`${args[1]}\`успешно установлен.`, ErrorMessageType.NoTitle)] }))
+        break
+      case 'djrole':
+        const roleName = args.slice(1).join(' ')
 
-      if (message?.mentions.roles.size) {
-        const role = message.mentions.roles.first()
+        if (message?.mentions.users.size) {
+          return respond({ embeds: [Utils.generateErrorMessage('Неверное имя роли.')] })
+        }
 
-        if (role)
-          client.db.setAccessRole(role.name, guild.id).then(() =>
-            respond({embeds: [Utils.generateErrorMessage(`DJ роль \`${role.name}\` установлена.`, ErrorMessageType.NoTitle)]})
-          )
-        return
-      }
+        if (message?.mentions.roles.size) {
+          const role = message.mentions.roles.first()
 
-      if (!roleName)
-        return respond({embeds: [Utils.generateErrorMessage('Неверное имя роли.')]})
+          if (role)
+            client.db.setAccessRole(role.name, guild.id).then(() =>
+              respond({ embeds: [Utils.generateErrorMessage(`DJ роль \`${role.name}\` установлена.`, ErrorMessageType.NoTitle)] })
+            )
+          return
+        }
 
-      client.db.setAccessRole(roleName, guild.id).then(() => respond({
-        embeds: [Utils.generateErrorMessage(`DJ роль \`${roleName}\` установлена.`, ErrorMessageType.NoTitle)]
-      }))
-      break
-    case 'dj':
-      if (!args[1] || (args[1] !== 'on' && args[1] !== 'off'))
-        return respond({embeds: [Utils.generateErrorMessage('Используйте `on`/`off`.')]})
+        if (!roleName)
+          return respond({ embeds: [Utils.generateErrorMessage('Неверное имя роли.')] })
 
-      if (args[1] === 'on')
-        client.db.setAccessRoleEnabled(true, guild.id).then(async () => respond({embeds: [Utils.generateErrorMessage('DJ режим включён.' +
-          `\nПри включенном DJ режиме **бот будет работать** только у пользователей с ролью \`${await client.db.getAccessRole(guild.id)}\`.`, ErrorMessageType.NoTitle)]}))
-      else if (args[1] === 'off')
-        client.db.setAccessRoleEnabled(false, guild.id).then(() => respond({embeds: [Utils.generateErrorMessage('DJ режим выключён.', ErrorMessageType.NoTitle)]}))
-      break
-    case 'announcements':
-      if (!args[1] || (args[1] !== 'on' && args[1] !== 'off'))
-        return respond({embeds: [Utils.generateErrorMessage('Используйте `on`/`off`.')]})
-
-      if (args[1] === 'on')
-        client.db.setDisableAnnouncements(false, guild.id).then(() => respond({
-          embeds: [Utils.generateErrorMessage('Оповещения включены.', ErrorMessageType.NoTitle)]
+        client.db.setAccessRole(roleName, guild.id).then(() => respond({
+          embeds: [Utils.generateErrorMessage(`DJ роль \`${roleName}\` установлена.`, ErrorMessageType.NoTitle)]
         }))
-      else if (args[1] === 'off')
-        client.db.setDisableAnnouncements(true, guild.id).then(() => respond({
-          embeds: [Utils.generateErrorMessage('Оповещения выключены.', ErrorMessageType.NoTitle)]
-        }))
-      break
+        break
+      case 'dj':
+        if (!args[1] || (args[1] !== 'on' && args[1] !== 'off'))
+          return respond({ embeds: [Utils.generateErrorMessage('Используйте `on`/`off`.')] })
+
+        if (args[1] === 'on')
+          client.db.setAccessRoleEnabled(true, guild.id).then(async () => respond({
+            embeds: [Utils.generateErrorMessage('DJ режим включён.' +
+              `\nПри включенном DJ режиме **бот будет работать** только у пользователей с ролью \`${await client.db.getAccessRole(guild.id)}\`.`, ErrorMessageType.NoTitle)]
+          }))
+        else if (args[1] === 'off')
+          client.db.setAccessRoleEnabled(false, guild.id).then(() => respond({ embeds: [Utils.generateErrorMessage('DJ режим выключён.', ErrorMessageType.NoTitle)] }))
+        break
+      case 'announcements':
+        if (!args[1] || (args[1] !== 'on' && args[1] !== 'off'))
+          return respond({ embeds: [Utils.generateErrorMessage('Используйте `on`/`off`.')] })
+
+        if (args[1] === 'on')
+          client.db.setDisableAnnouncements(false, guild.id).then(() => respond({
+            embeds: [Utils.generateErrorMessage('Оповещения включены.', ErrorMessageType.NoTitle)]
+          }))
+        else if (args[1] === 'off')
+          client.db.setDisableAnnouncements(true, guild.id).then(() => respond({
+            embeds: [Utils.generateErrorMessage('Оповещения выключены.', ErrorMessageType.NoTitle)]
+          }))
+        break
     }
   }
 })

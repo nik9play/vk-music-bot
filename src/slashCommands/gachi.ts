@@ -1,7 +1,7 @@
 import gachiList from '../lists/gachi.json'
 import play from './play'
 import logger from '../Logger'
-import {Command, CommandType} from '../SlashCommandManager'
+import { Command, CommandType } from '../SlashCommandManager'
 
 export default new Command({
   name: 'gachi',
@@ -15,6 +15,6 @@ export default new Command({
 
     params.args = [id]
 
-    command.execute(params).catch(err => logger.error({err, ...params.meta}, 'Error executing command'))
+    command.execute(params).catch(err => logger.error({ err, ...params.meta }, 'Error executing command'))
   }
 })

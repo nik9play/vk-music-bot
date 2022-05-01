@@ -13,11 +13,11 @@ import {
 } from 'discord.js'
 import logger from './Logger'
 import Collection from '@discordjs/collection'
-import {CaptchaInfo, VkMusicBotClient} from './client'
-import Utils, {ErrorMessageType} from './Utils'
+import { CaptchaInfo, VkMusicBotClient } from './client'
+import Utils, { ErrorMessageType } from './Utils'
 import glob from 'glob'
-import {promisify} from 'util'
-import {generateQueueResponse} from './helpers/QueueCommandHelper'
+import { promisify } from 'util'
+import { generateQueueResponse } from './helpers/QueueCommandHelper'
 
 const globPromise = promisify(glob)
 
@@ -63,7 +63,7 @@ export interface CommandExecuteParams {
 
 export default class {
   private client: VkMusicBotClient
-  
+
   constructor(client: VkMusicBotClient) {
     this.client = client
   }
@@ -97,13 +97,19 @@ export default class {
     this.client.on('interactionCreate', async interaction => {
       //console.log(interaction.options.data)
       if (interaction.isCommand() || interaction.isButton())
-        this.executeSlash(interaction).catch((err) => logger.error({ shard_id: this.client.cluster.id, err } , 'executeSlash'))
+        this.executeSlash(interaction).catch((err) => logger.error({
+          shard_id: this.client.cluster.id,
+          err
+        }, 'executeSlash'))
     })
 
     // обычные команды с префиксом
     this.client.on('messageCreate', async message => {
       //console.log(message)
-      this.executePrefix(message).catch((err) => logger.error({ shard_id: this.client.cluster.id, err }, 'executePrefix'))
+      this.executePrefix(message).catch((err) => logger.error({
+        shard_id: this.client.cluster.id,
+        err
+      }, 'executePrefix'))
     })
   }
 
@@ -123,23 +129,23 @@ export default class {
 
     const respond = async (data: MessageOptions | InteractionReplyOptions, timeout?: number): Promise<void> => {
       if (interaction.deferred)
-        await interaction.editReply(data).catch(err => logger.error({err, ...meta}, 'Can\'t edit reply'))
+        await interaction.editReply(data).catch(err => logger.error({ err, ...meta }, 'Can\'t edit reply'))
       else
-        await interaction.reply(data).catch(err => logger.error({err, ...meta}, 'Can\'t send reply'))
+        await interaction.reply(data).catch(err => logger.error({ err, ...meta }, 'Can\'t send reply'))
 
       if (timeout)
         setTimeout(async () => {
-          await interaction.deleteReply().catch(err => logger.error({err, ...meta}, 'Error deleting reply'))
+          await interaction.deleteReply().catch(err => logger.error({ err, ...meta }, 'Error deleting reply'))
         }, timeout)
     }
 
     const send = async (data: MessageOptions, timeout?: number): Promise<void> => {
-      const message = await text.send(data).catch(err => logger.error({err, ...meta}, 'Can\'t send message'))
+      const message = await text.send(data).catch(err => logger.error({ err, ...meta }, 'Can\'t send message'))
 
       if (timeout)
         setTimeout(async () => {
           if (message && typeof message.delete === 'function') {
-            await message.delete().catch(err => logger.error({err, ...meta}, 'Can\'t delete message'))
+            await message.delete().catch(err => logger.error({ err, ...meta }, 'Can\'t delete message'))
           }
         }, timeout)
     }
@@ -182,7 +188,8 @@ export default class {
         if (!member.permissions.has(Permissions.FLAGS.MANAGE_GUILD) && !member.roles.cache.some(role => role.name === djRole)) {
           await respond({
             embeds: [Utils.generateErrorMessage(`Сейчас включен DJ режим, и вы не можете выполнять команды, так как у вас нет роли \`${djRole}\`.`)],
-            ephemeral: true })
+            ephemeral: true
+          })
           return
         }
       }
@@ -202,7 +209,7 @@ export default class {
         return ''
       }) ?? []
 
-      logger.info({args, ...meta}, `Executed command ${command.name} with arguments`)
+      logger.info({ args, ...meta }, `Executed command ${command.name} with arguments`)
 
       if (command.name === 'play' || command.name === 'search') {
         const captcha = this.client.captcha.get(guild.id)
@@ -233,12 +240,12 @@ export default class {
         respond,
         send,
         meta
-      }).catch(err => logger.error({err, ...meta}, 'Error executing command'))
+      }).catch(err => logger.error({ err, ...meta }, 'Error executing command'))
     }
 
     if (interaction.isButton()) {
       if (interaction?.customId.startsWith('search')) {
-        logger.info({...meta}, 'Search button pressed')
+        logger.info({ ...meta }, 'Search button pressed')
 
         const id = interaction.customId.split(',')[1]
 
@@ -259,12 +266,12 @@ export default class {
             respond,
             send,
             meta
-          }).catch((err: any) => logger.error({err, ...meta}, 'Error executing command from button'))
+          }).catch((err: any) => logger.error({ err, ...meta }, 'Error executing command from button'))
         }
       }
 
       if (interaction?.customId.startsWith('queue')) {
-        logger.info({...meta}, 'Queue button pressed')
+        logger.info({ ...meta }, 'Queue button pressed')
 
         const page = parseInt(interaction?.customId.split('_')[1])
 
@@ -282,17 +289,17 @@ export default class {
   async executePrefix(message: Message): Promise<void> {
     if (message.channel.type != 'GUILD_TEXT' || message.author.bot) return
     if (!message.channel.permissionsFor(message.client.user as User)?.has(Permissions.FLAGS.SEND_MESSAGES)) return
-  
+
     const prefix = await this.client.db.getPrefix(message.guild?.id.toString())
-  
+
     if (!message.content.startsWith(prefix)) return
-  
+
     const args = message.content.slice(prefix.length).split(/ +/)
 
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     const commandName = args.shift().toLowerCase()
-    
+
     if (this.client.commands.has(commandName)) {
       const guild = message.guild as Guild
       const member = message.member as GuildMember
@@ -303,15 +310,15 @@ export default class {
         guild_id: guild.id
       }
 
-      logger.info({args, ...meta}, `Executed command ${commandName} with arguments`)
-      
+      logger.info({ args, ...meta }, `Executed command ${commandName} with arguments`)
+
       const respond = async (data: MessageOptions, timeout?: number): Promise<void> => {
-        const message = await channel.send(data).catch(err => logger.error({err}, 'Can\'t send message'))
+        const message = await channel.send(data).catch(err => logger.error({ err }, 'Can\'t send message'))
 
         if (timeout)
           setTimeout(() => {
             if (message) {
-              message.delete().catch(err => logger.error({err}, 'Can\'t delete message'))
+              message.delete().catch(err => logger.error({ err }, 'Can\'t delete message'))
             }
           }, timeout)
       }
@@ -333,7 +340,7 @@ export default class {
       // проверка на dj роль
       if (await this.client.db.getAccessRoleEnabled(guild.id)) {
         const djRole = await this.client.db.getAccessRole(guild.id)
-  
+
         if (!member.permissions.has(Permissions.FLAGS.MANAGE_GUILD) && !member.roles.cache.some(role => role.name === djRole)) {
           await respond({
             embeds: [Utils.generateErrorMessage(`Сейчас включен DJ режим, и вы не можете выполнять команды, так как у вас нет роли \`${djRole}\`.`)]
@@ -341,7 +348,7 @@ export default class {
           return
         }
       }
-      
+
       // проверка на наличие премиума
       if (command?.premium && !await this.client.db.checkPremium(guild.id)) {
         await respond({
@@ -387,10 +394,10 @@ export default class {
           const timeLeft = (expirationTime - now) / 1000
 
           await respond({
-            embeds: [Utils.generateErrorMessage(`Пожалуйста, подождите еще ${timeLeft.toFixed(2)} секунд перед тем как использовать \`${realCommandName}\`!`,
-              ErrorMessageType.Warning)]
-          },
-          timeLeft * 1000 + 1000)
+              embeds: [Utils.generateErrorMessage(`Пожалуйста, подождите еще ${timeLeft.toFixed(2)} секунд перед тем как использовать \`${realCommandName}\`!`,
+                ErrorMessageType.Warning)]
+            },
+            timeLeft * 1000 + 1000)
           return
         }
       } else {
@@ -409,7 +416,7 @@ export default class {
         send,
         message,
         meta
-      }).catch(err => logger.error({err, ...meta}, 'Error executing command'))
+      }).catch(err => logger.error({ err, ...meta }, 'Error executing command'))
     }
   }
 

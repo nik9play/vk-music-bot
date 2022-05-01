@@ -1,5 +1,5 @@
-import {Command} from '../SlashCommandManager'
-import {generateQueueResponse} from '../helpers/QueueCommandHelper'
+import { Command } from '../SlashCommandManager'
+import { generateQueueResponse } from '../helpers/QueueCommandHelper'
 
 export default new Command({
   name: 'queue',

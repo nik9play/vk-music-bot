@@ -2,6 +2,10 @@
 //const manager = new ShardingManager('./dist/index.js', { token: process.env.DISCORD_TOKEN, mode: 'process', respawn: true })
 
 import Cluster from 'discord-hybrid-sharding'
+import axios from 'axios'
+import logger from './Logger'
+import { Client } from 'discord.js'
+
 const manager = new Cluster.Manager('./dist/index.js', {
   totalShards: 'auto',
   shardsPerClusters: 2,
@@ -9,17 +13,13 @@ const manager = new Cluster.Manager('./dist/index.js', {
   token: process.env.DISCORD_TOKEN
 })
 
-import axios from 'axios'
-import logger from './Logger'
-import {Client} from 'discord.js'
-
 manager.on('clusterCreate', cluster => {
   logger.info(`Launched cluster ${cluster.id}`)
 })
 
 manager.on('debug', msg => logger.debug(msg))
 
-manager.spawn({timeout: 60000}).then(() => {
+manager.spawn({ timeout: 60000 }).then(() => {
   logger.info(`Manager finished spawning clusters. Total clusters: ${manager.totalClusters}`)
   setTimeout(() => {
     sendInfo()
@@ -36,15 +36,15 @@ function sendInfo() {
     .then(async results => {
       const serverSize: number = results.reduce((acc, guildCount) => acc + guildCount, 0)
 
-      function setPr (c: Client, { servers }: any) {
+      function setPr(c: Client, { servers }: any) {
         if (c.user) {
           c.user.setPresence({
-            activities: [{name: `/help | ${(servers/1000).toFixed(1)}k серверов`, type: 2}]
+            activities: [{ name: `/help | ${(servers / 1000).toFixed(1)}k серверов`, type: 2 }]
           })
         }
       }
 
-      await manager.broadcastEval(setPr, { context: { servers: serverSize }})
+      await manager.broadcastEval(setPr, { context: { servers: serverSize } })
 
       // manager.shards.get(0).
 
@@ -62,7 +62,7 @@ function sendInfo() {
         token: process.env.API_TOKEN,
         metrics: {
           servers: serverSize,
-          serverShards: results,
+          serverShards: results
           //lavalinkInfo
         }
       })
@@ -82,19 +82,19 @@ function sendInfo() {
           const id = results[0]
 
           axios.post(`https://api.server-discord.com/v2/bots/${id}/stats`, {
-            servers: serverSize,
-            shards: manager.totalShards
-          },
-          {
-            headers: {
-              'Authorization': 'SDC ' + process.env.SDC_TOKEN
-            }
-          })
+              servers: serverSize,
+              shards: manager.totalShards
+            },
+            {
+              headers: {
+                'Authorization': 'SDC ' + process.env.SDC_TOKEN
+              }
+            })
             .then(res => {
               if (res.data.error) {
                 logger.error('Ошибка отправки статистики на мониторинг. (Ошибка сервера)')
               } else {
-                logger.info( 'Статистика отправлена на мониторинг.')
+                logger.info('Статистика отправлена на мониторинг.')
               }
             })
             .catch(() => {
@@ -103,7 +103,7 @@ function sendInfo() {
         })
     })
     .catch(err => {
-      logger.error({err}, 'Send stat error')
+      logger.error({ err }, 'Send stat error')
     })
 }
 
@@ -119,11 +119,11 @@ function exitHandler(options: any, exitCode: number) {
   if (options.exit) process.exit()
 }
 
-process.on('exit', exitHandler.bind(null,{cleanup:true}))
+process.on('exit', exitHandler.bind(null, { cleanup: true }))
 
 //catches ctrl+c event
-process.on('SIGINT', exitHandler.bind(null, {exit:true}))
+process.on('SIGINT', exitHandler.bind(null, { exit: true }))
 
 // catches "kill pid" (for example: nodemon restart)
-process.on('SIGUSR1', exitHandler.bind(null, {exit:true}))
-process.on('SIGUSR2', exitHandler.bind(null, {exit:true}))
+process.on('SIGUSR1', exitHandler.bind(null, { exit: true }))
+process.on('SIGUSR2', exitHandler.bind(null, { exit: true }))

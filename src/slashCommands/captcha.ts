@@ -1,7 +1,7 @@
 import play from './play'
 import search from './search'
-import {Command, CommandType} from '../SlashCommandManager'
-import Utils, {ErrorMessageType} from '../Utils'
+import { Command, CommandType } from '../SlashCommandManager'
+import Utils, { ErrorMessageType } from '../Utils'
 
 export default new Command({
   name: 'captcha',

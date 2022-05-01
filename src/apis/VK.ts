@@ -81,23 +81,23 @@ export default class VK {
       })
 
       if (res.data.status === 'error') {
-        switch(res.data.error.code) {
-        case 14:
-          return {
-            status: 'error',
-            type: 'captcha',
-            error: res.data.error
-          }
-        case 201:
-          return {
-            status: 'error',
-            type: 'access_denied'
-          }
-        case 113:
-          return {
-            status: 'error',
-            type: 'empty'
-          }
+        switch (res.data.error.code) {
+          case 14:
+            return {
+              status: 'error',
+              type: 'captcha',
+              error: res.data.error
+            }
+          case 201:
+            return {
+              status: 'error',
+              type: 'access_denied'
+            }
+          case 113:
+            return {
+              status: 'error',
+              type: 'empty'
+            }
         }
 
         return {
@@ -182,7 +182,7 @@ export default class VK {
 
   /**
    * Получение треков из плейлиста по ID создателя и ID плейлиста
-   * @param {Object} opts Параметры запроса 
+   * @param {Object} opts Параметры запроса
    * @returns {Object[]} Массив треков
    */
   static async GetPlaylist(opts: any): Promise<APIResponse | PlaylistResponse> {
@@ -233,7 +233,7 @@ export default class VK {
 
   /**
    * Получение треков пользователя или группы по ID
-   * @param {Object} opts Параметры запроса 
+   * @param {Object} opts Параметры запроса
    * @returns {Object[]} Массив треков
    */
   static async GetUser(opts: any): Promise<APIResponse | UserResponse> {
@@ -295,7 +295,7 @@ export default class VK {
 
   /**
    * Получение 5 треков по запросу
-   * @param {Object} opts Параметры запроса 
+   * @param {Object} opts Параметры запроса
    * @returns {Object[]} Массив треков
    */
   static async GetMany(opts: any): Promise<APIResponse | ManyTracksResponse> {

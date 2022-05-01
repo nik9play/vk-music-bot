@@ -1,14 +1,14 @@
 /* eslint-disable no-case-declarations */
-import VK, {APIResponse, GroupInfo, OneTrackResponse, PlaylistResponse, UserResponse} from '../apis/VK'
+import VK, { APIResponse, GroupInfo, OneTrackResponse, PlaylistResponse, UserResponse } from '../apis/VK'
 
-import {Duration} from 'luxon'
-import {TrackUtils} from 'erela.js-vk'
+import { Duration } from 'luxon'
+import { TrackUtils } from 'erela.js-vk'
 
 import logger from '../Logger'
-import {Command} from '../SlashCommandManager'
-import Utils, {ErrorMessageType} from '../Utils'
-import {User} from 'discord.js'
-import {Player} from 'erela.js-vk/structures/Player'
+import { Command } from '../SlashCommandManager'
+import Utils, { ErrorMessageType } from '../Utils'
+import { User } from 'discord.js'
+import { Player } from 'erela.js-vk/structures/Player'
 
 async function fillQueue(newArray: OneTrackResponse[], player: Player, wrongTracks: OneTrackResponse[]) {
   for await (const e of newArray) {
@@ -35,16 +35,18 @@ export default new Command({
   adminOnly: false,
   deferred: true,
   cooldown: 2,
-  execute: async ({ guild, voice, text,
-    client, args, captcha,
-    respond, send, meta }) => {
+  execute: async ({
+                    guild, voice, text,
+                    client, args, captcha,
+                    respond, send, meta
+                  }) => {
     if (!voice) return respond({
       embeds: [Utils.generateErrorMessage('Необходимо находиться в голосовом канале.')],
       ephemeral: true
     })
 
-    if (!args.length) return respond({ 
-      embeds: [Utils.generateErrorMessage('Вставьте после команды ссылку на плейлист или альбом, ID пользователя или трека.')], 
+    if (!args.length) return respond({
+      embeds: [Utils.generateErrorMessage('Вставьте после команды ссылку на плейлист или альбом, ID пользователя или трека.')],
       ephemeral: true
     })
 
@@ -70,7 +72,7 @@ export default new Command({
       player.connect()
     }
 
-    logger.info({guild_id: player.guild, voice: player.voiceChannel, state: player.state, ...meta}, 'player created')
+    logger.info({ guild_id: player.guild, voice: player.voiceChannel, state: player.state, ...meta }, 'player created')
     //if (channel.id !== player.voiceChannel) return message.reply("вы находитесь не в том голосовом канале.")
 
     // сброс таймера и снятие с паузы при добавлении в очередь
@@ -98,45 +100,45 @@ export default new Command({
     }
 
     switch (arg.type) {
-    case 'track':
-      req = await VK.GetOne({
-        q: search,
+      case 'track':
+        req = await VK.GetOne({
+          q: search,
 
-        ...query
-      })
-      break
-    case 'playlist':
-      req = await VK.GetPlaylist({
-        owner_id: arg.parsedURL?.id?.split('_')[0],
-        album_id: arg.parsedURL?.id?.split('_')[1],
-        count,
-        offset,
-        access_key: arg.parsedURL?.access_key,
+          ...query
+        })
+        break
+      case 'playlist':
+        req = await VK.GetPlaylist({
+          owner_id: arg.parsedURL?.id?.split('_')[0],
+          album_id: arg.parsedURL?.id?.split('_')[1],
+          count,
+          offset,
+          access_key: arg.parsedURL?.access_key,
 
-        ...query
-      })
-      break
-    case 'group':
-    case 'user':
-      req = await VK.GetUser({
-        owner_id: arg.id,
-        count,
-        offset,
+          ...query
+        })
+        break
+      case 'group':
+      case 'user':
+        req = await VK.GetUser({
+          owner_id: arg.id,
+          count,
+          offset,
 
-        ...query
-      })
-      break
+          ...query
+        })
+        break
     }
 
     if (arg.type === 'unknown') {
-      await respond({embeds: [Utils.generateErrorMessage('Неизвестный тип ссылки', ErrorMessageType.Error)]})
+      await respond({ embeds: [Utils.generateErrorMessage('Неизвестный тип ссылки', ErrorMessageType.Error)] })
       return
     }
 
     if (!req) return
 
     if (req.status === 'error') {
-      logger.warn({req, ...meta}, 'VK Request error')
+      logger.warn({ req, ...meta }, 'VK Request error')
 
       const reqError = req as APIResponse
 
@@ -209,7 +211,7 @@ export default new Command({
         fields: [
           {
             name: 'Длительность',
-            value: Duration.fromObject({seconds: req.duration}).toFormat('mm:ss')
+            value: Duration.fromObject({ seconds: req.duration }).toFormat('mm:ss')
           }
         ]
       }
@@ -236,17 +238,17 @@ export default new Command({
       }
 
       switch (res.loadType) {
-      case 'NO_MATCHES':
-        if (!player.queue.current) player.destroy()
-        await respond({ embeds: [Utils.generateErrorMessage('Неизвестная ошибка.')], ephemeral: true })
-        return
-      case 'TRACK_LOADED':
-        res.tracks[0].title = req.title
-        res.tracks[0].author = req.author
+        case 'NO_MATCHES':
+          if (!player.queue.current) player.destroy()
+          await respond({ embeds: [Utils.generateErrorMessage('Неизвестная ошибка.')], ephemeral: true })
+          return
+        case 'TRACK_LOADED':
+          res.tracks[0].title = req.title
+          res.tracks[0].author = req.author
 
-        player.queue.add(res.tracks[0])
-  
-        if (!player.playing && !player.paused && !player.queue.size) await player.play()
+          player.queue.add(res.tracks[0])
+
+          if (!player.playing && !player.paused && !player.queue.size) await player.play()
       }
 
       await respond({ embeds: [songEmbed] })
@@ -352,21 +354,25 @@ export default new Command({
 
       desc = `${desc}\n${wrongTracks.length > 5 ? `...\nи еще ${wrongTracks.length - 5} ${Utils.declOfNum(wrongTracks.length - 5, ['трек', 'трека', 'треков'])}.` : ''}`
 
-      await send({embeds: [{
-        color: 0x5181b8,
-        author: {
-          name: 'Следующие треки не могут быть добавлены из-за решения автора или представителя'
-        },
-        description: desc
-      }]}, 30000)
+      await send({
+        embeds: [{
+          color: 0x5181b8,
+          author: {
+            name: 'Следующие треки не могут быть добавлены из-за решения автора или представителя'
+          },
+          description: desc
+        }]
+      }, 30000)
     }
 
     if (!await client.db.checkPremium(guild.id)) {
       if (player)
         if (player.queue.totalSize > 200) {
           player.queue.remove(199, player.queue.totalSize - 1)
-          await send({embeds: [Utils.generateErrorMessage('В очереди было больше 200 треков, поэтому лишние треки были удалены. ' +
-          `Хотите больше треков? Приобретите Премиум, подробности: \`${await client.db.getPrefix(guild.id)}donate\`.`, ErrorMessageType.Warning)]})
+          await send({
+            embeds: [Utils.generateErrorMessage('В очереди было больше 200 треков, поэтому лишние треки были удалены. ' +
+              `Хотите больше треков? Приобретите Премиум, подробности: \`${await client.db.getPrefix(guild.id)}donate\`.`, ErrorMessageType.Warning)]
+          })
         }
     }
   }

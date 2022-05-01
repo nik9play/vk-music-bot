@@ -1,4 +1,4 @@
-import {Player} from 'erela.js-vk/structures/Player'
+import { Player } from 'erela.js-vk/structures/Player'
 import {
   InteractionReplyOptions,
   MessageActionRow,
@@ -7,10 +7,14 @@ import {
   MessageEmbed
 } from 'discord.js'
 import Utils from '../Utils'
-import {Duration} from 'luxon'
+import { Duration } from 'luxon'
 
 export function generateQueueResponse(page: number, player: Player | undefined): InteractionReplyOptions {
-  if (!player) return { embeds: [Utils.generateErrorMessage('Сейчас ничего не играет.')], ephemeral: true, components: [] }
+  if (!player) return {
+    embeds: [Utils.generateErrorMessage('Сейчас ничего не играет.')],
+    ephemeral: true,
+    components: []
+  }
 
   const queue = player.queue
   const embed = new MessageEmbed()
@@ -37,7 +41,7 @@ export function generateQueueResponse(page: number, player: Player | undefined):
 
   const maxPages = Math.ceil(queue.length / multiple)
 
-  embed.setFooter({text: `Страница ${page > maxPages ? maxPages : page} из ${maxPages}`})
+  embed.setFooter({ text: `Страница ${page > maxPages ? maxPages : page} из ${maxPages}` })
 
   const buttons: MessageActionRowComponentResolvable[] = []
 

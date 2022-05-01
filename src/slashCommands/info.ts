@@ -1,4 +1,4 @@
-import {Command} from '../SlashCommandManager'
+import { Command } from '../SlashCommandManager'
 
 export default new Command({
   name: 'info',
@@ -6,7 +6,7 @@ export default new Command({
   premium: false,
   djOnly: false,
   cooldown: 10,
-  execute: async function({client, respond, guild}) {
+  execute: async function ({ client, respond, guild }) {
     let totalServers = await client.cluster.fetchClientValues('guilds.cache.size')
     totalServers = totalServers.reduce((acc, guildCount) => acc + guildCount, 0)
 
@@ -84,10 +84,10 @@ export default new Command({
           'name': 'ID сервера',
           'value': `\`\`\`js\n${guild.id}\`\`\``,
           'inline': true
-        },
+        }
       ]
     }
 
-    respond({embeds: [embed], ephemeral: true})
+    respond({ embeds: [embed], ephemeral: true })
   }
 })

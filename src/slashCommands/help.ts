@@ -1,4 +1,4 @@
-import {Command} from '../SlashCommandManager'
+import { Command } from '../SlashCommandManager'
 
 export default new Command({
   name: 'help',
@@ -7,7 +7,7 @@ export default new Command({
   adminOnly: false,
   premium: false,
   djOnly: false,
-  execute: async function({ respond }) {
+  execute: async function ({ respond }) {
     const embed = {
       title: '❔ Справка',
       color: 0x5181b8,

@@ -1,4 +1,4 @@
-import {Command} from '../SlashCommandManager'
+import { Command } from '../SlashCommandManager'
 
 export default new Command({
   name: 'donate',
@@ -6,14 +6,14 @@ export default new Command({
   adminOnly: true,
   premium: false,
   djOnly: false,
-  execute: async ({client, guild, respond}) => {
+  execute: async ({ client, guild, respond }) => {
     const premium = await client.db.checkPremium(guild.id)
 
-    let info = 
-`${premium ? '**Спасибо за поддержку бота!**\n' : ''}`
+    let info =
+      `${premium ? '**Спасибо за поддержку бота!**\n' : ''}`
 
     if (!premium) info +=
-    `Вы можете приобрести **Премиум**, задонатив 15₽ или больше [здесь](https://vk.com/app6887721_-197274096)
+      `Вы можете приобрести **Премиум**, задонатив 15₽ или больше [здесь](https://vk.com/app6887721_-197274096)
 **В комментарий к переводу укажите данный ID**: \`${guild.id}\`
 Премиум дает Вам следующие возможности:
 ● Режим 24/7
@@ -29,6 +29,6 @@ export default new Command({
       description: info
     }
 
-    respond({embeds: [embed]})
+    respond({ embeds: [embed] })
   }
 })

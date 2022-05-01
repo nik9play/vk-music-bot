@@ -1,5 +1,5 @@
-import {Collection, Db, MongoClient} from 'mongodb'
-import {createClient, RedisClientType} from 'redis'
+import { Collection, Db, MongoClient } from 'mongodb'
+import { createClient, RedisClientType } from 'redis'
 
 export default class DB {
   private readonly mongoURL: string
@@ -12,7 +12,7 @@ export default class DB {
 
   private readonly cacheDuration = 259200
 
-  constructor (mongoURL: string, redisURL: string) {
+  constructor(mongoURL: string, redisURL: string) {
     this.mongoURL = mongoURL
     this.redisURL = redisURL
     this.mongoClient = new MongoClient(this.mongoURL)
@@ -36,16 +36,17 @@ export default class DB {
 
   async setValueUpsert(guild_id: string, property: string, value: any): Promise<void> {
     const query = { guild_id }
-    const update = { $set:
-      {
-        [property]: value
-      }
+    const update = {
+      $set:
+        {
+          [property]: value
+        }
     }
 
     await this.redisClient.set(`${guild_id}/${property}`, JSON.stringify({ value }), {
       EX: this.cacheDuration // удалить ключ через трое суток
     })
-    await this.collection.updateOne(query, update, {upsert: true})
+    await this.collection.updateOne(query, update, { upsert: true })
   }
 
   async getValue(guild_id: string, property: string, defaultValue: any): Promise<any> {
@@ -69,8 +70,7 @@ export default class DB {
         EX: this.cacheDuration
       })
       return defaultValue
-    }
-    else {
+    } else {
       await this.redisClient.set(`${guild_id}/${property}`, JSON.stringify({ value: server[property] }), {
         EX: this.cacheDuration
       })

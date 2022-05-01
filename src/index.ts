@@ -4,7 +4,7 @@ import Cluster from 'discord-hybrid-sharding'
 
 import SlashCommandManager from './SlashCommandManager'
 import logger from './Logger'
-import {NodeOptions} from 'erela.js-vk/structures/Node'
+import { NodeOptions } from 'erela.js-vk/structures/Node'
 
 const LavalinkServersString = process.env.LAVALINK_NODES
 
@@ -19,7 +19,7 @@ const nodes: NodeOptions[] = LavalinkServersString.split(';').map((val): NodeOpt
   }
 })
 
-console.log({nodes})
+console.log({ nodes })
 
 const client = new VkMusicBotClient({
   makeCache: Options.cacheWithLimits({
@@ -30,7 +30,7 @@ const client = new VkMusicBotClient({
   }),
   shards: Cluster.data.SHARD_LIST,
   shardCount: Cluster.data.TOTAL_SHARDS,
-  intents: [ Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_VOICE_STATES, Intents.FLAGS.GUILD_MESSAGES ]
+  intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_VOICE_STATES, Intents.FLAGS.GUILD_MESSAGES]
 }, nodes)
 
 const slashCommandManager = new SlashCommandManager(client)
@@ -38,13 +38,13 @@ slashCommandManager.init()
 
 client.once('ready', () => {
   client.manager.init(client.user?.id)
-  logger.info({shard_id: client.cluster.id}, `Logged in as ${client.user?.tag}`)
+  logger.info({ shard_id: client.cluster.id }, `Logged in as ${client.user?.tag}`)
 })
 
 client.on('raw', d => client.manager.updateVoiceState(d))
 
 client.on('guildDelete', (guild) => {
-  logger.info({guild_id: guild.id, shard_id: client.cluster.id}, 'bot leaves')
+  logger.info({ guild_id: guild.id, shard_id: client.cluster.id }, 'bot leaves')
   const player = client.manager.get(guild.id)
 
   if (player) player.destroy()

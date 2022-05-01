@@ -1,5 +1,5 @@
-import {Command} from '../SlashCommandManager'
-import Utils, {ErrorMessageType} from '../Utils'
+import { Command } from '../SlashCommandManager'
+import Utils, { ErrorMessageType } from '../Utils'
 
 export default new Command({
   name: 'settings',
@@ -34,8 +34,8 @@ export default new Command({
       client.db.setAccessRoleEnabled(value, guild.id).then(async () => respond({
         embeds: [
           Utils.generateErrorMessage('**DJ режим ' + (value ? 'включён.**' +
-          `\nПри включенном DJ режиме **бот будет работать** только у пользователей с ролью \`${await client.db.getAccessRole(guild.id)}\`.` : 'выключён.**'),
-          ErrorMessageType.NoTitle)
+            `\nПри включенном DJ режиме **бот будет работать** только у пользователей с ролью \`${await client.db.getAccessRole(guild.id)}\`.` : 'выключён.**'),
+            ErrorMessageType.NoTitle)
         ]
       }))
     } else if (type === 'djrole') {
@@ -76,7 +76,7 @@ export default new Command({
         ]
       }
 
-      return respond({embeds: [embed]})
+      return respond({ embeds: [embed] })
     }
   }
 })

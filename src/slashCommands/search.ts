@@ -1,4 +1,4 @@
-import VK, {APIResponse, ManyTracksResponse} from '../apis/VK'
+import VK, { APIResponse, ManyTracksResponse } from '../apis/VK'
 import { MessageActionRow, MessageButton } from 'discord.js'
 import logger from '../Logger'
 import { Command } from '../SlashCommandManager'
@@ -14,7 +14,7 @@ export default new Command({
     const search = args.join(' ')
 
     const query: any = {}
-    
+
     if (captcha) {
       query.captcha_id = captcha.sid
       query.captcha_key = captcha.captcha_key
@@ -28,7 +28,7 @@ export default new Command({
     })
 
     if (req.status === 'error') {
-      logger.warn({req, ...meta}, 'VK Request error: %O')
+      logger.warn({ req, ...meta }, 'VK Request error: %O')
 
       const reqError = req as APIResponse
 
@@ -44,7 +44,7 @@ export default new Command({
         const captcha = client.captcha.get(guild.id)
         const embed = {
           description: 'Ошибка! Требуется капча. Введите команду `/captcha`, а после код с картинки.' +
-          `Если картинки не видно, перейдите по [ссылке](${captcha?.url})`,
+            `Если картинки не видно, перейдите по [ссылке](${captcha?.url})`,
           color: 0x5181b8,
           image: {
             url: captcha?.url + Utils.generateRandomCaptchaString()
@@ -53,7 +53,10 @@ export default new Command({
 
         return respond({ embeds: [embed], ephemeral: true })
       } else if (reqError.type === 'empty') {
-        return respond({ embeds: [Utils.generateErrorMessage('Не удалось ничего найти по запросу или плейлиста не существует.')], ephemeral: true })
+        return respond({
+          embeds: [Utils.generateErrorMessage('Не удалось ничего найти по запросу или плейлиста не существует.')],
+          ephemeral: true
+        })
       } else if (reqError.type === 'api') {
         return respond({ embeds: [Utils.generateErrorMessage('Неверный формат ссылки или запроса.')], ephemeral: true })
       } else if (reqError.type === 'request') {

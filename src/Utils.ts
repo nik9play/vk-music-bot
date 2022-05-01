@@ -1,6 +1,6 @@
-import {MessageEmbed, TextChannel} from 'discord.js'
-import {Player} from 'erela.js-vk/structures/Player'
-import {VkMusicBotClient} from './client'
+import { MessageEmbed, TextChannel } from 'discord.js'
+import { Player } from 'erela.js-vk/structures/Player'
+import { VkMusicBotClient } from './client'
 import logger from './Logger'
 
 export interface ArgType {
@@ -24,7 +24,7 @@ export enum ErrorMessageType {
 export default class Utils {
   public static declOfNum(number: number, titles: string[]): string {
     const cases = [2, 0, 1, 1, 1, 2]
-    return titles[ (number%100>4 && number%100<20)? 2 : cases[(number%10<5)?number%10:5] ]
+    return titles[(number % 100 > 4 && number % 100 < 20) ? 2 : cases[(number % 10 < 5) ? number % 10 : 5]]
   }
 
   public static parsePlaylistURL(url: URL): PlaylistURL {
@@ -114,32 +114,32 @@ export default class Utils {
       }
     }
   }
-  
+
   public static escapeFormat(text: string | undefined): string {
     if (!text) return ''
     return text.replace(/([*_`~\\])/g, '\\$1')
   }
-  
+
   public static generateErrorMessage(message: string, type: ErrorMessageType = ErrorMessageType.Error, escapeFormatting = false): MessageEmbed {
     let title
     let color
 
     switch (type) {
-    case ErrorMessageType.Error:
-      title = '<:no2:835498572916195368> **Ошибка!**\n'
-      color = 0xED4245
-      break
-    case ErrorMessageType.Warning:
-      title = '⚠️ **Предупреждение**\n'
-      color = 0xFEE75C
-      break
-    case ErrorMessageType.Info:
-      title = 'ℹ️ **Информация**\n'
-      color = 0x3b88c3
-      break
-    case ErrorMessageType.NoTitle:
-      title = ''
-      color = 0x5181b8
+      case ErrorMessageType.Error:
+        title = '<:no2:835498572916195368> **Ошибка!**\n'
+        color = 0xED4245
+        break
+      case ErrorMessageType.Warning:
+        title = '⚠️ **Предупреждение**\n'
+        color = 0xFEE75C
+        break
+      case ErrorMessageType.Info:
+        title = 'ℹ️ **Информация**\n'
+        color = 0x3b88c3
+        break
+      case ErrorMessageType.NoTitle:
+        title = ''
+        color = 0x5181b8
     }
 
     if (escapeFormatting) {
@@ -151,11 +151,11 @@ export default class Utils {
       color
     })
   }
-  
+
   public static generateRandomCaptchaString(): string {
     return `&r=${Math.random().toString(36).substring(2, 15)}`
   }
-  
+
   public static getExitTimeout(player: Player, client: VkMusicBotClient): NodeJS.Timeout {
     return setTimeout(async () => {
       if (player) {
@@ -169,18 +169,20 @@ export default class Utils {
 
         if (channel instanceof TextChannel) {
           try {
-            const message = await channel.send({embeds: [{
-              description: `**Я покинул канал, так как слишком долго был неактивен.**\n Хотите, чтобы я оставался? Включите режим 24/7 (доступен только для Премиум пользователей, подробности: \`${await client.db.getPrefix(player.guild)}donate\`). `,
-              color: 0x5181b8
-            }]})
+            const message = await channel.send({
+              embeds: [{
+                description: `**Я покинул канал, так как слишком долго был неактивен.**\n Хотите, чтобы я оставался? Включите режим 24/7 (доступен только для Премиум пользователей, подробности: \`${await client.db.getPrefix(player.guild)}donate\`). `,
+                color: 0x5181b8
+              }]
+            })
 
             setTimeout(() => {
               if (message && typeof message.delete === 'function') {
-                message.delete().catch(err => logger.error({err}, 'Can\'t delete message'))
+                message.delete().catch(err => logger.error({ err }, 'Can\'t delete message'))
               }
             }, 30000)
           } catch (err) {
-            logger.warn({err}, 'Can\'t send timeout message')
+            logger.warn({ err }, 'Can\'t send timeout message')
           }
 
         }

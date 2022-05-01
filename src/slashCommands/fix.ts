@@ -1,5 +1,5 @@
-import {Command} from '../SlashCommandManager'
-import Utils, {ErrorMessageType} from '../Utils'
+import { Command } from '../SlashCommandManager'
+import Utils, { ErrorMessageType } from '../Utils'
 
 export default new Command({
   name: 'fix',
@@ -7,7 +7,7 @@ export default new Command({
   cooldown: 5,
   adminOnly: false,
   premium: false,
-  execute: async ({client, respond, guild }) => { 
+  execute: async ({ client, respond, guild }) => {
     const player = client.manager.get(guild.id)
     if (!player)
       return
@@ -17,7 +17,7 @@ export default new Command({
       clearTimeout(timer)
 
     player.destroy()
-    
+
     respond({ embeds: [Utils.generateErrorMessage('🔧', ErrorMessageType.NoTitle)] })
   }
 })
