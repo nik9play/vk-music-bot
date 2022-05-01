@@ -394,10 +394,10 @@ export default class {
           const timeLeft = (expirationTime - now) / 1000
 
           await respond({
-              embeds: [Utils.generateErrorMessage(`Пожалуйста, подождите еще ${timeLeft.toFixed(2)} секунд перед тем как использовать \`${realCommandName}\`!`,
-                ErrorMessageType.Warning)]
-            },
-            timeLeft * 1000 + 1000)
+            embeds: [Utils.generateErrorMessage(`Пожалуйста, подождите еще ${timeLeft.toFixed(2)} секунд перед тем как использовать \`${realCommandName}\`!`,
+              ErrorMessageType.Warning)]
+          },
+          timeLeft * 1000 + 1000)
           return
         }
       } else {

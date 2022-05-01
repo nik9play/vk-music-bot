@@ -82,22 +82,22 @@ export default class VK {
 
       if (res.data.status === 'error') {
         switch (res.data.error.code) {
-          case 14:
-            return {
-              status: 'error',
-              type: 'captcha',
-              error: res.data.error
-            }
-          case 201:
-            return {
-              status: 'error',
-              type: 'access_denied'
-            }
-          case 113:
-            return {
-              status: 'error',
-              type: 'empty'
-            }
+        case 14:
+          return {
+            status: 'error',
+            type: 'captcha',
+            error: res.data.error
+          }
+        case 201:
+          return {
+            status: 'error',
+            type: 'access_denied'
+          }
+        case 113:
+          return {
+            status: 'error',
+            type: 'empty'
+          }
         }
 
         return {

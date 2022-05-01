@@ -36,10 +36,10 @@ export default new Command({
   deferred: true,
   cooldown: 2,
   execute: async ({
-                    guild, voice, text,
-                    client, args, captcha,
-                    respond, send, meta
-                  }) => {
+    guild, voice, text,
+    client, args, captcha,
+    respond, send, meta
+  }) => {
     if (!voice) return respond({
       embeds: [Utils.generateErrorMessage('Необходимо находиться в голосовом канале.')],
       ephemeral: true
@@ -100,34 +100,34 @@ export default new Command({
     }
 
     switch (arg.type) {
-      case 'track':
-        req = await VK.GetOne({
-          q: search,
+    case 'track':
+      req = await VK.GetOne({
+        q: search,
 
-          ...query
-        })
-        break
-      case 'playlist':
-        req = await VK.GetPlaylist({
-          owner_id: arg.parsedURL?.id?.split('_')[0],
-          album_id: arg.parsedURL?.id?.split('_')[1],
-          count,
-          offset,
-          access_key: arg.parsedURL?.access_key,
+        ...query
+      })
+      break
+    case 'playlist':
+      req = await VK.GetPlaylist({
+        owner_id: arg.parsedURL?.id?.split('_')[0],
+        album_id: arg.parsedURL?.id?.split('_')[1],
+        count,
+        offset,
+        access_key: arg.parsedURL?.access_key,
 
-          ...query
-        })
-        break
-      case 'group':
-      case 'user':
-        req = await VK.GetUser({
-          owner_id: arg.id,
-          count,
-          offset,
+        ...query
+      })
+      break
+    case 'group':
+    case 'user':
+      req = await VK.GetUser({
+        owner_id: arg.id,
+        count,
+        offset,
 
-          ...query
-        })
-        break
+        ...query
+      })
+      break
     }
 
     if (arg.type === 'unknown') {
@@ -238,17 +238,17 @@ export default new Command({
       }
 
       switch (res.loadType) {
-        case 'NO_MATCHES':
-          if (!player.queue.current) player.destroy()
-          await respond({ embeds: [Utils.generateErrorMessage('Неизвестная ошибка.')], ephemeral: true })
-          return
-        case 'TRACK_LOADED':
-          res.tracks[0].title = req.title
-          res.tracks[0].author = req.author
+      case 'NO_MATCHES':
+        if (!player.queue.current) player.destroy()
+        await respond({ embeds: [Utils.generateErrorMessage('Неизвестная ошибка.')], ephemeral: true })
+        return
+      case 'TRACK_LOADED':
+        res.tracks[0].title = req.title
+        res.tracks[0].author = req.author
 
-          player.queue.add(res.tracks[0])
+        player.queue.add(res.tracks[0])
 
-          if (!player.playing && !player.paused && !player.queue.size) await player.play()
+        if (!player.playing && !player.paused && !player.queue.size) await player.play()
       }
 
       await respond({ embeds: [songEmbed] })

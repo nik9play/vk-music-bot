@@ -35,7 +35,7 @@ export default new Command({
         embeds: [
           Utils.generateErrorMessage('**DJ режим ' + (value ? 'включён.**' +
             `\nПри включенном DJ режиме **бот будет работать** только у пользователей с ролью \`${await client.db.getAccessRole(guild.id)}\`.` : 'выключён.**'),
-            ErrorMessageType.NoTitle)
+          ErrorMessageType.NoTitle)
         ]
       }))
     } else if (type === 'djrole') {

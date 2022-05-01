@@ -24,18 +24,18 @@ export default new Command({
       let gain = 0.0
 
       switch (level) {
-        case 'выкл':
-          gain = 0.0
-          break
-        case 'слабый':
-          gain = 0.15
-          break
-        case 'средний':
-          gain = 0.25
-          break
-        case 'мощный':
-          gain = 0.35
-          break
+      case 'выкл':
+        gain = 0.0
+        break
+      case 'слабый':
+        gain = 0.15
+        break
+      case 'средний':
+        gain = 0.25
+        break
+      case 'мощный':
+        gain = 0.35
+        break
       }
 
       const bands = new Array(3)

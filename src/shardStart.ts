@@ -82,14 +82,14 @@ function sendInfo() {
           const id = results[0]
 
           axios.post(`https://api.server-discord.com/v2/bots/${id}/stats`, {
-              servers: serverSize,
-              shards: manager.totalShards
-            },
-            {
-              headers: {
-                'Authorization': 'SDC ' + process.env.SDC_TOKEN
-              }
-            })
+            servers: serverSize,
+            shards: manager.totalShards
+          },
+          {
+            headers: {
+              'Authorization': 'SDC ' + process.env.SDC_TOKEN
+            }
+          })
             .then(res => {
               if (res.data.error) {
                 logger.error('Ошибка отправки статистики на мониторинг. (Ошибка сервера)')
