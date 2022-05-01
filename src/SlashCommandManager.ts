@@ -1,7 +1,8 @@
 import {
+  ButtonInteraction,
+  CommandInteraction,
   Guild,
   GuildMember,
-  Interaction,
   InteractionReplyOptions,
   Message,
   MessageOptions,
@@ -16,6 +17,7 @@ import {CaptchaInfo, VkMusicBotClient} from './client'
 import Utils, {ErrorMessageType} from './Utils'
 import glob from 'glob'
 import {promisify} from 'util'
+import {generateQueueResponse} from './helpers/QueueCommandHelper'
 
 const globPromise = promisify(glob)
 
@@ -31,6 +33,7 @@ export type CommandType = {
   premium: boolean
   cooldown?: number
   djOnly: boolean
+  deferred?: boolean
   execute(params: CommandExecuteParams): Promise<void>
 }
 
@@ -40,6 +43,9 @@ export class Command {
   }
 }
 
+type RespondFunction = (data: MessageOptions | InteractionReplyOptions, timeout?: number) => Promise<void>
+type SendFunction = (data: MessageOptions, timeout?: number) => Promise<void>
+
 export interface CommandExecuteParams {
   guild: Guild,
   user: User,
@@ -47,9 +53,9 @@ export interface CommandExecuteParams {
   text: TextBasedChannel,
   client: VkMusicBotClient,
   args: string[],
-  interaction?: Interaction,
-  respond(data: MessageOptions | InteractionReplyOptions, timeout?: number): void,
-  send(data: MessageOptions, timeout?: number): void,
+  interaction?: CommandInteraction,
+  respond: RespondFunction,
+  send: SendFunction,
   message?: Message,
   captcha?: CaptchaInfo,
   meta: Meta
@@ -66,8 +72,6 @@ export default class {
     logger.info('Loading commands...')
     const commandFiles = await globPromise('**/dist/slashCommands/*.js')
 
-    console.log({ commandFiles })
-
     for (const file of commandFiles) {
       const module = await import(`../${file}`)
       const command: CommandType = module.default
@@ -81,18 +85,19 @@ export default class {
     }
 
     logger.info('Loading commands overwrites...')
-    // const slashOverwrites = readdirSync('./dist/slashCommands').filter(file => file.endsWith('.ts'))
-    //
-    // for (const file of slashOverwrites) {
-    //   import(`../slashOverwrites/${file.replace('.ts', '')}.ts`).then((command: CommandType) => {
-    //     this.client.slashOverwrites.set(command.name, command)
-    //   })
-    // }
+    const overwritesFiles = await globPromise('**/dist/slashOverwrites/*.js')
+
+    for (const file of overwritesFiles) {
+      const module = await import(`../${file}`)
+      const command: CommandType = module.default
+
+      this.client.slashOverwrites.set(command.name, command)
+    }
 
     this.client.on('interactionCreate', async interaction => {
       //console.log(interaction.options.data)
-
-      this.executeSlash(interaction).catch((err) => logger.error({ shard_id: this.client.cluster.id, err } , 'executeSlash'))
+      if (interaction.isCommand() || interaction.isButton())
+        this.executeSlash(interaction).catch((err) => logger.error({ shard_id: this.client.cluster.id, err } , 'executeSlash'))
     })
 
     // обычные команды с префиксом
@@ -105,22 +110,41 @@ export default class {
   /*
    * Слэш команды
    */
-  async executeSlash(interaction: Interaction) {
+  async executeSlash(interaction: CommandInteraction | ButtonInteraction) {
+    const guild = interaction.guild as Guild
+    const user = interaction.member?.user as User
+    const member = interaction.member as GuildMember
+    const text = interaction.channel as TextBasedChannel
+
+    const meta: Meta = {
+      shard_id: this.client.cluster.id,
+      guild_id: guild?.id
+    }
+
+    const respond = async (data: MessageOptions | InteractionReplyOptions, timeout?: number): Promise<void> => {
+      if (interaction.deferred)
+        await interaction.editReply(data).catch(err => logger.error({err, ...meta}, 'Can\'t edit reply'))
+      else
+        await interaction.reply(data).catch(err => logger.error({err, ...meta}, 'Can\'t send reply'))
+
+      if (timeout)
+        setTimeout(async () => {
+          await interaction.deleteReply().catch(err => logger.error({err, ...meta}, 'Error deleting reply'))
+        }, timeout)
+    }
+
+    const send = async (data: MessageOptions, timeout?: number): Promise<void> => {
+      const message = await text.send(data).catch(err => logger.error({err, ...meta}, 'Can\'t send message'))
+
+      if (timeout)
+        setTimeout(async () => {
+          if (message && typeof message.delete === 'function') {
+            await message.delete().catch(err => logger.error({err, ...meta}, 'Can\'t delete message'))
+          }
+        }, timeout)
+    }
+
     if (interaction.isCommand()) {
-      const guild = interaction.guild as Guild
-      const user = interaction.member?.user as User
-      const member = interaction.member as GuildMember
-      const text = interaction.channel as TextBasedChannel
-
-      // if (guild == null || user == null || member == null || text == null) {
-      //   return
-      // }
-
-      const meta: Meta = {
-        shard_id: this.client.cluster.id,
-        guild_id: guild?.id
-      }
-
       let command: CommandType
 
       if (this.client.slashOverwrites.has(interaction.commandName)) {
@@ -129,37 +153,21 @@ export default class {
         command = this.client.commands.get(interaction.commandName) as CommandType
       }
 
-      const respond = (data: MessageOptions | InteractionReplyOptions, timeout?: number) => {
-        interaction.reply(data).catch(err => logger.error({err, ...meta}, 'Can\'t send reply'))
-        
-        if (timeout)
-          setTimeout(() => {
-            interaction.deleteReply().catch(err => logger.error({err, ...meta}, 'Error deleting reply'))
-          }, timeout)
-      }
-
-      const send = async (data: MessageOptions, timeout?: number) => {
-        const message = await text.send(data).catch(err => logger.error({err, ...meta}, 'Can\'t send message'))
-
-        if (timeout)
-          setTimeout(() => {
-            if (message && typeof message.delete === 'function') {
-              message.delete().catch(err => logger.error({err, ...meta}, 'Can\'t delete message'))
-            }
-          }, timeout)
-      }
-
       if (!command) {
-        respond({
+        await respond({
           content: 'Неизвестная команда'
         })
         return
       }
 
+      // редактировать ответ если команда отложена
+      if (command.deferred && !interaction.deferred)
+        await interaction.deferReply()
+
       // проверка на админа
       if (command.adminOnly) {
-        if (member.permissions.has(Permissions.FLAGS.MANAGE_GUILD)) {
-          respond({
+        if (!member.permissions.has(Permissions.FLAGS.MANAGE_GUILD)) {
+          await respond({
             embeds: [Utils.generateErrorMessage('Эту команду могут выполнять только пользователи с правом `Управление сервером`.')],
             ephemeral: true
           })
@@ -171,8 +179,8 @@ export default class {
       if (await this.client.db.getAccessRoleEnabled(guild.id)) {
         const djRole = await this.client.db.getAccessRole(guild.id)
 
-        if (member.permissions.has(Permissions.FLAGS.MANAGE_GUILD) && !member.roles.cache.some(role => role.name === djRole)) {
-          respond({
+        if (!member.permissions.has(Permissions.FLAGS.MANAGE_GUILD) && !member.roles.cache.some(role => role.name === djRole)) {
+          await respond({
             embeds: [Utils.generateErrorMessage(`Сейчас включен DJ режим, и вы не можете выполнять команды, так как у вас нет роли \`${djRole}\`.`)],
             ephemeral: true })
           return
@@ -181,7 +189,7 @@ export default class {
 
       // проверка на премиум
       if (command.premium && !await this.client.db.checkPremium(guild.id)) {
-        respond({
+        await respond({
           embeds: [Utils.generateErrorMessage('Для выполнения этой команды требуется **Премиум**! Подробности: /donate.')],
           ephemeral: true
         })
@@ -209,7 +217,7 @@ export default class {
             }
           }
 
-          respond({ embeds: [embed], ephemeral: true })
+          await respond({ embeds: [embed], ephemeral: true })
           return
         }
       }
@@ -226,28 +234,43 @@ export default class {
         send,
         meta
       }).catch(err => logger.error({err, ...meta}, 'Error executing command'))
+    }
 
-      if (interaction.isButton()) {
-        if (interaction?.customId.startsWith('search')) {
-          logger.info({...meta}, 'Нажата кнопка')
+    if (interaction.isButton()) {
+      if (interaction?.customId.startsWith('search')) {
+        logger.info({...meta}, 'Search button pressed')
 
-          const id = interaction.customId.split(',')[1]
+        const id = interaction.customId.split(',')[1]
 
-          if (id) {
-            const commandPlay = this.client.commands.get('play')
+        if (id) {
+          const commandPlay = this.client.commands.get('play')
 
-            commandPlay?.execute({
-              guild,
-              user,
-              voice: member?.voice?.channel as VoiceBasedChannel,
-              text,
-              client: this.client,
-              args: [id],
-              respond,
-              send,
-              meta
-            }).catch((err: any) => logger.error({err, ...meta}, 'Error executing command'))
-          }
+          // редактировать ответ если команда отложена
+          if (!interaction.deferred)
+            await interaction.deferReply()
+
+          commandPlay?.execute({
+            guild,
+            user,
+            voice: member?.voice?.channel as VoiceBasedChannel,
+            text,
+            client: this.client,
+            args: [id],
+            respond,
+            send,
+            meta
+          }).catch((err: any) => logger.error({err, ...meta}, 'Error executing command from button'))
+        }
+      }
+
+      if (interaction?.customId.startsWith('queue')) {
+        logger.info({...meta}, 'Queue button pressed')
+
+        const page = parseInt(interaction?.customId.split('_')[1])
+
+        if (page) {
+          const player = this.client.manager.get(guild.id)
+          await interaction.update(generateQueueResponse(page, player))
         }
       }
     }
@@ -282,7 +305,7 @@ export default class {
 
       logger.info({args, ...meta}, `Executed command ${commandName} with arguments`)
       
-      const respond = async (data: MessageOptions, timeout?: number) => {
+      const respond = async (data: MessageOptions, timeout?: number): Promise<void> => {
         const message = await channel.send(data).catch(err => logger.error({err}, 'Can\'t send message'))
 
         if (timeout)
