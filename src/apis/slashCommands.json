@@ -12,14 +12,12 @@
       {
         "type": 4,
         "name": "количество",
-        "description": "Количество треков, которые добавить",
-        "required": false
+        "description": "Количество треков, которые добавить"
       },
       {
         "type": 4,
         "name": "отступ",
-        "description": "Отступ от начала списка треков",
-        "required": false
+        "description": "Отступ от начала списка треков"
       }
     ]
   },
@@ -30,8 +28,7 @@
       {
         "type": 4,
         "name": "страница",
-        "description": "Страница с очередью",
-        "required": false
+        "description": "Страница с очередью"
       }
     ]
   },
@@ -83,7 +80,6 @@
         "type": 3,
         "name": "режим",
         "description": "Режим повтора",
-        "required": false,
         "choices": [
           {
             "name": "выкл",
@@ -138,10 +134,6 @@
     "description": "Добавление в очередь случайного гачи ремикса"
   },
   {
-    "name": "mashup",
-    "description": "Добавление в очередь случайного мэшапа"
-  },
-  {
     "name": "bass",
     "description": "Переключение бас буста",
     "options": [
@@ -180,6 +172,69 @@
         "name": "код",
         "description": "Код с капчи",
         "required": true
+      }
+    ]
+  },
+  {
+    "name": "settings",
+    "description": "Настройки бота",
+    "options": [
+      {
+        "type": 1,
+        "name": "prefix",
+        "description": "Настройка префикса",
+        "options": [
+          {
+            "type": 3,
+            "name": "префикс",
+            "description": "Префикс, 1-5 символов",
+            "required": true
+          }
+        ]
+      },
+      {
+        "type": 1,
+        "name": "djrole",
+        "description": "Роль DJ режима",
+        "options": [
+          {
+            "type": 8,
+            "name": "роль",
+            "description": "Роль",
+            "required": true
+          }
+        ]
+      },
+      {
+        "type": 1,
+        "name": "dj",
+        "description": "Переключение DJ режима",
+        "options": [
+          {
+            "type": 5,
+            "name": "включен",
+            "description": "Состояние DJ режима",
+            "required": true
+          }
+        ]
+      },
+      {
+        "type": 1,
+        "name": "announcements",
+        "description": "Настройка поведения оповещений",
+        "options": [
+          {
+            "type": 5,
+            "name": "включены",
+            "description": "Состояние оповещений",
+            "required": true
+          }
+        ]
+      },
+      {
+        "type": 1,
+        "name": "show",
+        "description": "Показать текущие настройки"
       }
     ]
   }
