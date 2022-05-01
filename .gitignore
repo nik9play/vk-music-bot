@@ -3,3 +3,4 @@ dist
 .env
 src/commands/debug.js
 src/slashCommands/debug.js
+.idea
