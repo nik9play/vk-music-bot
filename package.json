@@ -10,13 +10,11 @@
   "scripts": {
     "start": "node dist/shardStart.js",
     "build": "tsc",
-    "dev": "tsc && node -r dotenv/config ./dist/shardStart.js"
+    "dev": "cross-env NODE_ENV=development tsc && node -r dotenv/config ./dist/shardStart.js"
   },
   "dependencies": {
     "axios": "^0.21.1",
-    "axios-rate-limit": "^1.3.0",
     "bufferutil": "^4.0.3",
-    "colors": "^1.4.0",
     "discord-hybrid-sharding": "^1.4.3",
     "discord.js": "^13.6.0",
     "dotenv": "^8.2.0",
