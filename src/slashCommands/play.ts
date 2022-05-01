@@ -33,8 +33,11 @@ export default new Command({
   djOnly: true,
   premium: false,
   adminOnly: false,
+  deferred: true,
   cooldown: 2,
-  execute: async ({ guild, voice, text, client, args, captcha, respond, send, meta }) => {
+  execute: async ({ guild, voice, text,
+    client, args, captcha,
+    respond, send, meta }) => {
     if (!voice) return respond({
       embeds: [Utils.generateErrorMessage('Необходимо находиться в голосовом канале.')],
       ephemeral: true
@@ -126,7 +129,7 @@ export default new Command({
     }
 
     if (arg.type === 'unknown') {
-      respond({embeds: [Utils.generateErrorMessage('Неизвестный тип ссылки', ErrorMessageType.Error)]})
+      await respond({embeds: [Utils.generateErrorMessage('Неизвестный тип ссылки', ErrorMessageType.Error)]})
       return
     }
 
@@ -157,34 +160,36 @@ export default new Command({
           }
         }
 
-        return respond({ embeds: [embed], ephemeral: true })
+        await respond({ embeds: [embed], ephemeral: true })
       } else if (reqError.type === 'empty') {
-        return respond({
+        await respond({
           embeds: [Utils.generateErrorMessage('Не удалось ничего найти по запросу или плейлиста не существует.')],
           ephemeral: true
         })
       } else if (reqError.type === 'api') {
-        return respond({
+        await respond({
           embeds: [Utils.generateErrorMessage('Неверный формат ссылки или запроса.')],
           ephemeral: true
         })
       } else if (reqError.type === 'request') {
-        return respond({
+        await respond({
           embeds: [Utils.generateErrorMessage('Ошибка запроса к серверам ВК.')],
           ephemeral: true
         })
       } else if (reqError.type === 'access_denied') {
-        if (arg.type === 'playlist')
-          return respond({
+        if (arg.type === 'playlist') {
+          await respond({
             embeds: [Utils.generateErrorMessage('Нет доступа к плейлисту. Попробуйте получить ссылку по [гайду](https://vk.com/@vkmusicbotds-kak-poluchit-rabochuu-ssylku-na-pleilist).')],
             ephemeral: true
           })
-        else if (arg.type === 'user')
-          return respond({
+        } else if (arg.type === 'user') {
+          await respond({
             embeds: [Utils.generateErrorMessage('Нет доступа к аудио пользователя. Аудио должны быть открыты.')],
             ephemeral: true
           })
+        }
       }
+      return
     }
 
     const wrongTracks: OneTrackResponse[] = []
@@ -216,22 +221,25 @@ export default new Command({
 
         if (res.loadType === 'LOAD_FAILED') {
           if (!player.queue.current) player.destroy()
-          return respond({
+          await respond({
             embeds: [Utils.generateErrorMessage('Ошибка загрузки.')],
             ephemeral: true
           })
+          return
         }
       } catch (err: any) {
-        return respond({
+        await respond({
           embeds: [Utils.generateErrorMessage(err.message)],
           ephemeral: true
         })
+        return
       }
 
       switch (res.loadType) {
       case 'NO_MATCHES':
         if (!player.queue.current) player.destroy()
-        return respond({ embeds: [Utils.generateErrorMessage('Неизвестная ошибка.')], ephemeral: true })
+        await respond({ embeds: [Utils.generateErrorMessage('Неизвестная ошибка.')], ephemeral: true })
+        return
       case 'TRACK_LOADED':
         res.tracks[0].title = req.title
         res.tracks[0].author = req.author
@@ -241,7 +249,7 @@ export default new Command({
         if (!player.playing && !player.paused && !player.queue.size) await player.play()
       }
 
-      respond({ embeds: [songEmbed] })
+      await respond({ embeds: [songEmbed] })
     } else if (arg.type === 'playlist') {
       req = req as PlaylistResponse
 
@@ -276,7 +284,7 @@ export default new Command({
 
       await fillQueue(newArray, player, wrongTracks)
 
-      respond({ embeds: [playlistEmbed] })
+      await respond({ embeds: [playlistEmbed] })
     } else if (arg.type === 'user') {
       req = req as UserResponse
 
@@ -305,7 +313,7 @@ export default new Command({
 
       await fillQueue(newArray, player, wrongTracks)
 
-      respond({ embeds: [playlistEmbed] })
+      await respond({ embeds: [playlistEmbed] })
     } else if (arg.type === 'group') {
       req = req as UserResponse
       const newArray = req.newArray
@@ -334,7 +342,7 @@ export default new Command({
 
       await fillQueue(newArray, player, wrongTracks)
 
-      respond({ embeds: [playlistEmbed] })
+      await respond({ embeds: [playlistEmbed] })
     }
 
     if (wrongTracks.length > 0) {
@@ -344,7 +352,7 @@ export default new Command({
 
       desc = `${desc}\n${wrongTracks.length > 5 ? `...\nи еще ${wrongTracks.length - 5} ${Utils.declOfNum(wrongTracks.length - 5, ['трек', 'трека', 'треков'])}.` : ''}`
 
-      send({embeds: [{
+      await send({embeds: [{
         color: 0x5181b8,
         author: {
           name: 'Следующие треки не могут быть добавлены из-за решения автора или представителя'
@@ -357,7 +365,7 @@ export default new Command({
       if (player)
         if (player.queue.totalSize > 200) {
           player.queue.remove(199, player.queue.totalSize - 1)
-          return send({embeds: [Utils.generateErrorMessage('В очереди было больше 200 треков, поэтому лишние треки были удалены. ' +
+          await send({embeds: [Utils.generateErrorMessage('В очереди было больше 200 треков, поэтому лишние треки были удалены. ' +
           `Хотите больше треков? Приобретите Премиум, подробности: \`${await client.db.getPrefix(guild.id)}donate\`.`, ErrorMessageType.Warning)]})
         }
     }
