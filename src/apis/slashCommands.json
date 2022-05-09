@@ -58,7 +58,15 @@
   },
   {
     "name": "skip",
-    "description": "Пропуск текущего трека"
+    "description": "Пропуск текущего трека",
+    "options": [
+      {
+        "type": 4,
+        "name": "количество",
+        "description": "Количество треков для пропуска",
+        "required": false
+      }
+    ]
   },
   {
     "name": "pause",
