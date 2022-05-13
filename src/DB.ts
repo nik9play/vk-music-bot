@@ -1,5 +1,6 @@
 import { Collection, Db, MongoClient } from 'mongodb'
 import { createClient, RedisClientType } from 'redis'
+import { Snowflake } from 'discord.js'
 
 export default class DB {
   private readonly mongoURL: string
@@ -78,47 +79,47 @@ export default class DB {
     }
   }
 
-  async setAccessRole(name: string, guild_id: string): Promise<void> {
+  async setAccessRole(name: string | Snowflake, guild_id: string): Promise<void> {
     await this.setValueUpsert(guild_id, 'accessRoleName', name)
   }
 
-  async getAccessRole(guild_id: string): Promise<string> {
+  async getAccessRole(guild_id: string | Snowflake): Promise<string> {
     return await this.getValue(guild_id, 'accessRoleName', 'DJ')
   }
 
-  async setAccessRoleEnabled(enable: boolean, guild_id: string): Promise<void> {
+  async setAccessRoleEnabled(enable: boolean, guild_id: string | Snowflake): Promise<void> {
     await this.setValueUpsert(guild_id, 'accessRoleNameEnabled', enable)
   }
 
-  async getAccessRoleEnabled(guild_id: string): Promise<boolean> {
+  async getAccessRoleEnabled(guild_id: string | Snowflake): Promise<boolean> {
     return await this.getValue(guild_id, 'accessRoleNameEnabled', false)
   }
 
-  async setPrefix(prefix: string, guild_id: string): Promise<void> {
+  async setPrefix(prefix: string, guild_id: string | Snowflake): Promise<void> {
     await this.setValueUpsert(guild_id, 'prefix', prefix)
   }
 
-  async getPrefix(guild_id: string): Promise<string> {
+  async getPrefix(guild_id: string | Snowflake): Promise<string> {
     return await this.getValue(guild_id, 'prefix', '-v')
   }
 
-  async set247(enable: boolean, guild_id: string): Promise<void> {
+  async set247(enable: boolean, guild_id: string | Snowflake): Promise<void> {
     await this.setValueUpsert(guild_id, 'e247', enable)
   }
 
-  async get247(guild_id: string): Promise<boolean> {
+  async get247(guild_id: string | Snowflake): Promise<boolean> {
     return await this.getValue(guild_id, 'e247', false)
   }
 
-  async setDisableAnnouncements(enable: boolean, guild_id: string): Promise<void> {
+  async setDisableAnnouncements(enable: boolean, guild_id: string | Snowflake): Promise<void> {
     await this.setValueUpsert(guild_id, 'disableAnnouncements', enable)
   }
 
-  async getDisableAnnouncements(guild_id: string): Promise<boolean> {
+  async getDisableAnnouncements(guild_id: string | Snowflake): Promise<boolean> {
     return await this.getValue(guild_id, 'disableAnnouncements', false)
   }
 
-  async checkPremium(guild_id: string): Promise<boolean> {
+  async checkPremium(guild_id: string | Snowflake): Promise<boolean> {
     return await this.getValue(guild_id, 'premium', false)
   }
 }

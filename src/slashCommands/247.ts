@@ -19,7 +19,7 @@ export default new Command({
         clearTimeout(timer)
     } else {
       client.db.set247(false, guild.id).then(() => respond({
-        embeds: [Utils.generateErrorMessage('Режим 24/7 выключён.', ErrorMessageType.NoTitle)],
+        embeds: [Utils.generateErrorMessage('Режим 24/7 выключен.', ErrorMessageType.NoTitle)],
         ephemeral: true
       }))
       const player = client.manager.get(guild.id)

@@ -3,7 +3,7 @@ import {
   CommandInteraction,
   Guild,
   GuildMember,
-  InteractionReplyOptions,
+  InteractionReplyOptions, InteractionUpdateOptions,
   Message,
   MessageOptions,
   Permissions,
@@ -131,7 +131,7 @@ export default class {
       if (interaction.deferred)
         await interaction.editReply(data).catch(err => logger.error({ err, ...meta }, 'Can\'t edit reply'))
       else
-        await interaction.reply(data).catch(err => logger.error({ err, ...meta }, 'Can\'t send reply'))
+        await interaction.reply(data as InteractionReplyOptions).catch(err => logger.error({ err, ...meta }, 'Can\'t send reply'))
 
       if (timeout)
         setTimeout(async () => {
@@ -171,14 +171,12 @@ export default class {
         await interaction.deferReply()
 
       // проверка на админа
-      if (command.adminOnly) {
-        if (!member.permissions.has(Permissions.FLAGS.MANAGE_GUILD)) {
-          await respond({
-            embeds: [Utils.generateErrorMessage('Эту команду могут выполнять только пользователи с правом `Управление сервером`.')],
-            ephemeral: true
-          })
-          return
-        }
+      if (command.adminOnly && !member.permissions.has(Permissions.FLAGS.MANAGE_GUILD)) {
+        await respond({
+          embeds: [Utils.generateErrorMessage('Эту команду могут выполнять только пользователи с правом `Управление сервером`.')],
+          ephemeral: true
+        })
+        return
       }
 
       // проверка на dj роль
@@ -217,7 +215,7 @@ export default class {
         if (captcha) {
           const embed = {
             description: 'Ошибка! Ожидается команда, для которой не введена капча. Введите команду `/captcha`, а после код с картинки.' +
-              `Если картинки не видно, перейдите по [ссылке](${captcha.url})`,
+              `Если картинки не видно, перейдите по [ссылке](${captcha.url}) (только один раз).`,
             color: 0x5181b8,
             image: {
               url: captcha.url + Utils.generateRandomCaptchaString()
@@ -277,7 +275,7 @@ export default class {
 
         if (page) {
           const player = this.client.manager.get(guild.id)
-          await interaction.update(generateQueueResponse(page, player))
+          await interaction.update(generateQueueResponse(page, player) as InteractionUpdateOptions)
         }
       }
     }
@@ -312,8 +310,8 @@ export default class {
 
       logger.info({ args, ...meta }, `Executed command ${commandName} with arguments`)
 
-      const respond = async (data: MessageOptions, timeout?: number): Promise<void> => {
-        const message = await channel.send(data).catch(err => logger.error({ err }, 'Can\'t send message'))
+      const respond = async (data: MessageOptions | InteractionReplyOptions, timeout?: number): Promise<void> => {
+        const message = await channel.send(data as MessageOptions).catch(err => logger.error({ err }, 'Can\'t send message'))
 
         if (timeout)
           setTimeout(() => {

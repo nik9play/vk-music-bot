@@ -8,6 +8,6 @@ export default new Command({
   adminOnly: false,
   cooldown: 1,
   execute: async ({ respond }) => {
-    respond({ embeds: [Utils.generateErrorMessage('Скоро™...', ErrorMessageType.NoTitle)] })
+    await respond({ embeds: [Utils.generateErrorMessage('Скоро™...', ErrorMessageType.NoTitle)] })
   }
 })

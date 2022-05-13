@@ -21,6 +21,6 @@ export default new Command({
     player.queue.clear()
     player.stop()
 
-    respond({ embeds: [Utils.generateErrorMessage('⏹️ Воспроизведение остановлено и очередь очищена.', ErrorMessageType.NoTitle)] })
+    await respond({ embeds: [Utils.generateErrorMessage('⏹️ Воспроизведение остановлено и очередь очищена.', ErrorMessageType.NoTitle)] })
   }
 })

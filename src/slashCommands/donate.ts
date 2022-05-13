@@ -29,6 +29,6 @@ export default new Command({
       description: info
     }
 
-    respond({ embeds: [embed] })
+    await respond({ embeds: [embed] })
   }
 })

@@ -1,6 +1,6 @@
 import { Player } from 'erela.js-vk/structures/Player'
 import {
-  InteractionReplyOptions,
+  InteractionReplyOptions, InteractionUpdateOptions,
   MessageActionRow,
   MessageActionRowComponentResolvable,
   MessageButton,
@@ -9,7 +9,7 @@ import {
 import Utils from '../Utils'
 import { Duration } from 'luxon'
 
-export function generateQueueResponse(page: number, player: Player | undefined): InteractionReplyOptions {
+export function generateQueueResponse(page: number, player: Player | undefined): InteractionReplyOptions | InteractionUpdateOptions {
   if (!player) return {
     embeds: [Utils.generateErrorMessage('Сейчас ничего не играет.')],
     ephemeral: true,

@@ -23,6 +23,6 @@ export default new Command({
 
     player.destroy()
 
-    respond({ embeds: [Utils.generateErrorMessage('👋', ErrorMessageType.NoTitle)] })
+    await respond({ embeds: [Utils.generateErrorMessage('👋', ErrorMessageType.NoTitle)] })
   }
 })

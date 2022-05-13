@@ -22,7 +22,7 @@ export default new Command({
       if (timer)
         clearTimeout(timer)
 
-      respond({ embeds: [Utils.generateErrorMessage('▶️ Пауза снята.', ErrorMessageType.NoTitle)] })
+      await respond({ embeds: [Utils.generateErrorMessage('▶️ Пауза снята.', ErrorMessageType.NoTitle)] })
 
       player.pause(false)
       return
@@ -31,7 +31,7 @@ export default new Command({
     if (!(await client.db.get247(guild.id)))
       client.timers.set(guild.id, Utils.getExitTimeout(player, client))
 
-    respond({ embeds: [Utils.generateErrorMessage('⏸️ Пауза поставлена.', ErrorMessageType.NoTitle)] })
+    await respond({ embeds: [Utils.generateErrorMessage('⏸️ Пауза поставлена.', ErrorMessageType.NoTitle)] })
 
     player.pause(true)
     return

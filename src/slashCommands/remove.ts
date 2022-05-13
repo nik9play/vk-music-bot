@@ -32,6 +32,6 @@ export default new Command({
       if (inta >= 1) removedTracks = [...removedTracks, ...queue.remove(inta - 1)]
     }
 
-    respond({ embeds: [Utils.generateErrorMessage(`🗑️ Удалено треков: ${removedTracks.length}.`, ErrorMessageType.NoTitle)] })
+    await respond({ embeds: [Utils.generateErrorMessage(`🗑️ Удалено треков: ${removedTracks.length}.`, ErrorMessageType.NoTitle)] })
   }
 })

@@ -46,12 +46,12 @@ export default new Command({
 
       player.setEQ(...bands)
 
-      respond({
+      await respond({
         embeds: [Utils.generateErrorMessage(`🔈 Уровень бас буста выставлен на \`${level}\`.\nДоступные уровни: \`выкл\`, \`слабый\`, \`средний\`, \`мощный\``,
           ErrorMessageType.NoTitle)]
       })
     } else {
-      respond({ embeds: [Utils.generateErrorMessage('🔈 Доступные уровни: `выкл`, `слабый`, `средний`, `мощный`')] })
+      await respond({ embeds: [Utils.generateErrorMessage('🔈 Доступные уровни: `выкл`, `слабый`, `средний`, `мощный`')] })
     }
   }
 })

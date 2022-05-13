@@ -10,6 +10,7 @@ export default new Command({
   cooldown: 5,
   premium: false,
   adminOnly: false,
+  deferred: true,
   execute: async function ({ guild, client, args, captcha, respond, meta }) {
     const search = args.join(' ')
 
@@ -85,6 +86,6 @@ export default new Command({
       description
     }
 
-    respond({ embeds: [embed], components: [buttonRow] }, 30000)
+    await respond({ embeds: [embed], components: [buttonRow] }, 30000)
   }
 })

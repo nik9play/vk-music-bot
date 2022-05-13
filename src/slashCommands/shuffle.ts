@@ -23,6 +23,6 @@ export default new Command({
     })
 
     player.queue.shuffle()
-    respond({ embeds: [Utils.generateErrorMessage('🔀 Очередь перемешана.', ErrorMessageType.NoTitle)] })
+    await respond({ embeds: [Utils.generateErrorMessage('🔀 Очередь перемешана.', ErrorMessageType.NoTitle)] })
   }
 })

@@ -27,7 +27,7 @@ export default new Command({
       await command.execute(params)
       params.client.captcha.delete(params.guild.id)
     } else {
-      params.respond({
+      await params.respond({
         embeds: [Utils.generateErrorMessage('В данный момент капчу вводит не надо.', ErrorMessageType.Info)],
         ephemeral: true
       })

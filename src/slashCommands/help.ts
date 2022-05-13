@@ -119,6 +119,6 @@ export default new Command({
       ]
     }
 
-    respond({ embeds: [embed], ephemeral: true })
+    await respond({ embeds: [embed], ephemeral: true })
   }
 })

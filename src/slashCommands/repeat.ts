@@ -19,18 +19,18 @@ export default new Command({
     if (args.length) {
       if (args[0] === 'очередь') {
         player.setQueueRepeat(true)
-        respond({ embeds: [Utils.generateErrorMessage('🔁 Включен повтор очереди.', ErrorMessageType.NoTitle)] })
+        await respond({ embeds: [Utils.generateErrorMessage('🔁 Включен повтор очереди.', ErrorMessageType.NoTitle)] })
         return
       }
       if (args[0] === 'трек') {
         player.setTrackRepeat(true)
-        respond({ embeds: [Utils.generateErrorMessage('🔁 Включен повтор трека.', ErrorMessageType.NoTitle)] })
+        await respond({ embeds: [Utils.generateErrorMessage('🔁 Включен повтор трека.', ErrorMessageType.NoTitle)] })
         return
       }
       if (args[0] === 'выкл') {
         player.setQueueRepeat(false)
         player.setTrackRepeat(false)
-        respond({ embeds: [Utils.generateErrorMessage('🔁 Повтор выключен.', ErrorMessageType.NoTitle)] })
+        await respond({ embeds: [Utils.generateErrorMessage('🔁 Повтор выключен.', ErrorMessageType.NoTitle)] })
         return
       }
     }
@@ -40,8 +40,8 @@ export default new Command({
     else if (player.queueRepeat) msg = 'Повтор очереди'
 
     if (msg)
-      respond({ embeds: [Utils.generateErrorMessage(`🔁 ${msg} сейчас включен. Доступные режимы: \`очередь\`, \`трек\`, \`выкл\``, ErrorMessageType.NoTitle)] })
+      await respond({ embeds: [Utils.generateErrorMessage(`🔁 ${msg} сейчас включен. Доступные режимы: \`очередь\`, \`трек\`, \`выкл\``, ErrorMessageType.NoTitle)] })
     else
-      respond({ embeds: [Utils.generateErrorMessage('🔁 Повтор сейчас выключен. Доступные режимы: `очередь`, `трек`, `выкл`', ErrorMessageType.NoTitle)] })
+      await respond({ embeds: [Utils.generateErrorMessage('🔁 Повтор сейчас выключен. Доступные режимы: `очередь`, `трек`, `выкл`', ErrorMessageType.NoTitle)] })
   }
 })
