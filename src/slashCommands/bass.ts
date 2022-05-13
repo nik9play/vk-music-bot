@@ -1,7 +1,7 @@
 import { Command } from '../SlashCommandManager'
 import Utils, { ErrorMessageType } from '../Utils'
 
-type LevelType = 'выкл' | 'слабый' | 'средний' | 'мощный'
+const levelTypes = ['выкл', 'слабый', 'средний', 'мощный']
 
 export default new Command({
   name: 'bass',
@@ -18,9 +18,9 @@ export default new Command({
     })
     //if (channel.id !== player.voiceChannel) return message.reply("вы находитесь не в том голосовом канале.")
 
-    const level = args[0].toLowerCase() as LevelType
+    const level = args[0].toLowerCase()
 
-    if (level) {
+    if (levelTypes.includes(level)) {
       let gain = 0.0
 
       switch (level) {
