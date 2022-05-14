@@ -3,7 +3,8 @@ import {
   CommandInteraction,
   Guild,
   GuildMember,
-  InteractionReplyOptions, InteractionUpdateOptions,
+  InteractionReplyOptions,
+  InteractionUpdateOptions,
   Message,
   MessageOptions,
   Permissions,
@@ -311,14 +312,18 @@ export default class {
       logger.info({ args, ...meta }, `Executed command ${commandName} with arguments`)
 
       const respond = async (data: MessageOptions | InteractionReplyOptions, timeout?: number): Promise<void> => {
-        const message = await channel.send(data as MessageOptions).catch(err => logger.error({ err }, 'Can\'t send message'))
+        try {
+          const message = await channel.send(data as MessageOptions)
 
-        if (timeout)
-          setTimeout(() => {
-            if (message) {
-              message.delete().catch(err => logger.error({ err }, 'Can\'t delete message'))
-            }
-          }, timeout)
+          if (timeout)
+            setTimeout(() => {
+              if (message) {
+                message.delete().catch(err => logger.error({ err }, 'Can\'t delete message'))
+              }
+            }, timeout)
+        } catch (err) {
+          logger.error({ err }, 'Can\'t delete message')
+        }
       }
 
       const send = respond

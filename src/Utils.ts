@@ -182,7 +182,7 @@ export default class Utils {
               }
             }, 30000)
           } catch (err) {
-            logger.warn({ err }, 'Can\'t send timeout message')
+            logger.error({ err }, 'Can\'t send timeout message')
           }
 
         }
