@@ -12,7 +12,7 @@ import { Player } from 'erela.js-vk/structures/Player'
 
 async function fillQueue(newArray: OneTrackResponse[], player: Player, wrongTracks: OneTrackResponse[]) {
   for await (const e of newArray) {
-    if (!e.url) {
+    if (!e.url || e.duration > 1800) {
       wrongTracks.push(e)
       continue
     }
@@ -198,6 +198,15 @@ export default new Command({
 
     if (arg.type === 'track') {
       req = req as OneTrackResponse
+
+      if (req.duration > 1800) {
+        await respond({
+          embeds: [Utils.generateErrorMessage('Нельзя добавлять треки длиннее 30 минут.')],
+          ephemeral: true
+        })
+        return
+      }
+
       const songEmbed = {
         color: 0x5181b8,
         title: Utils.escapeFormat(req.title),
