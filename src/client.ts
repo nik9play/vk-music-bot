@@ -6,6 +6,7 @@ import Utils from './Utils'
 import logger from './Logger'
 import db from './DB'
 import { CommandType } from './SlashCommandManager'
+import { RequestManager } from 'discord-cross-ratelimit'
 
 export interface CaptchaInfo {
   type: 'play' | 'search',
@@ -29,6 +30,9 @@ export class VkMusicBotClient extends Client {
 
   constructor(options: ClientOptions, nodes: NodeOptions[]) {
     super(options)
+
+    Object.assign(this, { rest: new RequestManager(this, this.cluster) })
+
     this.nodes = nodes
 
     if (!process.env.MONGO_URL || !process.env.REDIS_URL)
