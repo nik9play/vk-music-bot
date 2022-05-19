@@ -12,10 +12,13 @@ export default new Command({
     const player = client.manager.get(guild.id)
     if (!player) return respond({ embeds: [Utils.generateErrorMessage('Сейчас ничего не играет.')], ephemeral: true })
 
-    if (!voice) return respond({
-      embeds: [Utils.generateErrorMessage('Необходимо находиться в голосовом канале.')],
-      ephemeral: true
-    })
+    if (!voice) {
+      await respond({
+        embeds: [Utils.generateErrorMessage('Необходимо находиться в голосовом канале.')],
+        ephemeral: true
+      })
+      return
+    }
 
     const queue = player.queue
 
