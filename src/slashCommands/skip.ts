@@ -12,15 +12,22 @@ export default new Command({
     const player = client.manager.get(guild.id)
     if (!player) return respond({ embeds: [Utils.generateErrorMessage('Сейчас ничего не играет.')], ephemeral: true })
 
-    if (!voice) return respond({
-      embeds: [Utils.generateErrorMessage('Необходимо находиться в голосовом канале.')],
-      ephemeral: true
-    })
+    if (!voice)
+    {
+      await respond({
+        embeds: [Utils.generateErrorMessage('Необходимо находиться в голосовом канале.')],
+        ephemeral: true
+      })
+      return
+    }
 
-    if (!player.queue.current) return respond({
-      embeds: [Utils.generateErrorMessage('Очередь пуста.')],
-      ephemeral: true
-    })
+    if (!player.queue.current) {
+      await respond({
+        embeds: [Utils.generateErrorMessage('Очередь пуста.')],
+        ephemeral: true
+      })
+      return
+    }
 
     const { title, author } = player.queue.current
 
@@ -37,6 +44,7 @@ export default new Command({
       await respond({
         embeds: [Utils.generateErrorMessage('Нельзя пропустить количество треков большее чем размер очереди.')]
       }, 20000)
+      return
     }
 
     player.stop(skipCount)
