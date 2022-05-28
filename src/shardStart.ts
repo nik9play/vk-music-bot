@@ -21,9 +21,9 @@ manager.on('clusterCreate', cluster => {
   logger.info(`Launched cluster ${cluster.id}`)
 })
 
-manager.on('debug', msg => logger.debug(msg))
+manager.on('debug', msg => logger.info(msg, 'CLUSTER MANAGER'))
 
-manager.spawn({ timeout: 60000 }).then(() => {
+manager.spawn({ timeout: 1200000 }).then(() => {
   logger.info(`Manager finished spawning clusters. Total clusters: ${manager.totalClusters}`)
   setTimeout(() => {
     sendInfo()
