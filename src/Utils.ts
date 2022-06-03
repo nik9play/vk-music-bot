@@ -1,4 +1,4 @@
-import { MessageEmbed, TextChannel } from 'discord.js'
+import { MessageEmbed } from 'discord.js'
 import { Player } from 'erela.js-vk/structures/Player'
 import { VkMusicBotClient } from './client'
 import logger from './Logger'
@@ -167,7 +167,7 @@ export default class Utils {
 
         const channel = client.channels.cache.get(player.textChannel)
 
-        if (channel instanceof TextChannel) {
+        if (channel?.isText()) {
           try {
             const message = await channel.send({
               embeds: [{

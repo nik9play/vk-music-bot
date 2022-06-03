@@ -1,4 +1,4 @@
-import { Client, ClientOptions, Collection, TextChannel } from 'discord.js'
+import { Client, ClientOptions, Collection } from 'discord.js'
 import Cluster from 'discord-hybrid-sharding'
 import { Manager } from 'erela.js-vk'
 import { NodeOptions } from 'erela.js-vk/structures/Node'
@@ -56,7 +56,7 @@ export class VkMusicBotClient extends Client {
           if (player.textChannel) {
             const channel = this.channels.cache.get(player.textChannel)
 
-            if (channel && channel instanceof TextChannel && track && track.author && track.title) {
+            if (channel?.isText() && track?.author && track?.title) {
               try {
                 const message = await channel.send({
                   embeds: [{
