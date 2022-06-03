@@ -203,6 +203,12 @@ export default class {
       }
 
       const args: string[] = interaction.options.data.map((el): string => {
+        if (el.type === 'CHANNEL' && el.channel) {
+          if (el.channel.type === 'GUILD_TEXT') {
+            return `<#${el.channel.id}>`
+          }
+        }
+
         if (el.value)
           return el.value.toString()
         return ''
