@@ -16,7 +16,7 @@
     "axios": "^0.21.1",
     "bufferutil": "^4.0.3",
     "discord-cross-ratelimit": "^0.0.4",
-    "discord-hybrid-sharding": "^1.4.3",
+    "discord-hybrid-sharding-vk": "^1.5.1-vk1",
     "discord.js": "^13.6.0",
     "dotenv": "^8.2.0",
     "erela.js-vk": "^2.3.3-vk-11",

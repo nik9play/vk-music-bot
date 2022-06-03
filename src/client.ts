@@ -1,5 +1,5 @@
 import { Client, ClientOptions, Collection } from 'discord.js'
-import Cluster from 'discord-hybrid-sharding'
+import Cluster from 'discord-hybrid-sharding-vk'
 import { Manager } from 'erela.js-vk'
 import { NodeOptions } from 'erela.js-vk/structures/Node'
 import Utils from './Utils'

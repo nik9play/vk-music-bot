@@ -556,10 +556,10 @@ discord-cross-ratelimit@^0.0.4:
     cheshire "github:Deivu/Cheshire#2.0.2"
     discord.js "^13.5.0"
 
-discord-hybrid-sharding@^1.4.3:
-  version "1.5.3"
-  resolved "https://registry.yarnpkg.com/discord-hybrid-sharding/-/discord-hybrid-sharding-1.5.3.tgz#2b39d1d5357961e4f271835c37230994680cfbf3"
-  integrity sha512-T+agr6CZpUsWzpKGcYcv/euriLXCQ29JpHrnACbO6LnvWFs3uoG9ARQXZT4c2adA3oF6IKf339WLTiujBsJXCQ==
+discord-hybrid-sharding-vk@^1.5.1-vk1:
+  version "1.5.1-vk1"
+  resolved "https://registry.yarnpkg.com/discord-hybrid-sharding-vk/-/discord-hybrid-sharding-vk-1.5.1-vk1.tgz#1fb04087431db5643c9a89bac6278a0a32083849"
+  integrity sha512-ebMm03ZV0IoJJfDfPd3NS8Q/iKwihCBeyVbHj1c/vIVdGKWQBtUOASBVxyzsmxkA9YCuCAEJWVd5aFA3RItKvg==
   dependencies:
     node-fetch "^2.6.1"
 

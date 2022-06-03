@@ -1,6 +1,6 @@
 import { Intents, Options } from 'discord.js'
 import { VkMusicBotClient } from './client'
-import Cluster from 'discord-hybrid-sharding'
+import Cluster from 'discord-hybrid-sharding-vk'
 
 import SlashCommandManager from './SlashCommandManager'
 import logger from './Logger'

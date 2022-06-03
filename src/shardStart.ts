@@ -1,7 +1,7 @@
 //import { ShardingManager } from 'discord.js'
 //const manager = new ShardingManager('./dist/index.js', { token: process.env.DISCORD_TOKEN, mode: 'process', respawn: true })
 
-import Cluster from 'discord-hybrid-sharding'
+import Cluster from 'discord-hybrid-sharding-vk'
 import axios from 'axios'
 import logger from './Logger'
 import { Client } from 'discord.js'
