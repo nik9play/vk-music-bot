@@ -104,32 +104,32 @@ export class VkMusicBotClient extends Client {
       })
       .on('socketClosed', async (player, socket) => {
         // reconnect on "Abnormal closure"
-        if (socket.code == 1006) {
-          logger.warn({
-            guild_id: player.guild,
-            shard_id: this.cluster.id
-          }, 'caught Abnormal closure, trying to reconnect...')
-          const voiceChannel = player.voiceChannel
-          const textChannel = player.textChannel
-
-          try {
-            player.disconnect()
-          } catch {
-            //
-          }
-
-          if (voiceChannel && textChannel) {
-            setTimeout(() => {
-              player.setVoiceChannel(voiceChannel)
-              player.setTextChannel(textChannel)
-
-              player.connect()
-              setTimeout(() => {
-                player.pause(false)
-              }, 500)
-            }, 500)
-          }
-        }
+        // if (socket.code == 1006) {
+        //   logger.warn({
+        //     guild_id: player.guild,
+        //     shard_id: this.cluster.id
+        //   }, 'caught Abnormal closure, trying to reconnect...')
+        //   const voiceChannel = player.voiceChannel
+        //   const textChannel = player.textChannel
+        //
+        //   try {
+        //     player.disconnect()
+        //   } catch {
+        //     //
+        //   }
+        //
+        //   if (voiceChannel && textChannel) {
+        //     setTimeout(() => {
+        //       player.setVoiceChannel(voiceChannel)
+        //       player.setTextChannel(textChannel)
+        //
+        //       player.connect()
+        //       setTimeout(() => {
+        //         player.pause(false)
+        //       }, 500)
+        //     }, 500)
+        //   }
+        // }
 
         logger.debug({ code: socket.code, guild_id: player.guild }, 'socket closed')
       })
