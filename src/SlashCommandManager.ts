@@ -361,7 +361,7 @@ export default class {
       // проверка на наличие премиума
       if (command?.premium && !await this.client.db.checkPremium(guild.id)) {
         await respond({
-          embeds: [Utils.generateErrorMessage(`Для выполнения этой команды требуется **Премиум**! Подробности: \`${await this.client.db.getPrefix(guild.id)}donate\``)]
+          embeds: [Utils.generateErrorMessage('Для выполнения этой команды требуется **Премиум**! Подробности: `/donate`')]
         })
         return
       }
@@ -372,7 +372,7 @@ export default class {
 
         if (captcha) {
           const embed = {
-            description: `Ошибка! Ожидается команда, для которой не введена капча. Введите команду \`${await this.client.db.getPrefix(guild.id)}captcha\`, а после код с картинки.` +
+            description: 'Ошибка! Ожидается команда, для которой не введена капча. Введите команду `/captcha`, а после код с картинки.' +
               `Если картинки не видно, перейдите по [ссылке](${captcha.url})`,
             color: 0x5181b8,
             image: {

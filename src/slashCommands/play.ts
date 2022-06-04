@@ -347,7 +347,7 @@ export default new Command({
           }
         ],
         footer: {
-          text: 'Чтобы добавить больше 10 треков, введите количество треков после ссылки.'
+          text: 'Чтобы добавить больше 10 треков, введите количество треков в аргумент `количество`.'
         }
       }
 
@@ -380,7 +380,7 @@ export default new Command({
           player.queue.remove(199, player.queue.totalSize - 1)
           await send({
             embeds: [Utils.generateErrorMessage('В очереди было больше 200 треков, поэтому лишние треки были удалены. ' +
-              `Хотите больше треков? Приобретите Премиум, подробности: \`${await client.db.getPrefix(guild.id)}donate\`.`, ErrorMessageType.Warning)]
+              'Хотите больше треков? Приобретите Премиум, подробности: `/donate`.', ErrorMessageType.Warning)]
           })
         }
     }
