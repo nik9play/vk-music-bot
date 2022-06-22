@@ -12,7 +12,7 @@ const manager = new Cluster.Manager('./dist/index.js', {
   totalShards: 'auto',
   shardsPerClusters: 2,
   mode: 'process',
-  token: process.env.DISCORD_TOKEN
+  token: process.env.DISCORD_TOKEN,
 })
 
 new RatelimitManager(manager, { inactiveTimeout: 240000, requestOffset: 500 })
@@ -27,7 +27,7 @@ manager.spawn({ timeout: 120000 }).then(() => {
   logger.info(`Manager finished spawning clusters. Total clusters: ${manager.totalClusters}`)
   setTimeout(() => {
     sendInfo()
-  }, 60000)
+  }, 1800000)
 })
 
 // manager.on('shardCreate', shard => logger.log('info', `Launched shard ${shard.id}`))
@@ -72,13 +72,13 @@ function sendInfo() {
       })
         .then(res => {
           if (res.data.status === 'error') {
-            logger.error('Ошибка отправки статистики на метрику. (Ошибка сервера)')
+            logger.error('Error sending stats (server error)')
           } else {
-            logger.info('Статистика отправлена на метрику.')
+            logger.info('Stats sent.')
           }
         })
         .catch(() => {
-          logger.error('Ошибка отправки статистики на метрику. (Ошибка подключения)')
+          logger.error('Error sending stats (connection error)')
         })
 
       manager.fetchClientValues('user.id')
@@ -96,13 +96,13 @@ function sendInfo() {
           })
             .then(res => {
               if (res.data.error) {
-                logger.error('Ошибка отправки статистики на мониторинг. (Ошибка сервера)')
+                logger.error('Error sending stats (server error)')
               } else {
-                logger.info('Статистика отправлена на мониторинг.')
+                logger.info('Stats sent.')
               }
             })
             .catch(() => {
-              logger.error('Ошибка отправки статистики на мониторинг. (Ошибка подключения)')
+              logger.error('Error sending stats (connection error)')
             })
         })
     })
@@ -113,7 +113,7 @@ function sendInfo() {
 
 if (process.env.NODE_ENV != 'development') setInterval(() => {
   sendInfo()
-}, 300000)
+}, 1800000)
 
 process.stdin.resume()
 
