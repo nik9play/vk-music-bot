@@ -54,4 +54,8 @@ client.on('guildDelete', (guild) => {
     clearTimeout(timer)
 })
 
+client.on('debug', (aa) => {
+  logger.info(aa)
+})
+
 client.login(process.env.DISCORD_TOKEN)
