@@ -1,6 +1,6 @@
 {
   "name": "vk-music-bot-next",
-  "version": "4.0.0",
+  "version": "4.1.0",
   "main": "index.js",
   "author": "nik9",
   "license": "MIT",
@@ -23,7 +23,7 @@
     "glob": "^8.0.1",
     "luxon": "^2.3.2",
     "mongodb": "^4.5.0",
-    "pino": "^7.11.0",
+    "pino": "^8.1.0",
     "redis": "^4.0.6",
     "utf-8-validate": "^5.0.4"
   },
