@@ -31,6 +31,9 @@ manager.spawn({ timeout: 240000 }).then(() => {
   logger.info(`Manager finished spawning clusters. Total clusters: ${manager.totalClusters}`)
   setTimeout(() => {
     sendInfo()
+    if (process.env.NODE_ENV != 'development') setInterval(() => {
+      sendInfo()
+    }, 1800000)
   }, 1800000)
 })
 
@@ -102,10 +105,6 @@ function sendInfo() {
       logger.error({ err }, 'Send stat error')
     })
 }
-
-if (process.env.NODE_ENV != 'development') setInterval(() => {
-  sendInfo()
-}, 1800000)
 
 process.stdin.resume()
 
