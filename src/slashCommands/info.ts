@@ -51,7 +51,7 @@ export default new Command({
           'inline': true
         },
         {
-          'name': 'Кол-во серверов шарда',
+          'name': 'Кол-во серверов кластера',
           'value': `\`\`\`js\n${client.guilds.cache.size}\`\`\``,
           'inline': true
         },
@@ -61,13 +61,13 @@ export default new Command({
           'inline': true
         },
         {
-          'name': 'Кол-во шардов',
+          'name': 'Кол-во кластеров',
           'value': `\`\`\`js\n${client.cluster.count}\`\`\``,
           'inline': true
         },
         {
-          'name': 'Номер шарда',
-          'value': `\`\`\`js\n${guild.shardId}\`\`\``,
+          'name': 'Номер кластера',
+          'value': `\`\`\`js\n${client.cluster.id}\`\`\``,
           'inline': true
         },
         {
