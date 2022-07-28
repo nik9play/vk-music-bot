@@ -13,6 +13,10 @@ const manager = new Cluster.Manager('./dist/index.js', {
   shardsPerClusters: 2,
   mode: 'process',
   token: process.env.DISCORD_TOKEN,
+  restarts: {
+    max: 5,
+    interval: 60*60*1000
+  }
 })
 
 new RatelimitManager(manager, { inactiveTimeout: 240000, requestOffset: 500 })
@@ -49,18 +53,6 @@ function sendInfo() {
       }
 
       await manager.broadcastEval(setPr, { context: { servers: serverSize } })
-
-      // manager.shards.get(0).
-
-      // const lavalinkInfo = manager.broadcastEval(c => {
-      //   const info = {
-      //     playingPlayers: 0
-      //   }
-      //   c.manager.nodes.each(e => {
-      //     info.playingPlayers += e.stats.playingPlayers
-      //   })
-      //   return info
-      // })
 
       axios.post('https://vk-api-v2.megaworld.space/metrics', {
         token: process.env.API_TOKEN,
