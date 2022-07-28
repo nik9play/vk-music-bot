@@ -17,6 +17,11 @@ export interface CaptchaInfo {
   captcha_key?: string
 }
 
+export interface PlayerTrackErrorTracker {
+  count: number,
+  timer: NodeJS.Timeout
+}
+
 export class VkMusicBotClient extends Client {
   public cooldowns: Collection<string, any> = new Collection()
   public commands: Collection<string, CommandType> = new Collection()
@@ -27,6 +32,7 @@ export class VkMusicBotClient extends Client {
   public db: any
   public nodes?: NodeOptions[]
   public manager: Manager
+  public playerTrackErrorTrackers: Collection<string, PlayerTrackErrorTracker> = new Collection()
 
   constructor(options: ClientOptions, nodes: NodeOptions[]) {
     super(options)
@@ -142,7 +148,29 @@ export class VkMusicBotClient extends Client {
         //   description: `С треком **${track.author} — ${track.title}** произошла проблема, поэтому он был пропущен.`,
         //   color: 0x5181b8
         // }}).then(msg => msg.delete({timeout: 30000}).catch(console.error)).catch(console.error)
-        logger.warn({ guild_id: player.guild, shard_id: this.cluster.id, track }, 'Track error')
+        logger.warn({ guild_id: player.guild, shard_id: this.cluster.id, name: track.title, author: track.author, url: track.uri }, 'Track error')
+        
+        const tracker = this.playerTrackErrorTrackers.get(player.guild)
+        if (tracker) {
+          tracker.count = tracker.count + 1
+          clearTimeout(tracker.timer)
+          tracker.timer = setTimeout(() => {
+            this.playerTrackErrorTrackers.delete(player.guild)
+          }, 30 * 1000)
+
+          if (tracker.count >= 5) {
+            player?.queue.clear()
+            clearTimeout(tracker.timer)
+            this.playerTrackErrorTrackers.delete(player.guild)
+          }
+        } else {
+          this.playerTrackErrorTrackers.set(player.guild, {
+            count: 1,
+            timer: setTimeout(() => {
+              this.playerTrackErrorTrackers.delete(player.guild)
+            }, 2000)
+          })
+        }
       })
   }
 }
