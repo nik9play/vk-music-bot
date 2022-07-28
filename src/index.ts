@@ -28,8 +28,8 @@ const client = new VkMusicBotClient({
     PresenceManager: 0,
     ThreadManager: 0
   }),
-  shards: Cluster.data.SHARD_LIST,
-  shardCount: Cluster.data.TOTAL_SHARDS,
+  shards: Cluster.Client.getInfo().SHARD_LIST,
+  shardCount: Cluster.Client.getInfo().TOTAL_SHARDS,
   intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_VOICE_STATES, Intents.FLAGS.GUILD_MESSAGES]
 }, nodes)
 
