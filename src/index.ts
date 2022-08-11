@@ -15,7 +15,8 @@ const nodes: NodeOptions[] = LavalinkServersString.split(';').map((val): NodeOpt
   return {
     host: arr[1],
     port: parseInt(arr[2]),
-    password: arr[3]
+    password: arr[3],
+    retryAmount: 128
   }
 })
 
