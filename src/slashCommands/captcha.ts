@@ -8,6 +8,7 @@ export default new Command({
   djOnly: true,
   adminOnly: false,
   premium: false,
+  deferred: true,
   cooldown: 5,
   execute: async (params) => {
     const captcha = params.client.captcha.get(params.guild.id)
@@ -28,7 +29,7 @@ export default new Command({
       params.client.captcha.delete(params.guild.id)
     } else {
       await params.respond({
-        embeds: [Utils.generateErrorMessage('В данный момент капчу вводит не надо.', ErrorMessageType.Info)],
+        embeds: [Utils.generateErrorMessage('В данный момент капчу вводить не надо.', ErrorMessageType.Info)],
         ephemeral: true
       })
     }
