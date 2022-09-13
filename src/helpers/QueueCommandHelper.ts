@@ -29,8 +29,9 @@ export function generateQueueResponse(page: number, player: Player | undefined):
 
   const tracks = queue.slice(start, end)
 
-  if (queue.current) embed.addField('Сейчас играет',
-    `${queue.current.author} — ${queue.current.title} (${Duration.fromMillis(player.position).toFormat('mm:ss')}/${Duration.fromMillis(queue.current.duration ?? 0).toFormat('mm:ss')})`)
+  if (queue.current) embed.addFields({
+    name: 'Сейчас играет',
+    value: `${queue.current.author} — ${queue.current.title} (${Duration.fromMillis(player.position).toFormat('mm:ss')}/${Duration.fromMillis(queue.current.duration ?? 0).toFormat('mm:ss')})`})
   //console.log(queue.current)
 
   if (!tracks.length) embed.setDescription(`Нет треков на странице \`${page}\`.`)
