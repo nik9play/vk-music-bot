@@ -5,7 +5,7 @@
   "author": "nik9",
   "license": "MIT",
   "engines": {
-    "node": ">=16.6.0 <= 16.15.0"
+    "node": ">=16.6.0 < 16.16.0"
   },
   "scripts": {
     "start": "node dist/shardStart.js",
