@@ -1,16 +1,16 @@
 import { MessageEmbed } from 'discord.js'
-import { Player } from 'erela.js-vk/structures/Player'
-import { VkMusicBotClient } from './client'
+import { Player } from 'erela.js-vk'
+//import { VkMusicBotClient } from './client'
 import logger from './Logger'
 
 export interface ArgType {
-  type: 'group' | 'playlist' | 'user' | 'track' | 'unknown',
-  id?: string,
+  type: 'group' | 'playlist' | 'user' | 'track' | 'unknown'
+  id?: string
   parsedURL?: PlaylistURL
 }
 
 export interface PlaylistURL {
-  id: string | null,
+  id: string | null
   access_key: string | null
 }
 
@@ -24,13 +24,21 @@ export enum ErrorMessageType {
 export default class Utils {
   public static declOfNum(number: number, titles: string[]): string {
     const cases = [2, 0, 1, 1, 1, 2]
-    return titles[(number % 100 > 4 && number % 100 < 20) ? 2 : cases[(number % 10 < 5) ? number % 10 : 5]]
+    return titles[
+      number % 100 > 4 && number % 100 < 20
+        ? 2
+        : cases[number % 10 < 5 ? number % 10 : 5]
+    ]
   }
 
   public static parsePlaylistURL(url: URL): PlaylistURL {
-    if (url.pathname.includes('/music/playlist/') || url.pathname.includes('/music/album/')) {
+    if (
+      url.pathname.includes('/music/playlist/') ||
+      url.pathname.includes('/music/album/')
+    ) {
       const query = url.pathname.split('/')[3]
-      let id = null, access_key = null
+      let id = null,
+        access_key = null
 
       if (query) {
         const queryArr = query.split('_')
@@ -45,7 +53,8 @@ export default class Utils {
       }
     } else {
       const query = url.searchParams.get('z')
-      let id = null, access_key = null
+      let id = null,
+        access_key = null
 
       if (query) {
         id = query.split('/')[0].replace('audio_playlist', '')
@@ -117,29 +126,36 @@ export default class Utils {
 
   public static escapeFormat(text: string | undefined): string {
     if (!text) return ''
-    return text.replace(/([*_`~\\])/g, '\\$1')
+    //return text.replace(/([*_`~\\])/g, '\\$1')
+    return text
+      .replace(/([_*~`|\\<>:!])/g, '\\$1')
+      .replace(/@(everyone|here|[!&]?[0-9]{17,21})/g, '@\u200b$1')
   }
 
-  public static generateErrorMessage(message: string, type: ErrorMessageType = ErrorMessageType.Error, escapeFormatting = false): MessageEmbed {
+  public static generateErrorMessage(
+    message: string,
+    type: ErrorMessageType = ErrorMessageType.Error,
+    escapeFormatting = false
+  ): MessageEmbed {
     let title
     let color
 
     switch (type) {
-    case ErrorMessageType.Error:
-      title = '<:no2:835498572916195368> **Ошибка!**\n'
-      color = 0xED4245
-      break
-    case ErrorMessageType.Warning:
-      title = '⚠️ **Предупреждение**\n'
-      color = 0xFEE75C
-      break
-    case ErrorMessageType.Info:
-      title = 'ℹ️ **Информация**\n'
-      color = 0x3b88c3
-      break
-    case ErrorMessageType.NoTitle:
-      title = ''
-      color = 0x5181b8
+      case ErrorMessageType.Error:
+        title = '<:no2:835498572916195368> **Ошибка!**\n'
+        color = 0xed4245
+        break
+      case ErrorMessageType.Warning:
+        title = '⚠️ **Предупреждение**\n'
+        color = 0xfee75c
+        break
+      case ErrorMessageType.Info:
+        title = 'ℹ️ **Информация**\n'
+        color = 0x3b88c3
+        break
+      case ErrorMessageType.NoTitle:
+        title = ''
+        color = 0x5181b8
     }
 
     if (escapeFormatting) {
@@ -156,9 +172,12 @@ export default class Utils {
     return `&r=${Math.random().toString(36).substring(2, 15)}`
   }
 
-  public static getExitTimeout(player: Player, client: VkMusicBotClient): NodeJS.Timeout {
+  public static getExitTimeout(
+    player: Player
+    //client: VkMusicBotClient
+  ): NodeJS.Timeout {
     logger.info(`Exit timeout set ${player.guild}`)
-    
+
     return setTimeout(async () => {
       if (player) {
         player.destroy()
@@ -189,5 +208,4 @@ export default class Utils {
       }
     }, 1200000)
   }
-
 }

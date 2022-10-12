@@ -9,15 +9,15 @@ export default new Command({
   premium: false,
   execute: async ({ client, respond, guild }) => {
     const player = client.manager.get(guild.id)
-    if (!player)
-      return
+    if (!player) return
 
     const timer = client.timers.get(guild.id)
-    if (timer)
-      clearTimeout(timer)
+    if (timer) clearTimeout(timer)
 
     player.destroy()
 
-    await respond({ embeds: [Utils.generateErrorMessage('🔧', ErrorMessageType.NoTitle)] })
+    await respond({
+      embeds: [Utils.generateErrorMessage('🔧', ErrorMessageType.NoTitle)]
+    })
   }
 })

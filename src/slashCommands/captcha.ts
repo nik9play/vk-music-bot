@@ -1,6 +1,6 @@
-import play from './play'
-import search from './search'
-import { Command, CommandType } from '../SlashCommandManager'
+import { playCommand } from '../helpers/PlayCommandHelper'
+import { searchCommand } from '../helpers/SearchCommandHelper'
+import { Command } from '../SlashCommandManager'
 import Utils, { ErrorMessageType } from '../Utils'
 
 export default new Command({
@@ -13,23 +13,28 @@ export default new Command({
   execute: async (params) => {
     const captcha = params.client.captcha.get(params.guild.id)
     if (captcha) {
-      let command: CommandType
-      captcha.captcha_key = params.args[0]
+      captcha.captcha_key = params.interaction.options.getString(
+        'код'
+      ) as string
+      params.captcha = captcha
 
-      if (captcha.type == 'search') {
-        command = search as CommandType
-      } else {
-        command = play as CommandType
+      if (captcha.type === 'play') {
+        await playCommand(params, captcha.query, captcha.count, captcha.offset)
       }
 
-      params.captcha = captcha
-      params.args = captcha.args
+      if (captcha.type === 'search') {
+        await searchCommand(params, captcha.query)
+      }
 
-      await command.execute(params)
       params.client.captcha.delete(params.guild.id)
     } else {
       await params.respond({
-        embeds: [Utils.generateErrorMessage('В данный момент капчу вводить не надо.', ErrorMessageType.Info)],
+        embeds: [
+          Utils.generateErrorMessage(
+            'В данный момент капчу вводить не надо.',
+            ErrorMessageType.Info
+          )
+        ],
         ephemeral: true
       })
     }

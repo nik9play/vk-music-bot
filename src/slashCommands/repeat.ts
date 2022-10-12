@@ -7,30 +7,66 @@ export default new Command({
   djOnly: true,
   adminOnly: false,
   premium: false,
-  execute: async function ({ guild, voice, client, args, respond }) {
+  execute: async function ({ guild, voice, client, interaction, respond }) {
     const player = client.manager.get(guild.id)
-    if (!player) return respond({ embeds: [Utils.generateErrorMessage('Сейчас ничего не играет.')], ephemeral: true })
+    if (!player) {
+      await respond({
+        embeds: [Utils.generateErrorMessage('Сейчас ничего не играет.')],
+        ephemeral: true
+      })
+      return
+    }
 
-    if (!voice) return respond({
-      embeds: [Utils.generateErrorMessage('Необходимо находиться в голосовом канале.')],
-      ephemeral: true
-    })
+    if (!voice) {
+      await respond({
+        embeds: [
+          Utils.generateErrorMessage(
+            'Необходимо находиться в голосовом канале.'
+          )
+        ],
+        ephemeral: true
+      })
+      return
+    }
 
-    if (args.length) {
-      if (args[0] === 'очередь') {
+    const repeatParam = interaction.options.getString('режим')
+
+    if (repeatParam) {
+      if (repeatParam === 'очередь') {
         player.setQueueRepeat(true)
-        await respond({ embeds: [Utils.generateErrorMessage('🔁 Включен повтор очереди.', ErrorMessageType.NoTitle)] })
+        await respond({
+          embeds: [
+            Utils.generateErrorMessage(
+              '🔁 Включен повтор очереди.',
+              ErrorMessageType.NoTitle
+            )
+          ]
+        })
         return
       }
-      if (args[0] === 'трек') {
+      if (repeatParam === 'трек') {
         player.setTrackRepeat(true)
-        await respond({ embeds: [Utils.generateErrorMessage('🔁 Включен повтор трека.', ErrorMessageType.NoTitle)] })
+        await respond({
+          embeds: [
+            Utils.generateErrorMessage(
+              '🔁 Включен повтор трека.',
+              ErrorMessageType.NoTitle
+            )
+          ]
+        })
         return
       }
-      if (args[0] === 'выкл') {
+      if (repeatParam === 'выкл') {
         player.setQueueRepeat(false)
         player.setTrackRepeat(false)
-        await respond({ embeds: [Utils.generateErrorMessage('🔁 Повтор выключен.', ErrorMessageType.NoTitle)] })
+        await respond({
+          embeds: [
+            Utils.generateErrorMessage(
+              '🔁 Повтор выключен.',
+              ErrorMessageType.NoTitle
+            )
+          ]
+        })
         return
       }
     }
@@ -40,8 +76,22 @@ export default new Command({
     else if (player.queueRepeat) msg = 'Повтор очереди'
 
     if (msg)
-      await respond({ embeds: [Utils.generateErrorMessage(`🔁 ${msg} сейчас включен. Доступные режимы: \`очередь\`, \`трек\`, \`выкл\``, ErrorMessageType.NoTitle)] })
+      await respond({
+        embeds: [
+          Utils.generateErrorMessage(
+            `🔁 ${msg} сейчас включен. Доступные режимы: \`очередь\`, \`трек\`, \`выкл\``,
+            ErrorMessageType.NoTitle
+          )
+        ]
+      })
     else
-      await respond({ embeds: [Utils.generateErrorMessage('🔁 Повтор сейчас выключен. Доступные режимы: `очередь`, `трек`, `выкл`', ErrorMessageType.NoTitle)] })
+      await respond({
+        embeds: [
+          Utils.generateErrorMessage(
+            '🔁 Повтор сейчас выключен. Доступные режимы: `очередь`, `трек`, `выкл`',
+            ErrorMessageType.NoTitle
+          )
+        ]
+      })
   }
 })

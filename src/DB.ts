@@ -35,22 +35,33 @@ export default class DB {
     await this.redisClient.disconnect()
   }
 
-  async setValueUpsert(guild_id: string, property: string, value: any): Promise<void> {
+  async setValueUpsert(
+    guild_id: string | Snowflake,
+    property: string,
+    value: any
+  ): Promise<void> {
     const query = { guild_id }
     const update = {
-      $set:
-        {
-          [property]: value
-        }
+      $set: {
+        [property]: value
+      }
     }
 
-    await this.redisClient.set(`${guild_id}/${property}`, JSON.stringify({ value }), {
-      EX: this.cacheDuration // удалить ключ через трое суток
-    })
+    await this.redisClient.set(
+      `${guild_id}/${property}`,
+      JSON.stringify({ value }),
+      {
+        EX: this.cacheDuration // удалить ключ через трое суток
+      }
+    )
     await this.collection.updateOne(query, update, { upsert: true })
   }
 
-  async getValue(guild_id: string, property: string, defaultValue: any): Promise<any> {
+  async getValue(
+    guild_id: string | Snowflake,
+    property: string,
+    defaultValue: any
+  ): Promise<any> {
     const query = {
       guild_id,
       [property]: { $exists: true }
@@ -67,19 +78,30 @@ export default class DB {
     const server = await this.collection.findOne(query)
 
     if (!server) {
-      await this.redisClient.set(`${guild_id}/${property}`, JSON.stringify({ value: defaultValue }), {
-        EX: this.cacheDuration
-      })
+      await this.redisClient.set(
+        `${guild_id}/${property}`,
+        JSON.stringify({ value: defaultValue }),
+        {
+          EX: this.cacheDuration
+        }
+      )
       return defaultValue
     } else {
-      await this.redisClient.set(`${guild_id}/${property}`, JSON.stringify({ value: server[property] }), {
-        EX: this.cacheDuration
-      })
+      await this.redisClient.set(
+        `${guild_id}/${property}`,
+        JSON.stringify({ value: server[property] }),
+        {
+          EX: this.cacheDuration
+        }
+      )
       return server[property]
     }
   }
 
-  async setAccessRole(name: string | Snowflake, guild_id: string): Promise<void> {
+  async setAccessRole(
+    name: string | Snowflake,
+    guild_id: string | Snowflake
+  ): Promise<void> {
     await this.setValueUpsert(guild_id, 'accessRoleName', name)
   }
 
@@ -87,7 +109,10 @@ export default class DB {
     return await this.getValue(guild_id, 'accessRoleName', 'DJ')
   }
 
-  async setAccessRoleEnabled(enable: boolean, guild_id: string | Snowflake): Promise<void> {
+  async setAccessRoleEnabled(
+    enable: boolean,
+    guild_id: string | Snowflake
+  ): Promise<void> {
     await this.setValueUpsert(guild_id, 'accessRoleNameEnabled', enable)
   }
 
@@ -111,11 +136,16 @@ export default class DB {
     return await this.getValue(guild_id, 'e247', false)
   }
 
-  async setDisableAnnouncements(enable: boolean, guild_id: string | Snowflake): Promise<void> {
+  async setDisableAnnouncements(
+    enable: boolean,
+    guild_id: string | Snowflake
+  ): Promise<void> {
     await this.setValueUpsert(guild_id, 'disableAnnouncements', enable)
   }
 
-  async getDisableAnnouncements(guild_id: string | Snowflake): Promise<boolean> {
+  async getDisableAnnouncements(
+    guild_id: string | Snowflake
+  ): Promise<boolean> {
     return await this.getValue(guild_id, 'disableAnnouncements', false)
   }
 

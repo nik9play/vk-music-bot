@@ -1,56 +1,56 @@
 import axios from 'axios'
 
 export interface APIResponse {
-  status: 'success' | 'error',
+  status: 'success' | 'error'
   type?: 'api' | 'captcha' | 'empty' | 'access_denied' | 'request'
-  error?: any,
+  error?: any
   data?: any
 }
 
 export interface OneTrackResponse {
-  status?: 'success' | 'error',
-  author: string,
-  title: string,
-  url: string,
-  duration: number,
-  thumb?: string,
+  status?: 'success' | 'error'
+  author: string
+  title: string
+  url: string
+  duration: number
+  thumb?: string
   id: string
 }
 
 export interface PlaylistInfo {
-  title: string,
-  description: string,
-  count: number,
+  title: string
+  description: string
+  count: number
   imgUrl?: string
 }
 
 export interface PlaylistResponse {
-  status: 'success' | 'error',
-  info: PlaylistInfo,
+  status: 'success' | 'error'
+  info: PlaylistInfo
   newArray: OneTrackResponse[]
 }
 
 export interface UserInfo {
-  type: 'user',
-  name: string,
+  type: 'user'
+  name: string
   img?: string
 }
 
 export interface GroupInfo {
-  type: 'group',
-  name: string,
-  description: string,
+  type: 'group'
+  name: string
+  description: string
   img?: string
 }
 
 export interface UserResponse {
-  status: 'success' | 'error',
-  info: UserInfo | GroupInfo,
+  status: 'success' | 'error'
+  info: UserInfo | GroupInfo
   newArray: OneTrackResponse[]
 }
 
 export interface ManyTracksResponse {
-  status: 'success' | 'error',
+  status: 'success' | 'error'
   tracks: OneTrackResponse[]
 }
 
@@ -82,22 +82,22 @@ export default class VK {
 
       if (res.data.status === 'error') {
         switch (res.data.error.code) {
-        case 14:
-          return {
-            status: 'error',
-            type: 'captcha',
-            error: res.data.error
-          }
-        case 201:
-          return {
-            status: 'error',
-            type: 'access_denied'
-          }
-        case 113:
-          return {
-            status: 'error',
-            type: 'empty'
-          }
+          case 14:
+            return {
+              status: 'error',
+              type: 'captcha',
+              error: res.data.error
+            }
+          case 201:
+            return {
+              status: 'error',
+              type: 'access_denied'
+            }
+          case 113:
+            return {
+              status: 'error',
+              type: 'empty'
+            }
         }
 
         return {
@@ -147,8 +147,6 @@ export default class VK {
 
   /**
    * Получить первый трек из поиска либо трек по ID
-   * @param {Object} opts Параметры запроса
-   * @returns {Object[]} Трек
    */
   static async GetOne(opts: any): Promise<APIResponse | OneTrackResponse> {
     if (/^-?[0-9]+_[0-9]+$/g.test(opts.q)) {
@@ -182,8 +180,6 @@ export default class VK {
 
   /**
    * Получение треков из плейлиста по ID создателя и ID плейлиста
-   * @param {Object} opts Параметры запроса
-   * @returns {Object[]} Массив треков
    */
   static async GetPlaylist(opts: any): Promise<APIResponse | PlaylistResponse> {
     const res = await this.sendRequest(`albums/${opts.album_id}`, opts)
@@ -233,8 +229,6 @@ export default class VK {
 
   /**
    * Получение треков пользователя или группы по ID
-   * @param {Object} opts Параметры запроса
-   * @returns {Object[]} Массив треков
    */
   static async GetUser(opts: any): Promise<APIResponse | UserResponse> {
     let res
@@ -295,8 +289,6 @@ export default class VK {
 
   /**
    * Получение 5 треков по запросу
-   * @param {Object} opts Параметры запроса
-   * @returns {Object[]} Массив треков
    */
   static async GetMany(opts: any): Promise<APIResponse | ManyTracksResponse> {
     opts.count = 5

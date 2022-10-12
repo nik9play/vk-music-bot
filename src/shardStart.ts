@@ -15,25 +15,28 @@ const manager = new Cluster.Manager('./dist/index.js', {
   token: process.env.DISCORD_TOKEN,
   restarts: {
     max: 5,
-    interval: 60*60*1000
+    interval: 60 * 60 * 1000
   }
 })
 
 new RatelimitManager(manager, { inactiveTimeout: 240000, requestOffset: 500 })
 
-manager.on('clusterCreate', cluster => {
+manager.on('clusterCreate', (cluster) => {
   logger.info(`Launched cluster ${cluster.id}`)
 })
 
-manager.on('debug', msg => logger.info(msg, 'CLUSTER MANAGER'))
+manager.on('debug', (msg) => logger.info(msg, 'CLUSTER MANAGER'))
 
 manager.spawn({ timeout: 240000 }).then(() => {
-  logger.info(`Manager finished spawning clusters. Total clusters: ${manager.totalClusters}`)
+  logger.info(
+    `Manager finished spawning clusters. Total clusters: ${manager.totalClusters}`
+  )
   setTimeout(() => {
     sendInfo()
-    if (process.env.NODE_ENV != 'development') setInterval(() => {
-      sendInfo()
-    }, 1800000)
+    if (process.env.NODE_ENV != 'development')
+      setInterval(() => {
+        sendInfo()
+      }, 1800000)
   }, 1800000)
 })
 
@@ -43,29 +46,39 @@ manager.spawn({ timeout: 240000 }).then(() => {
 // }).catch(err => logger.log('error', 'Error starting shard %O', err))
 
 function sendInfo() {
-  manager.fetchClientValues('guilds.cache.size')
-    .then(async results => {
-      const serverSize: number = results.reduce((acc, guildCount) => acc + guildCount, 0)
+  manager
+    .fetchClientValues('guilds.cache.size')
+    .then(async (results) => {
+      const serverSize: number = results.reduce(
+        (acc, guildCount) => acc + guildCount,
+        0
+      )
 
       function setPr(c: Client, { servers }: any) {
         if (c.user) {
           c.user.setPresence({
-            activities: [{ name: `/help | ${(servers / 1000).toFixed(1)}k серверов`, type: 2 }]
+            activities: [
+              {
+                name: `/help | ${(servers / 1000).toFixed(1)}k серверов`,
+                type: 2
+              }
+            ]
           })
         }
       }
 
       await manager.broadcastEval(setPr, { context: { servers: serverSize } })
 
-      axios.post('https://vk-api-v2.megaworld.space/metrics', {
-        token: process.env.API_TOKEN,
-        metrics: {
-          servers: serverSize,
-          serverShards: results
-          //lavalinkInfo
-        }
-      })
-        .then(res => {
+      axios
+        .post('https://vk-api-v2.megaworld.space/metrics', {
+          token: process.env.API_TOKEN,
+          metrics: {
+            servers: serverSize,
+            serverShards: results
+            //lavalinkInfo
+          }
+        })
+        .then((res) => {
           if (res.data.status === 'error') {
             logger.error('Error sending stats (server error)')
           } else {
@@ -76,32 +89,35 @@ function sendInfo() {
           logger.error('Error sending stats (connection error)')
         })
 
-      manager.fetchClientValues('user.id')
-        .then(results => {
-          const id = results[0]
+      manager.fetchClientValues('user.id').then((results) => {
+        const id = results[0]
 
-          axios.post(`https://api.server-discord.com/v2/bots/${id}/stats`, {
-            servers: serverSize,
-            shards: manager.totalShards
-          },
-          {
-            headers: {
-              'Authorization': 'SDC ' + process.env.SDC_TOKEN
+        axios
+          .post(
+            `https://api.server-discord.com/v2/bots/${id}/stats`,
+            {
+              servers: serverSize,
+              shards: manager.totalShards
+            },
+            {
+              headers: {
+                Authorization: 'SDC ' + process.env.SDC_TOKEN
+              }
+            }
+          )
+          .then((res) => {
+            if (res.data.error) {
+              logger.error('Error sending stats (server error)')
+            } else {
+              logger.info('Stats sent.')
             }
           })
-            .then(res => {
-              if (res.data.error) {
-                logger.error('Error sending stats (server error)')
-              } else {
-                logger.info('Stats sent.')
-              }
-            })
-            .catch(() => {
-              logger.error('Error sending stats (connection error)')
-            })
-        })
+          .catch(() => {
+            logger.error('Error sending stats (connection error)')
+          })
+      })
     })
-    .catch(err => {
+    .catch((err) => {
       logger.error({ err }, 'Send stat error')
     })
 }
