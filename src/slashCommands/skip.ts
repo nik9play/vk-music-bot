@@ -40,7 +40,7 @@ export default new Command({
 
     const { title, author } = player.queue.current
 
-    let skipCount = interaction.options.getNumber('количество')
+    let skipCount = interaction.options.getInteger('количество')
     if (!skipCount || skipCount < 1) skipCount = 1
 
     let description = `**${Utils.escapeFormat(author)} — ${Utils.escapeFormat(
@@ -55,6 +55,24 @@ export default new Command({
         'трека',
         'треков'
       ])} пропущены.`
+
+    console.log(player.queue.length, skipCount)
+
+    if (skipCount === 1 && player.queue.length === 0) {
+      player.stop()
+      await respond(
+        {
+          embeds: [
+            {
+              description: description,
+              color: 0x5181b8
+            }
+          ]
+        },
+        20000
+      )
+      return
+    }
 
     if (skipCount > player.queue.length) {
       await respond(
