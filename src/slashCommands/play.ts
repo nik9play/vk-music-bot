@@ -11,8 +11,8 @@ export default new Command({
   cooldown: 2,
   execute: async (params) => {
     const query = params.interaction.options.getString('название') as string
-    const count = params.interaction.options.getNumber('количество')
-    const offset = params.interaction.options.getNumber('отступ')
+    const count = params.interaction.options.getInteger('количество')
+    const offset = params.interaction.options.getInteger('отступ')
 
     await playCommand(params, query, count, offset)
   }

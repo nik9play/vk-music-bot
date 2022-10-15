@@ -10,7 +10,7 @@ export default new Command({
   premium: false,
   execute: async ({ guild, respond, interaction, client }) => {
     const player = client.manager.get(guild.id)
-    const pageParam = interaction.options.getNumber('страница')
+    const pageParam = interaction.options.getInteger('страница')
     const page = pageParam ?? 1
 
     await respond(
