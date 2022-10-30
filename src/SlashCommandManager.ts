@@ -107,17 +107,17 @@ export default class {
           )
         )
 
-      if (interaction.isAutocomplete()) {
-        this.executeAutocomplete(interaction).catch((err) => {
-          logger.error(
-            {
-              shard_id: this.client.cluster.id,
-              err
-            },
-            'executeAutocomplete'
-          )
-        })
-      }
+      // if (interaction.isAutocomplete()) {
+      //   this.executeAutocomplete(interaction).catch((err) => {
+      //     logger.error(
+      //       {
+      //         shard_id: this.client.cluster.id,
+      //         err
+      //       },
+      //       'executeAutocomplete'
+      //     )
+      //   })
+      // }
     })
 
     // обычные команды с префиксом
