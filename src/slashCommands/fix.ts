@@ -1,5 +1,5 @@
-import { Command } from '../SlashCommandManager'
-import Utils, { ErrorMessageType } from '../Utils'
+import { Command } from '../SlashCommandManager.js'
+import Utils, { ErrorMessageType } from '../Utils.js'
 
 export default new Command({
   name: 'fix',

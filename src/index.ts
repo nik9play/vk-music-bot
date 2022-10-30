@@ -1,26 +1,24 @@
 import { Intents, Options } from 'discord.js'
-import { VkMusicBotClient } from './client'
+import { VkMusicBotClient } from './client.js'
 import Cluster from 'discord-hybrid-sharding-vk'
 
-import SlashCommandManager from './SlashCommandManager'
-import logger from './Logger'
+import SlashCommandManager from './SlashCommandManager.js'
+import logger from './Logger.js'
 import { NodeOptions } from 'erela.js-vk'
 
 const LavalinkServersString = process.env.LAVALINK_NODES
 
 if (LavalinkServersString == null) throw new Error('poshel ti')
 
-const nodes: NodeOptions[] = LavalinkServersString.split(';').map(
-  (val): NodeOptions => {
-    const arr = val.split(',')
-    return {
-      host: arr[1],
-      port: parseInt(arr[2]),
-      password: arr[3],
-      retryAmount: 128
-    }
+const nodes: NodeOptions[] = LavalinkServersString.split(';').map((val): NodeOptions => {
+  const arr = val.split(',')
+  return {
+    host: arr[1],
+    port: parseInt(arr[2]),
+    password: arr[3],
+    retryAmount: 128
   }
-)
+})
 
 console.log({ nodes })
 
@@ -34,24 +32,17 @@ const client = new VkMusicBotClient(
     }),
     shards: Cluster.Client.getInfo().SHARD_LIST,
     shardCount: Cluster.Client.getInfo().TOTAL_SHARDS,
-    intents: [
-      Intents.FLAGS.GUILDS,
-      Intents.FLAGS.GUILD_VOICE_STATES,
-      Intents.FLAGS.GUILD_MESSAGES
-    ]
+    intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_VOICE_STATES, Intents.FLAGS.GUILD_MESSAGES]
   },
   nodes
 )
 
 const slashCommandManager = new SlashCommandManager(client)
-slashCommandManager.init()
+await slashCommandManager.init()
 
 client.once('ready', () => {
   client.manager.init(client.user?.id)
-  logger.info(
-    { shard_id: client.cluster.id },
-    `Logged in as ${client.user?.tag}`
-  )
+  logger.info({ shard_id: client.cluster.id }, `Logged in as ${client.user?.tag}`)
 })
 
 client.on('raw', (d) => client.manager.updateVoiceState(d))
@@ -66,4 +57,4 @@ client.on('guildDelete', (guild) => {
   if (timer) clearTimeout(timer)
 })
 
-client.login(process.env.DISCORD_TOKEN)
+await client.login(process.env.DISCORD_TOKEN)

@@ -1,5 +1,5 @@
-import { Command } from '../SlashCommandManager'
-import Utils, { ErrorMessageType } from '../Utils'
+import { Command } from '../SlashCommandManager.js'
+import Utils, { ErrorMessageType } from '../Utils.js'
 
 export default new Command({
   name: 'text',
@@ -19,11 +19,7 @@ export default new Command({
 
     if (!voice) {
       await respond({
-        embeds: [
-          Utils.generateErrorMessage(
-            'Необходимо находиться в голосовом канале.'
-          )
-        ],
+        embeds: [Utils.generateErrorMessage('Необходимо находиться в голосовом канале.')],
         ephemeral: true
       })
       return
@@ -41,12 +37,7 @@ export default new Command({
         channelParam.type !== 'GUILD_PRIVATE_THREAD'
       ) {
         await respond({
-          embeds: [
-            Utils.generateErrorMessage(
-              'Необходимо указать текстовый канал.',
-              ErrorMessageType.Error
-            )
-          ]
+          embeds: [Utils.generateErrorMessage('Необходимо указать текстовый канал.', ErrorMessageType.Error)]
         })
         return
       }
@@ -56,23 +47,13 @@ export default new Command({
           textChannel = channelParam
         } else {
           await respond({
-            embeds: [
-              Utils.generateErrorMessage(
-                'Необходимо указать текстовый канал.',
-                ErrorMessageType.Error
-              )
-            ]
+            embeds: [Utils.generateErrorMessage('Необходимо указать текстовый канал.', ErrorMessageType.Error)]
           })
           return
         }
       } else {
         await respond({
-          embeds: [
-            Utils.generateErrorMessage(
-              'Не удалось найти такой канал.',
-              ErrorMessageType.Error
-            )
-          ]
+          embeds: [Utils.generateErrorMessage('Не удалось найти такой канал.', ErrorMessageType.Error)]
         })
         return
       }

@@ -1,5 +1,5 @@
-import { Command } from '../SlashCommandManager'
-import Utils, { ErrorMessageType } from '../Utils'
+import { Command } from '../SlashCommandManager.js'
+import Utils, { ErrorMessageType } from '../Utils.js'
 
 export default new Command({
   name: 'shuffle',
@@ -20,11 +20,7 @@ export default new Command({
 
     if (!voice) {
       await respond({
-        embeds: [
-          Utils.generateErrorMessage(
-            'Необходимо находиться в голосовом канале.'
-          )
-        ],
+        embeds: [Utils.generateErrorMessage('Необходимо находиться в голосовом канале.')],
         ephemeral: true
       })
       return
@@ -41,12 +37,7 @@ export default new Command({
     player.queue.shuffle()
 
     await respond({
-      embeds: [
-        Utils.generateErrorMessage(
-          '🔀 Очередь перемешана.',
-          ErrorMessageType.NoTitle
-        )
-      ]
+      embeds: [Utils.generateErrorMessage('🔀 Очередь перемешана.', ErrorMessageType.NoTitle)]
     })
   }
 })

@@ -1,5 +1,5 @@
-import { Command } from '../SlashCommandManager'
-import { searchCommand } from '../helpers/SearchCommandHelper'
+import { Command } from '../SlashCommandManager.js'
+import { searchCommand } from '../helpers/SearchCommandHelper.js'
 
 export default new Command({
   name: 'search',

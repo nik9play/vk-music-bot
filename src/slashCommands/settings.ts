@@ -1,5 +1,5 @@
-import { Command } from '../SlashCommandManager'
-import Utils, { ErrorMessageType } from '../Utils'
+import { Command } from '../SlashCommandManager.js'
+import Utils, { ErrorMessageType } from '../Utils.js'
 
 export default new Command({
   name: 'settings',
@@ -15,11 +15,7 @@ export default new Command({
 
       if (length < 1 || length > 5) {
         await respond({
-          embeds: [
-            Utils.generateErrorMessage(
-              'Префикс может быть длиной от 1 до 5 символов.'
-            )
-          ]
+          embeds: [Utils.generateErrorMessage('Префикс может быть длиной от 1 до 5 символов.')]
         })
         return
       }
@@ -58,10 +54,7 @@ export default new Command({
       if (name === '@everyone' || name === '@here') {
         await respond({
           embeds: [
-            Utils.generateErrorMessage(
-              `Нельзя установить роль ${Utils.escapeFormat(name)}.`,
-              ErrorMessageType.Error
-            )
+            Utils.generateErrorMessage(`Нельзя установить роль ${Utils.escapeFormat(name)}.`, ErrorMessageType.Error)
           ]
         })
         return
@@ -70,10 +63,7 @@ export default new Command({
       await client.db.setAccessRole(name, guild.id)
       await respond({
         embeds: [
-          Utils.generateErrorMessage(
-            `DJ роль "${Utils.escapeFormat(name)}" установлена.`,
-            ErrorMessageType.NoTitle
-          )
+          Utils.generateErrorMessage(`DJ роль "${Utils.escapeFormat(name)}" установлена.`, ErrorMessageType.NoTitle)
         ]
       })
     } else if (type === 'announcements') {
@@ -82,10 +72,7 @@ export default new Command({
       await client.db.setDisableAnnouncements(!enable, guild.id)
       await respond({
         embeds: [
-          Utils.generateErrorMessage(
-            'Оповещения ' + (enable ? 'включены.' : 'выключены.'),
-            ErrorMessageType.NoTitle
-          )
+          Utils.generateErrorMessage('Оповещения ' + (enable ? 'включены.' : 'выключены.'), ErrorMessageType.NoTitle)
         ]
       })
     } else if (type === 'show') {
@@ -94,9 +81,7 @@ export default new Command({
         color: 0x5181b8,
         fields: [
           {
-            name: `prefix: ${Utils.escapeFormat(
-              await client.db.getPrefix(guild.id)
-            )}`,
+            name: `prefix: ${Utils.escapeFormat(await client.db.getPrefix(guild.id))}`,
             value: 'Настройка префикса.'
           },
           {
@@ -105,13 +90,10 @@ export default new Command({
                 ? '<:yes2:835498559805063169>'
                 : '<:no2:835498572916195368>'
             }`,
-            value:
-              'DJ режим. Позволяет пользоваться ботом только если у пользователя есть определенная роль.'
+            value: 'DJ режим. Позволяет пользоваться ботом только если у пользователя есть определенная роль.'
           },
           {
-            name: `djrole: ${Utils.escapeFormat(
-              await client.db.getAccessRole(guild.id)
-            )}`,
+            name: `djrole: ${Utils.escapeFormat(await client.db.getAccessRole(guild.id))}`,
             value: 'Установка имени роли для DJ режима.'
           },
           {

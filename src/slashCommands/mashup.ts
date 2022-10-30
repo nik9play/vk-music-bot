@@ -1,5 +1,5 @@
-import Utils, { ErrorMessageType } from '../Utils'
-import { Command } from '../SlashCommandManager'
+import Utils, { ErrorMessageType } from '../Utils.js'
+import { Command } from '../SlashCommandManager.js'
 
 export default new Command({
   name: 'mashup',
@@ -9,9 +9,7 @@ export default new Command({
   cooldown: 1,
   execute: async ({ respond }) => {
     await respond({
-      embeds: [
-        Utils.generateErrorMessage('Скоро™...', ErrorMessageType.NoTitle)
-      ]
+      embeds: [Utils.generateErrorMessage('Скоро™...', ErrorMessageType.NoTitle)]
     })
   }
 })

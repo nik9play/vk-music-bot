@@ -4,8 +4,9 @@
   "main": "index.js",
   "author": "nik9",
   "license": "MIT",
+  "type": "module",
   "engines": {
-    "node": ">=16.6.0 < 16.16.0"
+    "node": ">=16.6.0"
   },
   "scripts": {
     "start": "node dist/shardStart.js",

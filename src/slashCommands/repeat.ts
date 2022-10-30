@@ -1,5 +1,5 @@
-import { Command } from '../SlashCommandManager'
-import Utils, { ErrorMessageType } from '../Utils'
+import { Command } from '../SlashCommandManager.js'
+import Utils, { ErrorMessageType } from '../Utils.js'
 
 export default new Command({
   name: 'repeat',
@@ -19,11 +19,7 @@ export default new Command({
 
     if (!voice) {
       await respond({
-        embeds: [
-          Utils.generateErrorMessage(
-            'Необходимо находиться в голосовом канале.'
-          )
-        ],
+        embeds: [Utils.generateErrorMessage('Необходимо находиться в голосовом канале.')],
         ephemeral: true
       })
       return
@@ -35,24 +31,14 @@ export default new Command({
       if (repeatParam === 'очередь') {
         player.setQueueRepeat(true)
         await respond({
-          embeds: [
-            Utils.generateErrorMessage(
-              '🔁 Включен повтор очереди.',
-              ErrorMessageType.NoTitle
-            )
-          ]
+          embeds: [Utils.generateErrorMessage('🔁 Включен повтор очереди.', ErrorMessageType.NoTitle)]
         })
         return
       }
       if (repeatParam === 'трек') {
         player.setTrackRepeat(true)
         await respond({
-          embeds: [
-            Utils.generateErrorMessage(
-              '🔁 Включен повтор трека.',
-              ErrorMessageType.NoTitle
-            )
-          ]
+          embeds: [Utils.generateErrorMessage('🔁 Включен повтор трека.', ErrorMessageType.NoTitle)]
         })
         return
       }
@@ -60,12 +46,7 @@ export default new Command({
         player.setQueueRepeat(false)
         player.setTrackRepeat(false)
         await respond({
-          embeds: [
-            Utils.generateErrorMessage(
-              '🔁 Повтор выключен.',
-              ErrorMessageType.NoTitle
-            )
-          ]
+          embeds: [Utils.generateErrorMessage('🔁 Повтор выключен.', ErrorMessageType.NoTitle)]
         })
         return
       }

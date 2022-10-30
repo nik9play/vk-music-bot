@@ -1,7 +1,8 @@
-import { MessageEmbed } from 'discord.js'
+import { MessageEmbed, VoiceBasedChannel } from 'discord.js'
 import { Player } from 'erela.js-vk'
-//import { VkMusicBotClient } from './client'
-import logger from './Logger'
+import { VkMusicBotClient } from './client.js'
+import logger from './Logger.js'
+import { RespondFunction } from './SlashCommandManager.js'
 
 export interface ArgType {
   type: 'group' | 'playlist' | 'user' | 'track' | 'unknown'
@@ -24,18 +25,11 @@ export enum ErrorMessageType {
 export default class Utils {
   public static declOfNum(number: number, titles: string[]): string {
     const cases = [2, 0, 1, 1, 1, 2]
-    return titles[
-      number % 100 > 4 && number % 100 < 20
-        ? 2
-        : cases[number % 10 < 5 ? number % 10 : 5]
-    ]
+    return titles[number % 100 > 4 && number % 100 < 20 ? 2 : cases[number % 10 < 5 ? number % 10 : 5]]
   }
 
   public static parsePlaylistURL(url: URL): PlaylistURL {
-    if (
-      url.pathname.includes('/music/playlist/') ||
-      url.pathname.includes('/music/album/')
-    ) {
+    if (url.pathname.includes('/music/playlist/') || url.pathname.includes('/music/album/')) {
       const query = url.pathname.split('/')[3]
       let id = null,
         access_key = null
@@ -127,9 +121,7 @@ export default class Utils {
   public static escapeFormat(text: string | undefined): string {
     if (!text) return ''
     //return text.replace(/([*_`~\\])/g, '\\$1')
-    return text
-      .replace(/([_*~`|\\<>:!])/g, '\\$1')
-      .replace(/@(everyone|here|[!&]?[0-9]{17,21})/g, '@\u200b$1')
+    return text.replace(/([_*~`|\\<>:!])/g, '\\$1').replace(/@(everyone|here|[!&]?[0-9]{17,21})/g, '@\u200b$1')
   }
 
   public static generateErrorMessage(
@@ -172,15 +164,13 @@ export default class Utils {
     return `&r=${Math.random().toString(36).substring(2, 15)}`
   }
 
-  public static getExitTimeout(
-    player: Player
-    //client: VkMusicBotClient
-  ): NodeJS.Timeout {
+  public static getExitTimeout(player: Player, client: VkMusicBotClient): NodeJS.Timeout {
     logger.info(`Exit timeout set ${player.guild}`)
 
     return setTimeout(async () => {
       if (player) {
         player.destroy()
+        console.log(client)
 
         // if (player.textChannel == null) return
 
@@ -207,5 +197,43 @@ export default class Utils {
         // }
       }
     }, 1200000)
+  }
+
+  public static async checkPlayerState(
+    respond: RespondFunction,
+    player?: Player,
+    voice?: VoiceBasedChannel | null,
+    checkPlayer = true,
+    checkVoice = true,
+    checkQueue = false
+  ): Promise<boolean> {
+    if (checkPlayer)
+      if (!player) {
+        await respond({
+          embeds: [Utils.generateErrorMessage('Сейчас ничего не играет.')],
+          ephemeral: true
+        })
+        return false
+      }
+
+    if (checkVoice)
+      if (!voice) {
+        await respond({
+          embeds: [Utils.generateErrorMessage('Необходимо находиться в голосовом канале.')],
+          ephemeral: true
+        })
+        return false
+      }
+
+    if (checkQueue)
+      if (!player?.queue.current) {
+        await respond({
+          embeds: [Utils.generateErrorMessage('Очередь пуста.')],
+          ephemeral: true
+        })
+        return false
+      }
+
+    return true
   }
 }

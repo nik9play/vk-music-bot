@@ -1,4 +1,4 @@
-import { Command } from '../SlashCommandManager'
+import { Command } from '../SlashCommandManager.js'
 
 export default new Command({
   name: 'info',
@@ -7,9 +7,7 @@ export default new Command({
   djOnly: false,
   cooldown: 10,
   execute: async function ({ client, respond, guild }) {
-    let totalServers = await client.cluster.fetchClientValues(
-      'guilds.cache.size'
-    )
+    let totalServers = await client.cluster.fetchClientValues('guilds.cache.size')
     totalServers = totalServers.reduce((acc, guildCount) => acc + guildCount, 0)
 
     let totalPlayers = 0
@@ -38,17 +36,13 @@ export default new Command({
       color: 0x5181b8,
       fields: [
         {
-          name: 'Shard RAM',
-          value: `\`\`\`js\n${
-            Math.round((process.memoryUsage().rss / 1024 / 1024) * 100) / 100
-          } MB\`\`\``,
+          name: 'Cluster RAM',
+          value: `\`\`\`js\n${Math.round((process.memoryUsage().rss / 1024 / 1024) * 100) / 100} MB\`\`\``,
           inline: true
         },
         {
           name: 'Lavalink RAM',
-          value: `\`\`\`js\n${
-            Math.round((RamLl / 1024 / 1024) * 100) / 100
-          } MB\`\`\``,
+          value: `\`\`\`js\n${Math.round((RamLl / 1024 / 1024) * 100) / 100} MB\`\`\``,
           inline: true
         },
         {

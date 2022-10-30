@@ -1,5 +1,5 @@
-import { Command } from '../SlashCommandManager'
-import Utils, { ErrorMessageType } from '../Utils'
+import { Command } from '../SlashCommandManager.js'
+import Utils, { ErrorMessageType } from '../Utils.js'
 
 export default new Command({
   name: 'stop',
@@ -20,11 +20,7 @@ export default new Command({
 
     if (!voice) {
       await respond({
-        embeds: [
-          Utils.generateErrorMessage(
-            'Необходимо находиться в голосовом канале.'
-          )
-        ],
+        embeds: [Utils.generateErrorMessage('Необходимо находиться в голосовом канале.')],
         ephemeral: true
       })
       return
@@ -36,10 +32,7 @@ export default new Command({
 
     await respond({
       embeds: [
-        Utils.generateErrorMessage(
-          '⏹️ Воспроизведение остановлено и очередь очищена.',
-          ErrorMessageType.NoTitle
-        )
+        Utils.generateErrorMessage('⏹️ Воспроизведение остановлено и очередь очищена.', ErrorMessageType.NoTitle)
       ]
     })
   }

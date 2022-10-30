@@ -3,10 +3,11 @@
 
 import Cluster from 'discord-hybrid-sharding-vk'
 import axios from 'axios'
-import logger from './Logger'
+import logger from './Logger.js'
 import { Client } from 'discord.js'
 
-import { RatelimitManager } from 'discord-cross-ratelimit'
+import cross from 'discord-cross-ratelimit'
+const { RatelimitManager } = cross
 
 const manager = new Cluster.Manager('./dist/index.js', {
   totalShards: 'auto',
@@ -28,9 +29,7 @@ manager.on('clusterCreate', (cluster) => {
 manager.on('debug', (msg) => logger.info(msg, 'CLUSTER MANAGER'))
 
 manager.spawn({ timeout: 240000 }).then(() => {
-  logger.info(
-    `Manager finished spawning clusters. Total clusters: ${manager.totalClusters}`
-  )
+  logger.info(`Manager finished spawning clusters. Total clusters: ${manager.totalClusters}`)
   setTimeout(() => {
     sendInfo()
     if (process.env.NODE_ENV != 'development')
@@ -49,10 +48,7 @@ function sendInfo() {
   manager
     .fetchClientValues('guilds.cache.size')
     .then(async (results) => {
-      const serverSize: number = results.reduce(
-        (acc, guildCount) => acc + guildCount,
-        0
-      )
+      const serverSize: number = results.reduce((acc, guildCount) => acc + guildCount, 0)
 
       function setPr(c: Client, { servers }: any) {
         if (c.user) {

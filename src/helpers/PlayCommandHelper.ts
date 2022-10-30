@@ -1,22 +1,12 @@
-import { CommandExecuteParams } from '../SlashCommandManager'
-import Utils, { ErrorMessageType } from '../Utils'
+import { CommandExecuteParams } from '../SlashCommandManager.js'
+import Utils, { ErrorMessageType } from '../Utils.js'
 import { User } from 'discord.js'
-import logger from '../Logger'
-import VK, {
-  APIResponse,
-  GroupInfo,
-  OneTrackResponse,
-  PlaylistResponse,
-  UserResponse
-} from '../apis/VK'
+import logger from '../Logger.js'
+import VK, { APIResponse, GroupInfo, OneTrackResponse, PlaylistResponse, UserResponse } from '../apis/VK.js'
 import { Duration } from 'luxon'
 import { Player, TrackUtils } from 'erela.js-vk'
 
-async function fillQueue(
-  newArray: OneTrackResponse[],
-  player: Player,
-  wrongTracks: OneTrackResponse[]
-) {
+async function fillQueue(newArray: OneTrackResponse[], player: Player, wrongTracks: OneTrackResponse[]) {
   for await (const e of newArray) {
     if (!e.url || e.duration > 1800) {
       wrongTracks.push(e)
@@ -29,8 +19,7 @@ async function fillQueue(
     unresolvedTrack.author = e.author
 
     player.queue.add(unresolvedTrack)
-    if (!player.playing && !player.paused && !player.queue.size)
-      await player.play()
+    if (!player.playing && !player.paused && !player.queue.size) await player.play()
   }
 }
 
@@ -44,23 +33,14 @@ export async function playCommand(
 
   if (!voice)
     return respond({
-      embeds: [
-        Utils.generateErrorMessage('Необходимо находиться в голосовом канале.')
-      ],
+      embeds: [Utils.generateErrorMessage('Необходимо находиться в голосовом канале.')],
       ephemeral: true
     })
 
   const permissions = voice.permissionsFor(client.user as User)
-  if (
-    permissions &&
-    (!permissions.has('CONNECT') ||
-      !permissions.has('SPEAK') ||
-      !permissions.has('VIEW_CHANNEL'))
-  ) {
+  if (permissions && (!permissions.has('CONNECT') || !permissions.has('SPEAK') || !permissions.has('VIEW_CHANNEL'))) {
     return respond({
-      embeds: [
-        Utils.generateErrorMessage('Мне нужны права, чтобы войти в канал.')
-      ],
+      embeds: [Utils.generateErrorMessage('Мне нужны права, чтобы войти в канал.')],
       ephemeral: true
     })
   }
@@ -146,12 +126,7 @@ export async function playCommand(
 
   if (arg.type === 'unknown') {
     await respond({
-      embeds: [
-        Utils.generateErrorMessage(
-          'Неизвестный тип ссылки',
-          ErrorMessageType.Error
-        )
-      ]
+      embeds: [Utils.generateErrorMessage('Неизвестный тип ссылки', ErrorMessageType.Error)]
     })
     return
   }
@@ -189,18 +164,12 @@ export async function playCommand(
       await respond({ embeds: [embed], ephemeral: true })
     } else if (reqError.type === 'empty') {
       await respond({
-        embeds: [
-          Utils.generateErrorMessage(
-            'Не удалось ничего найти по запросу или плейлиста не существует.'
-          )
-        ],
+        embeds: [Utils.generateErrorMessage('Не удалось ничего найти по запросу или плейлиста не существует.')],
         ephemeral: true
       })
     } else if (reqError.type === 'api') {
       await respond({
-        embeds: [
-          Utils.generateErrorMessage('Неверный формат ссылки или запроса.')
-        ],
+        embeds: [Utils.generateErrorMessage('Неверный формат ссылки или запроса.')],
         ephemeral: true
       })
     } else if (reqError.type === 'request') {
@@ -220,11 +189,7 @@ export async function playCommand(
         })
       } else if (arg.type === 'user') {
         await respond({
-          embeds: [
-            Utils.generateErrorMessage(
-              'Нет доступа к аудио пользователя. Аудио должны быть открыты.'
-            )
-          ],
+          embeds: [Utils.generateErrorMessage('Нет доступа к аудио пользователя. Аудио должны быть открыты.')],
           ephemeral: true
         })
       }
@@ -239,9 +204,7 @@ export async function playCommand(
 
     if (req.duration > 1800) {
       await respond({
-        embeds: [
-          Utils.generateErrorMessage('Нельзя добавлять треки длиннее 30 минут.')
-        ],
+        embeds: [Utils.generateErrorMessage('Нельзя добавлять треки длиннее 30 минут.')],
         ephemeral: true
       })
       return
@@ -260,9 +223,7 @@ export async function playCommand(
       fields: [
         {
           name: 'Длительность',
-          value: Duration.fromObject({ seconds: req.duration }).toFormat(
-            'mm:ss'
-          )
+          value: Duration.fromObject({ seconds: req.duration }).toFormat('mm:ss')
         }
       ]
     }
@@ -284,11 +245,7 @@ export async function playCommand(
     } catch (err: any) {
       logger.error({ err, ...meta }, 'Play error')
       await respond({
-        embeds: [
-          Utils.generateErrorMessage(
-            'Ошибка отправки запроса на стороне бота. Свяжитесь с поддержкой.'
-          )
-        ],
+        embeds: [Utils.generateErrorMessage('Ошибка отправки запроса на стороне бота. Свяжитесь с поддержкой.')],
         ephemeral: true
       })
       return
@@ -308,8 +265,7 @@ export async function playCommand(
 
         player.queue.add(res.tracks[0])
 
-        if (!player.playing && !player.paused && !player.queue.size)
-          await player.play()
+        if (!player.playing && !player.paused && !player.queue.size) await player.play()
     }
 
     await respond({ embeds: [songEmbed] })
@@ -418,10 +374,11 @@ export async function playCommand(
 
     desc = `${desc}\n${
       wrongTracks.length > 5
-        ? `...\nи еще ${wrongTracks.length - 5} ${Utils.declOfNum(
-            wrongTracks.length - 5,
-            ['трек', 'трека', 'треков']
-          )}.`
+        ? `...\nи еще ${wrongTracks.length - 5} ${Utils.declOfNum(wrongTracks.length - 5, [
+            'трек',
+            'трека',
+            'треков'
+          ])}.`
         : ''
     }`
 

@@ -12,13 +12,13 @@ import {
   User,
   VoiceBasedChannel
 } from 'discord.js'
-import logger from './Logger'
-import { CaptchaInfo, VkMusicBotClient } from './client'
-import { playCommand } from './helpers/PlayCommandHelper'
-import Utils from './Utils'
+import logger from './Logger.js'
+import { CaptchaInfo, VkMusicBotClient } from './client.js'
+import { playCommand } from './helpers/PlayCommandHelper.js'
+import Utils from './Utils.js'
 import glob from 'glob'
 import { promisify } from 'util'
-import { generateQueueResponse } from './helpers/QueueCommandHelper'
+import { generateQueueResponse } from './helpers/QueueCommandHelper.js'
 
 const globPromise = promisify(glob)
 
@@ -44,14 +44,8 @@ export class Command {
   }
 }
 
-export type RespondFunction = (
-  data: MessageOptions | InteractionReplyOptions,
-  timeout?: number
-) => Promise<void>
-export type SendFunction = (
-  data: MessageOptions,
-  timeout?: number
-) => Promise<void>
+export type RespondFunction = (data: MessageOptions | InteractionReplyOptions, timeout?: number) => Promise<void>
+export type SendFunction = (data: MessageOptions, timeout?: number) => Promise<void>
 
 export interface CommandExecuteParams {
   guild: Guild
@@ -112,6 +106,18 @@ export default class {
             'executeSlash'
           )
         )
+
+      if (interaction.isAutocomplete()) {
+        this.executeAutocomplete(interaction).catch((err) => {
+          logger.error(
+            {
+              shard_id: this.client.cluster.id,
+              err
+            },
+            'executeAutocomplete'
+          )
+        })
+      }
     })
 
     // обычные команды с префиксом
@@ -139,14 +145,9 @@ export default class {
       guild_id: guild?.id
     }
 
-    const respond = async (
-      data: MessageOptions | InteractionReplyOptions,
-      timeout?: number
-    ): Promise<void> => {
+    const respond = async (data: MessageOptions | InteractionReplyOptions, timeout?: number): Promise<void> => {
       if (interaction.deferred)
-        await interaction
-          .editReply(data)
-          .catch((err) => logger.error({ err, ...meta }, "Can't edit reply"))
+        await interaction.editReply(data).catch((err) => logger.error({ err, ...meta }, "Can't edit reply"))
       else
         await interaction
           .reply(data as InteractionReplyOptions)
@@ -154,31 +155,24 @@ export default class {
 
       if (timeout)
         setTimeout(async () => {
-          await interaction
-            .deleteReply()
-            .catch((err) =>
-              logger.error({ err, ...meta }, 'Error deleting reply')
-            )
+          await interaction.deleteReply().catch((err) => logger.error({ err, ...meta }, 'Error deleting reply'))
         }, timeout)
     }
 
-    const send = async (
-      data: MessageOptions,
-      timeout?: number
-    ): Promise<void> => {
-      const message = await text
-        .send(data)
-        .catch((err) => logger.error({ err, ...meta }, "Can't send message"))
+    const send = async (data: MessageOptions, timeout?: number): Promise<void> => {
+      if (text.type !== 'GUILD_TEXT') return
+
+      if (!text.permissionsFor(this.client.user as User)?.has(Permissions.FLAGS.SEND_MESSAGES)) return
+
+      const message = await text.send(data).catch((err) => logger.error({ err, ...meta }, "Can't send message"))
 
       if (timeout)
         setTimeout(async () => {
-          if (message && typeof message.delete === 'function') {
-            await message
-              .delete()
-              .catch((err) =>
-                logger.error({ err, ...meta }, "Can't delete message")
-              )
-          }
+          if (!message) return
+
+          if (message.channel.type !== 'GUILD_TEXT') return
+
+          await message.delete().catch((err) => logger.error({ err, ...meta }, "Can't delete message"))
         }, timeout)
     }
 
@@ -193,14 +187,10 @@ export default class {
       }
 
       // редактировать ответ если команда отложена
-      if (command.deferred && !interaction.deferred)
-        await interaction.deferReply()
+      if (command.deferred && !interaction.deferred) await interaction.deferReply()
 
       // проверка на админа
-      if (
-        command.adminOnly &&
-        !member.permissions.has(Permissions.FLAGS.MANAGE_GUILD)
-      ) {
+      if (command.adminOnly && !member.permissions.has(Permissions.FLAGS.MANAGE_GUILD)) {
         await respond({
           embeds: [
             Utils.generateErrorMessage(
@@ -236,9 +226,7 @@ export default class {
       if (command.premium && !(await this.client.db.checkPremium(guild.id))) {
         await respond({
           embeds: [
-            Utils.generateErrorMessage(
-              'Для выполнения этой команды требуется **Премиум**! Подробности: /donate.'
-            )
+            Utils.generateErrorMessage('Для выполнения этой команды требуется **Премиум**! Подробности: /donate.')
           ],
           ephemeral: true
         })
@@ -290,9 +278,7 @@ export default class {
           send,
           meta
         })
-        .catch((err) =>
-          logger.error({ err, ...meta }, 'Error executing command')
-        )
+        .catch((err) => logger.error({ err, ...meta }, 'Error executing command'))
     }
 
     if (interaction.isButton()) {
@@ -316,12 +302,8 @@ export default class {
             meta
           }
 
-          playCommand(partialParams as CommandExecuteParams, id).catch(
-            (err: any) =>
-              logger.error(
-                { err, ...meta },
-                'Error executing command from button'
-              )
+          playCommand(partialParams as CommandExecuteParams, id).catch((err: any) =>
+            logger.error({ err, ...meta }, 'Error executing command from button')
           )
         }
       }
@@ -333,13 +315,16 @@ export default class {
 
         if (page) {
           const player = this.client.manager.get(guild.id)
-          await interaction.update(
-            generateQueueResponse(page, player) as InteractionUpdateOptions
-          )
+          await interaction.update(generateQueueResponse(page, player) as InteractionUpdateOptions)
         }
       }
     }
   }
+
+  // async executeAutocomplete(interaction: AutocompleteInteraction) {
+  //   if (interaction.commandName === 'play') {
+  //   }
+  // }
 
   /*
    * Обычные команды

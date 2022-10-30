@@ -1,5 +1,5 @@
-import { Command } from '../SlashCommandManager'
-import Utils, { ErrorMessageType } from '../Utils'
+import { Command } from '../SlashCommandManager.js'
+import Utils, { ErrorMessageType } from '../Utils.js'
 
 export default new Command({
   name: 'pause',
@@ -19,11 +19,7 @@ export default new Command({
 
     if (!voice) {
       await respond({
-        embeds: [
-          Utils.generateErrorMessage(
-            'Необходимо находиться в голосовом канале.'
-          )
-        ],
+        embeds: [Utils.generateErrorMessage('Необходимо находиться в голосовом канале.')],
         ephemeral: true
       })
       return
@@ -36,28 +32,17 @@ export default new Command({
       if (timer) clearTimeout(timer)
 
       await respond({
-        embeds: [
-          Utils.generateErrorMessage(
-            '▶️ Пауза снята.',
-            ErrorMessageType.NoTitle
-          )
-        ]
+        embeds: [Utils.generateErrorMessage('▶️ Пауза снята.', ErrorMessageType.NoTitle)]
       })
 
       player.pause(false)
       return
     }
 
-    if (!(await client.db.get247(guild.id)))
-      client.timers.set(guild.id, Utils.getExitTimeout(player, client))
+    if (!(await client.db.get247(guild.id))) client.timers.set(guild.id, Utils.getExitTimeout(player, client))
 
     await respond({
-      embeds: [
-        Utils.generateErrorMessage(
-          '⏸️ Пауза поставлена.',
-          ErrorMessageType.NoTitle
-        )
-      ]
+      embeds: [Utils.generateErrorMessage('⏸️ Пауза поставлена.', ErrorMessageType.NoTitle)]
     })
 
     player.pause(true)

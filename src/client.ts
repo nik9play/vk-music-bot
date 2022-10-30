@@ -1,12 +1,12 @@
 import { Client, ClientOptions, Collection } from 'discord.js'
 import Cluster from 'discord-hybrid-sharding-vk'
-import { Manager } from 'erela.js-vk'
-import { NodeOptions } from 'erela.js-vk'
-import Utils from './Utils'
-import logger from './Logger'
-import DB from './DB'
-import { CommandType } from './SlashCommandManager'
-import { RequestManager } from 'discord-cross-ratelimit'
+import { Manager, NodeOptions } from 'erela.js-vk'
+import Utils from './Utils.js'
+import logger from './Logger.js'
+import DB from './DB.js'
+import { CommandType } from './SlashCommandManager.js'
+import cross from 'discord-cross-ratelimit'
+const { RequestManager } = cross
 
 export interface CaptchaInfo {
   type: 'play' | 'search'
@@ -34,8 +34,7 @@ export class VkMusicBotClient extends Client {
   public db: DB
   public nodes?: NodeOptions[]
   public manager: Manager
-  public playerTrackErrorTrackers: Collection<string, PlayerTrackErrorTracker> =
-    new Collection()
+  public playerTrackErrorTrackers: Collection<string, PlayerTrackErrorTracker> = new Collection()
 
   constructor(options: ClientOptions, nodes: NodeOptions[]) {
     super(options)
@@ -44,8 +43,7 @@ export class VkMusicBotClient extends Client {
 
     this.nodes = nodes
 
-    if (!process.env.MONGO_URL || !process.env.REDIS_URL)
-      throw new Error('Env not set')
+    if (!process.env.MONGO_URL || !process.env.REDIS_URL) throw new Error('Env not set')
     this.db = new DB(process.env.MONGO_URL, process.env.REDIS_URL)
     this.db.init()
 
@@ -57,15 +55,10 @@ export class VkMusicBotClient extends Client {
       }
     })
       .on('nodeConnect', (node) =>
-        logger.info(
-          { shard: this.cluster.id },
-          `Node "${node.options.identifier}" connected.`
-        )
+        logger.info({ shard: this.cluster.id }, `Node "${node.options.identifier}" connected.`)
       )
       .on('nodeError', (node, error) =>
-        logger.error(
-          `Node "${node.options.identifier}" encountered an error: ${error.message}.`
-        )
+        logger.error(`Node "${node.options.identifier}" encountered an error: ${error.message}.`)
       )
       .on('trackStart', async (player, track) => {
         if (!(await this.db.getDisableAnnouncements(player.guild))) {
@@ -77,9 +70,9 @@ export class VkMusicBotClient extends Client {
                 const message = await channel.send({
                   embeds: [
                     {
-                      description: `Сейчас играет **${Utils.escapeFormat(
-                        track.author
-                      )} — ${Utils.escapeFormat(track.title)}**.`,
+                      description: `Сейчас играет **${Utils.escapeFormat(track.author)} — ${Utils.escapeFormat(
+                        track.title
+                      )}**.`,
                       color: 0x5181b8
                     }
                   ]
@@ -87,11 +80,7 @@ export class VkMusicBotClient extends Client {
 
                 setTimeout(() => {
                   if (message && typeof message.delete === 'function') {
-                    message
-                      .delete()
-                      .catch((err) =>
-                        logger.error({ err }, "Can't delete message")
-                      )
+                    message.delete().catch((err) => logger.error({ err }, "Can't delete message"))
                   }
                 }, track.duration)
               } catch {
@@ -102,32 +91,20 @@ export class VkMusicBotClient extends Client {
         }
       })
       .on('queueEnd', async (player) => {
-        logger.info(
-          { guild_id: player.guild, shard_id: this.cluster.id },
-          'End of queue'
-        )
+        logger.info({ guild_id: player.guild, shard_id: this.cluster.id }, 'End of queue')
         if (!(await this.db.get247(player.guild)))
           if (player) {
-            logger.info(
-              { guild_id: player.guild, shard_id: this.cluster.id },
-              'set timeout'
-            )
+            logger.info({ guild_id: player.guild, shard_id: this.cluster.id }, 'set timeout')
             this.timers.set(player.guild, Utils.getExitTimeout(player, this))
           }
       })
       .on('playerMove', (player) => {
-        logger.info(
-          { guild_id: player.guild, shard_id: this.cluster.id },
-          'moved player'
-        )
+        logger.info({ guild_id: player.guild, shard_id: this.cluster.id }, 'moved player')
         player.pause(true)
         setTimeout(() => player.pause(false), 2000)
       })
       .on('playerDisconnect', (player) => {
-        logger.info(
-          { guild_id: player.guild, shard_id: this.cluster.id },
-          'player disconnected'
-        )
+        logger.info({ guild_id: player.guild, shard_id: this.cluster.id }, 'player disconnected')
 
         const timer = this.timers.get(player.guild)
         if (timer) clearTimeout(timer)
@@ -135,10 +112,7 @@ export class VkMusicBotClient extends Client {
         player.destroy()
       })
       .on('playerDestroy', (player) => {
-        logger.info(
-          { guild_id: player.guild, shard_id: this.cluster.id },
-          'player destroyed'
-        )
+        logger.info({ guild_id: player.guild, shard_id: this.cluster.id }, 'player destroyed')
       })
       .on('socketClosed', async (player, socket) => {
         // reconnect on "Abnormal closure"
@@ -169,16 +143,10 @@ export class VkMusicBotClient extends Client {
         //   }
         // }
 
-        logger.debug(
-          { code: socket.code, guild_id: player.guild },
-          'socket closed'
-        )
+        logger.debug({ code: socket.code, guild_id: player.guild }, 'socket closed')
       })
       .on('trackStuck', (guildId) => {
-        logger.warn(
-          { guild_id: guildId, shard_id: this.cluster.id },
-          'track stuck'
-        )
+        logger.warn({ guild_id: guildId, shard_id: this.cluster.id }, 'track stuck')
       })
       .on('trackError', (player, track, payload) => {
         logger.error(

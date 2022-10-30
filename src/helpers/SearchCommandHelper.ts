@@ -1,13 +1,10 @@
-import { CommandExecuteParams } from '../SlashCommandManager'
-import VK, { APIResponse, ManyTracksResponse } from '../apis/VK'
-import logger from '../Logger'
-import Utils from '../Utils'
+import { CommandExecuteParams } from '../SlashCommandManager.js'
+import VK, { APIResponse, ManyTracksResponse } from '../apis/VK.js'
+import logger from '../Logger.js'
+import Utils from '../Utils.js'
 import { MessageActionRow, MessageButton } from 'discord.js'
 
-export async function searchCommand(
-  params: CommandExecuteParams,
-  queryParam: string
-) {
+export async function searchCommand(params: CommandExecuteParams, queryParam: string) {
   const { guild, client, captcha, respond, meta } = params
 
   const query: any = {}
@@ -52,18 +49,12 @@ export async function searchCommand(
       return respond({ embeds: [embed], ephemeral: true })
     } else if (reqError.type === 'empty') {
       return respond({
-        embeds: [
-          Utils.generateErrorMessage(
-            'Не удалось ничего найти по запросу или плейлиста не существует.'
-          )
-        ],
+        embeds: [Utils.generateErrorMessage('Не удалось ничего найти по запросу или плейлиста не существует.')],
         ephemeral: true
       })
     } else if (reqError.type === 'api') {
       return respond({
-        embeds: [
-          Utils.generateErrorMessage('Неверный формат ссылки или запроса.')
-        ],
+        embeds: [Utils.generateErrorMessage('Неверный формат ссылки или запроса.')],
         ephemeral: true
       })
     } else if (reqError.type === 'request') {

@@ -1,7 +1,7 @@
-import { playCommand } from '../helpers/PlayCommandHelper'
-import { searchCommand } from '../helpers/SearchCommandHelper'
-import { Command } from '../SlashCommandManager'
-import Utils, { ErrorMessageType } from '../Utils'
+import { playCommand } from '../helpers/PlayCommandHelper.js'
+import { searchCommand } from '../helpers/SearchCommandHelper.js'
+import { Command } from '../SlashCommandManager.js'
+import Utils, { ErrorMessageType } from '../Utils.js'
 
 export default new Command({
   name: 'captcha',
@@ -13,9 +13,7 @@ export default new Command({
   execute: async (params) => {
     const captcha = params.client.captcha.get(params.guild.id)
     if (captcha) {
-      captcha.captcha_key = params.interaction.options.getString(
-        'код'
-      ) as string
+      captcha.captcha_key = params.interaction.options.getString('код') as string
       params.captcha = captcha
 
       if (captcha.type === 'play') {
@@ -29,12 +27,7 @@ export default new Command({
       params.client.captcha.delete(params.guild.id)
     } else {
       await params.respond({
-        embeds: [
-          Utils.generateErrorMessage(
-            'В данный момент капчу вводить не надо.',
-            ErrorMessageType.Info
-          )
-        ],
+        embeds: [Utils.generateErrorMessage('В данный момент капчу вводить не надо.', ErrorMessageType.Info)],
         ephemeral: true
       })
     }

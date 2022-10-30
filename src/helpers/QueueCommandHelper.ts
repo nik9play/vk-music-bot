@@ -7,7 +7,7 @@ import {
   MessageButton,
   MessageEmbed
 } from 'discord.js'
-import Utils from '../Utils'
+import Utils from '../Utils.js'
 import { Duration } from 'luxon'
 
 export function generateQueueResponse(
@@ -22,9 +22,7 @@ export function generateQueueResponse(
     }
 
   const queue = player.queue
-  const embed = new MessageEmbed()
-    .setAuthor({ name: 'Треки в очереди' })
-    .setColor(0x5181b8)
+  const embed = new MessageEmbed().setAuthor({ name: 'Треки в очереди' }).setColor(0x5181b8)
 
   const multiple = 10
   page = page < 0 ? 1 : page
@@ -37,25 +35,17 @@ export function generateQueueResponse(
   if (queue.current)
     embed.addFields({
       name: 'Сейчас играет',
-      value: `${queue.current.author} — ${
-        queue.current.title
-      } (${Duration.fromMillis(player.position).toFormat(
+      value: `${queue.current.author} — ${queue.current.title} (${Duration.fromMillis(player.position).toFormat(
         'mm:ss'
       )}/${Duration.fromMillis(queue.current.duration ?? 0).toFormat('mm:ss')})`
     })
   //console.log(queue.current)
 
-  if (!tracks.length)
-    embed.setDescription(`Нет треков на странице \`${page}\`.`)
+  if (!tracks.length) embed.setDescription(`Нет треков на странице \`${page}\`.`)
   else {
     embed.setDescription(
       tracks
-        .map(
-          (track, i) =>
-            `${start + ++i}. ${Utils.escapeFormat(
-              track.author
-            )} — ${Utils.escapeFormat(track.title)}`
-        )
+        .map((track, i) => `${start + ++i}. ${Utils.escapeFormat(track.author)} — ${Utils.escapeFormat(track.title)}`)
         .join('\n')
     )
   }

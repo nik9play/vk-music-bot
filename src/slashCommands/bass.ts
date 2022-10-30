@@ -1,5 +1,5 @@
-import { Command } from '../SlashCommandManager'
-import Utils, { ErrorMessageType } from '../Utils'
+import { Command } from '../SlashCommandManager.js'
+import Utils, { ErrorMessageType } from '../Utils.js'
 
 const levelTypes = ['выкл', 'слабый', 'средний', 'мощный']
 
@@ -20,11 +20,7 @@ export default new Command({
 
     if (!voice) {
       await respond({
-        embeds: [
-          Utils.generateErrorMessage(
-            'Необходимо находиться в голосовом канале.'
-          )
-        ],
+        embeds: [Utils.generateErrorMessage('Необходимо находиться в голосовом канале.')],
         ephemeral: true
       })
       return
@@ -66,11 +62,7 @@ export default new Command({
       })
     } else {
       await respond({
-        embeds: [
-          Utils.generateErrorMessage(
-            '🔈 Доступные уровни: `выкл`, `слабый`, `средний`, `мощный`'
-          )
-        ]
+        embeds: [Utils.generateErrorMessage('🔈 Доступные уровни: `выкл`, `слабый`, `средний`, `мощный`')]
       })
     }
   }

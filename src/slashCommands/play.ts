@@ -1,5 +1,5 @@
-import { Command } from '../SlashCommandManager'
-import { playCommand } from '../helpers/PlayCommandHelper'
+import { Command } from '../SlashCommandManager.js'
+import { playCommand } from '../helpers/PlayCommandHelper.js'
 
 export default new Command({
   name: 'play',

@@ -1,5 +1,5 @@
-import { Command } from '../SlashCommandManager'
-import { generateQueueResponse } from '../helpers/QueueCommandHelper'
+import { Command } from '../SlashCommandManager.js'
+import { generateQueueResponse } from '../helpers/QueueCommandHelper.js'
 import { InteractionReplyOptions } from 'discord.js'
 
 export default new Command({
@@ -13,8 +13,6 @@ export default new Command({
     const pageParam = interaction.options.getInteger('страница')
     const page = pageParam ?? 1
 
-    await respond(
-      generateQueueResponse(page, player) as InteractionReplyOptions
-    )
+    await respond(generateQueueResponse(page, player) as InteractionReplyOptions)
   }
 })
