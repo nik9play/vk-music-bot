@@ -69,7 +69,6 @@ export default class {
   }
 
   public async init() {
-    logger.info('Loading commands...')
     const commandFiles = await globPromise('**/dist/slashCommands/*.js')
 
     for (const file of commandFiles) {
@@ -172,7 +171,11 @@ export default class {
 
           if (message.channel.type !== 'GUILD_TEXT') return
 
-          await message.delete().catch((err) => logger.error({ err, ...meta }, "Can't delete message"))
+          try {
+            await message.delete()
+          } catch (err) {
+            logger.error({ err, ...meta }, "Can't delete message")
+          }
         }, timeout)
     }
 
