@@ -2,17 +2,21 @@
 //const manager = new ShardingManager('./dist/index.js', { token: process.env.DISCORD_TOKEN, mode: 'process', respawn: true })
 
 import Cluster from 'discord-hybrid-sharding-vk'
-import axios from 'axios'
+//import axios from 'axios'
 import logger from './Logger.js'
 import { Client } from 'discord.js'
+import express from 'express'
 
 import cross from 'discord-cross-ratelimit'
+import { fetch } from 'undici'
+import { VkMusicBotClient } from './client.js'
+
 const { RatelimitManager } = cross
 
 const manager = new Cluster.Manager('./dist/index.js', {
-  totalShards: 'auto',
+  totalShards: 4,
   shardsPerClusters: 2,
-  mode: 'process',
+  mode: 'worker',
   token: process.env.DISCORD_TOKEN,
   restarts: {
     max: 5,
@@ -20,13 +24,15 @@ const manager = new Cluster.Manager('./dist/index.js', {
   }
 })
 
+manager.extend(new Cluster.ReClusterManager())
+
 new RatelimitManager(manager, { inactiveTimeout: 240000, requestOffset: 500 })
 
 manager.on('clusterCreate', (cluster) => {
   logger.info(`Launched cluster ${cluster.id}`)
 })
 
-manager.on('debug', (msg) => logger.info(msg, 'CLUSTER MANAGER'))
+manager.on('debug', (msg) => logger.info(msg, 'Cluster manager debug'))
 
 manager.spawn({ timeout: 240000 }).then(() => {
   logger.info(`Manager finished spawning clusters. Total clusters: ${manager.totalClusters}`)
@@ -65,52 +71,65 @@ function sendInfo() {
 
       await manager.broadcastEval(setPr, { context: { servers: serverSize } })
 
-      axios
-        .post('https://vk-api-v2.megaworld.space/metrics', {
-          token: process.env.API_TOKEN,
-          metrics: {
-            servers: serverSize,
-            serverShards: results
-            //lavalinkInfo
-          }
+      try {
+        const res = await fetch('https://vk-api-v2.megaworld.space/metrics', {
+          method: 'POST',
+          body: JSON.stringify({
+            token: process.env.API_TOKEN,
+            metrics: {
+              servers: serverSize,
+              serverShards: results
+              //lavalinkInfo
+            }
+          })
         })
-        .then((res) => {
-          if (res.data.status === 'error') {
+
+        const data = (await res.json()) as any
+
+        if (!res.ok) {
+          logger.error(`Send metrics error (http error). ${res.status}`)
+          return
+        }
+
+        if (data.status === 'error') {
+          logger.error('Error sending stats (server error)')
+        } else {
+          logger.info('Stats sent.')
+        }
+      } catch {
+        logger.error('Send metrics error (request error).')
+      }
+
+      manager.fetchClientValues('user.id').then(async (results) => {
+        const id = results[0]
+
+        try {
+          const res = await fetch(`https://api.server-discord.com/v2/bots/${id}/stats`, {
+            method: 'POST',
+            body: JSON.stringify({
+              servers: serverSize,
+              shards: manager.totalShards
+            }),
+            headers: {
+              Authorization: 'SDC ' + process.env.SDC_TOKEN
+            }
+          })
+
+          const data = (await res.json()) as any
+
+          if (!res.ok) {
+            logger.error(`Send stats error (http error). ${res.status}`)
+            return
+          }
+
+          if (data.error) {
             logger.error('Error sending stats (server error)')
           } else {
             logger.info('Stats sent.')
           }
-        })
-        .catch(() => {
+        } catch {
           logger.error('Error sending stats (connection error)')
-        })
-
-      manager.fetchClientValues('user.id').then((results) => {
-        const id = results[0]
-
-        axios
-          .post(
-            `https://api.server-discord.com/v2/bots/${id}/stats`,
-            {
-              servers: serverSize,
-              shards: manager.totalShards
-            },
-            {
-              headers: {
-                Authorization: 'SDC ' + process.env.SDC_TOKEN
-              }
-            }
-          )
-          .then((res) => {
-            if (res.data.error) {
-              logger.error('Error sending stats (server error)')
-            } else {
-              logger.info('Stats sent.')
-            }
-          })
-          .catch(() => {
-            logger.error('Error sending stats (connection error)')
-          })
+        }
       })
     })
     .catch((err) => {
@@ -118,19 +137,45 @@ function sendInfo() {
     })
 }
 
-process.stdin.resume()
+const app = express()
+const port = 8888
 
-function exitHandler(options: any, exitCode: number) {
-  if (options.cleanup) console.log('clean')
-  if (exitCode || exitCode === 0) console.log(exitCode)
-  if (options.exit) process.exit()
-}
+app.get('/api/restart', async (req, res) => {
+  manager.recluster?.start({ restartMode: 'rolling' })
+  res.json({ message: 'Restarting in process...' })
+})
 
-process.on('exit', exitHandler.bind(null, { cleanup: true }))
+app.get('/api/clear-queue', async (req, res) => {
+  function clearQueues(c: Client) {
+    const botClient = c as VkMusicBotClient
+    for (const player of botClient.manager.players.values()) {
+      player.destroy()
+      //player.queue.clear()
+    }
+  }
 
-//catches ctrl+c event
-process.on('SIGINT', exitHandler.bind(null, { exit: true }))
+  await manager.broadcastEval(clearQueues)
 
-// catches "kill pid" (for example: nodemon restart)
-process.on('SIGUSR1', exitHandler.bind(null, { exit: true }))
-process.on('SIGUSR2', exitHandler.bind(null, { exit: true }))
+  res.json({ message: 'All queues has been cleared.' })
+})
+
+app.listen(port, () => {
+  console.log(`Example app listening on port ${port}`)
+})
+
+// process.stdin.resume()
+//
+// function exitHandler(options: any, exitCode: number) {
+//   if (options.cleanup) console.log('clean')
+//   if (exitCode || exitCode === 0) console.log(exitCode)
+//   if (options.exit) process.exit()
+// }
+//
+// process.on('exit', exitHandler.bind(null, { cleanup: true }))
+//
+// //catches ctrl+c event
+// process.on('SIGINT', exitHandler.bind(null, { exit: true }))
+//
+// // catches "kill pid" (for example: nodemon restart)
+// process.on('SIGUSR1', exitHandler.bind(null, { exit: true }))
+// process.on('SIGUSR2', exitHandler.bind(null, { exit: true }))
