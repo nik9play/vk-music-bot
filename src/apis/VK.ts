@@ -1,4 +1,4 @@
-import axios from 'axios'
+import { fetch } from 'undici'
 
 export interface APIResponse {
   status: 'success' | 'error'
@@ -76,17 +76,26 @@ export default class VK {
     }
 
     try {
-      const res = await axios.get(`${process.env['DATMUSIC_URL']}${path}`, {
-        params: urlParams
-      })
+      // const res = await axios.get(`${process.env['DATMUSIC_URL']}${path}`, {
+      //   params: urlParams
+      // })
+      const res = await fetch(`${process.env['DATMUSIC_URL']}${path}?${urlParams}`)
+      const data = (await res.json()) as any
 
-      if (res.data.status === 'error') {
-        switch (res.data.error.code) {
+      if (!res.ok) {
+        return {
+          status: 'error',
+          type: 'request'
+        }
+      }
+
+      if (data.status === 'error') {
+        switch (data.error.code) {
           case 14:
             return {
               status: 'error',
               type: 'captcha',
-              error: res.data.error
+              error: data.error
             }
           case 201:
             return {
@@ -103,13 +112,13 @@ export default class VK {
         return {
           status: 'error',
           type: 'api',
-          error: res.data.error
+          error: data.error
         }
       }
 
       return {
         status: 'success',
-        data: res.data.data
+        data: data.data
       }
     } catch (ex) {
       return {
