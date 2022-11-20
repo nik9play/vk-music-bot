@@ -2,7 +2,7 @@ import pino from 'pino'
 
 const logger = pino(
   pino.destination({
-    minLength: 1024,
+    minLength: 256,
     sync: false
   })
 )
