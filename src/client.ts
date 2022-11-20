@@ -45,7 +45,6 @@ export class VkMusicBotClient extends Client {
 
     if (!process.env.MONGO_URL || !process.env.REDIS_URL) throw new Error('Env not set')
     this.db = new DB(process.env.MONGO_URL, process.env.REDIS_URL)
-    this.db.init()
 
     this.manager = new Manager({
       nodes: this.nodes,
@@ -58,8 +57,17 @@ export class VkMusicBotClient extends Client {
         logger.info({ shard: this.cluster.id }, `Node "${node.options.identifier}" connected.`)
       )
       .on('nodeError', (node, error) =>
-        logger.error(`Node "${node.options.identifier}" encountered an error: ${error.message}.`)
+        logger.error(
+          { shard: this.cluster.id },
+          `Node "${node.options.identifier}" encountered an error: ${error.message}.`
+        )
       )
+      .on('nodeDisconnect', (node) => {
+        logger.info({ shard: this.cluster.id }, `Node "${node.options.identifier}" disconnected.`)
+      })
+      .on('nodeReconnect', (node) => {
+        logger.info({ shard: this.cluster.id }, `Node "${node.options.identifier}" reconnected.`)
+      })
       .on('trackStart', async (player, track) => {
         if (!(await this.db.getDisableAnnouncements(player.guild))) {
           if (player.textChannel) {
@@ -188,5 +196,9 @@ export class VkMusicBotClient extends Client {
           })
         }
       })
+  }
+
+  async initDb() {
+    await this.db.init()
   }
 }

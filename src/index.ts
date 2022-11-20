@@ -37,18 +37,15 @@ const client = new VkMusicBotClient(
   nodes
 )
 
-const slashCommandManager = new SlashCommandManager(client)
-await slashCommandManager.init()
-
 client.once('ready', () => {
   client.manager.init(client.user?.id)
-  logger.info({ shard_id: client.cluster.id }, `Logged in as ${client.user?.tag}`)
+  logger.info({ shard_id: client.cluster.id }, `Logged in as ${client.user?.tag} successfully`)
 })
 
 client.on('raw', (d) => client.manager.updateVoiceState(d))
 
 client.on('guildDelete', (guild) => {
-  logger.info({ guild_id: guild.id, shard_id: client.cluster.id }, 'bot leaves')
+  logger.info({ guild_id: guild.id, shard_id: client.cluster.id }, 'Bot leaves')
   const player = client.manager.get(guild.id)
 
   if (player) player.destroy()
@@ -56,5 +53,12 @@ client.on('guildDelete', (guild) => {
   const timer = client.timers.get(guild.id)
   if (timer) clearTimeout(timer)
 })
+
+await client.initDb()
+logger.info('DB init done.')
+
+const slashCommandManager = new SlashCommandManager(client)
+await slashCommandManager.init()
+logger.info('Loading commands done.')
 
 await client.login(process.env.DISCORD_TOKEN)
