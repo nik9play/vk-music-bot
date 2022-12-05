@@ -4,3 +4,4 @@ dist
 src/commands/debug.ts
 src/slashCommands/debug.ts
 .idea
+.vscode
