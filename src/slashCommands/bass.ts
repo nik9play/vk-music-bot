@@ -1,5 +1,5 @@
-import { Command } from '../SlashCommandManager.js'
-import Utils, { ErrorMessageType } from '../Utils.js'
+import { Command } from '../slashCommandManager.js'
+import Utils, { ErrorMessageType } from '../utils.js'
 
 const levelTypes = ['выкл', 'слабый', 'средний', 'мощный']
 

@@ -1,8 +1,8 @@
 import { MessageEmbed, VoiceBasedChannel } from 'discord.js'
 import { Player } from 'erela.js-vk'
 import { VkMusicBotClient } from './client.js'
-import logger from './Logger.js'
-import { RespondFunction } from './SlashCommandManager.js'
+import logger from './logger.js'
+import { RespondFunction } from './slashCommandManager.js'
 
 export interface ArgType {
   type: 'group' | 'playlist' | 'user' | 'track' | 'unknown'

@@ -1,7 +1,7 @@
-import { playCommand } from '../helpers/PlayCommandHelper.js'
-import { searchCommand } from '../helpers/SearchCommandHelper.js'
-import { Command } from '../SlashCommandManager.js'
-import Utils, { ErrorMessageType } from '../Utils.js'
+import { playCommand } from '../helpers/playCommandHelper.js'
+import { searchCommand } from '../helpers/searchCommandHelper.js'
+import { Command } from '../slashCommandManager.js'
+import Utils, { ErrorMessageType } from '../utils.js'
 
 export default new Command({
   name: 'captcha',

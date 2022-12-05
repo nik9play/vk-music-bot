@@ -12,13 +12,13 @@ import {
   User,
   VoiceBasedChannel
 } from 'discord.js'
-import logger from './Logger.js'
+import logger from './logger.js'
 import { CaptchaInfo, VkMusicBotClient } from './client.js'
-import { playCommand } from './helpers/PlayCommandHelper.js'
-import Utils from './Utils.js'
+import { playCommand } from './helpers/playCommandHelper.js'
+import Utils from './utils.js'
 import glob from 'glob'
 import { promisify } from 'util'
-import { generateQueueResponse } from './helpers/QueueCommandHelper.js'
+import { generateQueueResponse } from './helpers/queueCommandHelper.js'
 
 const globPromise = promisify(glob)
 

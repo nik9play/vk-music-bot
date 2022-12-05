@@ -1,7 +1,7 @@
-import { CommandExecuteParams } from '../SlashCommandManager.js'
+import { CommandExecuteParams } from '../slashCommandManager.js'
 import VK, { APIResponse, ManyTracksResponse } from '../apis/VK.js'
-import logger from '../Logger.js'
-import Utils from '../Utils.js'
+import logger from '../logger.js'
+import Utils from '../utils.js'
 import { MessageActionRow, MessageButton } from 'discord.js'
 
 export async function searchCommand(params: CommandExecuteParams, queryParam: string) {

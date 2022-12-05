@@ -1,5 +1,5 @@
-import { Command } from '../SlashCommandManager.js'
-import { generateQueueResponse } from '../helpers/QueueCommandHelper.js'
+import { Command } from '../slashCommandManager.js'
+import { generateQueueResponse } from '../helpers/queueCommandHelper.js'
 import { InteractionReplyOptions } from 'discord.js'
 
 export default new Command({

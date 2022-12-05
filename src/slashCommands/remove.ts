@@ -1,6 +1,6 @@
-import { Command } from '../SlashCommandManager.js'
+import { Command } from '../slashCommandManager.js'
 import { Track, UnresolvedTrack } from 'erela.js-vk'
-import Utils, { ErrorMessageType } from '../Utils.js'
+import Utils, { ErrorMessageType } from '../utils.js'
 
 export default new Command({
   name: 'remove',

@@ -1,10 +1,10 @@
 import { Client, ClientOptions, Collection } from 'discord.js'
 import Cluster from 'discord-hybrid-sharding-vk'
 import { Manager, NodeOptions } from 'erela.js-vk'
-import Utils from './Utils.js'
-import logger from './Logger.js'
+import Utils from './utils.js'
+import logger from './logger.js'
 import DB from './DB.js'
-import { CommandType } from './SlashCommandManager.js'
+import { CommandType } from './slashCommandManager.js'
 import cross from 'discord-cross-ratelimit'
 const { RequestManager } = cross
 
@@ -86,9 +86,11 @@ export class VkMusicBotClient extends Client {
                   ]
                 })
 
-                setTimeout(() => {
-                  if (message && typeof message.delete === 'function') {
-                    message.delete().catch((err) => logger.error({ err }, "Can't delete message"))
+                setTimeout(async () => {
+                  try {
+                    await message.delete()
+                  } catch (err) {
+                    logger.error({ err }, "Can't delete message")
                   }
                 }, track.duration)
               } catch {
@@ -123,34 +125,6 @@ export class VkMusicBotClient extends Client {
         logger.info({ guild_id: player.guild, shard_id: this.cluster.id }, 'player destroyed')
       })
       .on('socketClosed', async (player, socket) => {
-        // reconnect on "Abnormal closure"
-        // if (socket.code == 1006) {
-        //   logger.warn({
-        //     guild_id: player.guild,
-        //     shard_id: this.cluster.id
-        //   }, 'caught Abnormal closure, trying to reconnect...')
-        //   const voiceChannel = player.voiceChannel
-        //   const textChannel = player.textChannel
-        //
-        //   try {
-        //     player.disconnect()
-        //   } catch {
-        //     //
-        //   }
-        //
-        //   if (voiceChannel && textChannel) {
-        //     setTimeout(() => {
-        //       player.setVoiceChannel(voiceChannel)
-        //       player.setTextChannel(textChannel)
-        //
-        //       player.connect()
-        //       setTimeout(() => {
-        //         player.pause(false)
-        //       }, 500)
-        //     }, 500)
-        //   }
-        // }
-
         logger.debug({ code: socket.code, guild_id: player.guild }, 'socket closed')
       })
       .on('trackStuck', (guildId) => {

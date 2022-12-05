@@ -1,4 +1,4 @@
-import { Command } from '../SlashCommandManager.js'
+import { Command } from '../slashCommandManager.js'
 
 export default new Command({
   name: 'donate',

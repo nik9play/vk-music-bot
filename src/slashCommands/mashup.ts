@@ -1,5 +1,5 @@
-import Utils, { ErrorMessageType } from '../Utils.js'
-import { Command } from '../SlashCommandManager.js'
+import Utils, { ErrorMessageType } from '../utils.js'
+import { Command } from '../slashCommandManager.js'
 
 export default new Command({
   name: 'mashup',

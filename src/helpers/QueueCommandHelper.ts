@@ -7,7 +7,7 @@ import {
   MessageButton,
   MessageEmbed
 } from 'discord.js'
-import Utils from '../Utils.js'
+import Utils from '../utils.js'
 import { Duration } from 'luxon'
 
 export function generateQueueResponse(
