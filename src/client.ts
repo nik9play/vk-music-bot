@@ -3,7 +3,7 @@ import Cluster from 'discord-hybrid-sharding-vk'
 import { Manager, NodeOptions } from 'erela.js-vk'
 import Utils from './utils.js'
 import logger from './logger.js'
-import BotConfigDb from './BotConfigDb.js'
+import BotConfigDb from './botConfigDb.js'
 import { CommandType } from './slashCommandManager.js'
 import cross from 'discord-cross-ratelimit'
 const { RequestManager } = cross
