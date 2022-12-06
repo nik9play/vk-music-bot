@@ -166,7 +166,7 @@ export class VkMusicBotClient extends Client {
             count: 1,
             timer: setTimeout(() => {
               this.playerTrackErrorTrackers.delete(player.guild)
-            }, 2000)
+            }, 30000)
           })
         }
       })
