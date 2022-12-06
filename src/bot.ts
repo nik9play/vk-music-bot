@@ -20,8 +20,6 @@ const nodes: NodeOptions[] = LavalinkServersString.split(';').map((val): NodeOpt
   }
 })
 
-console.log({ nodes })
-
 const client = new VkMusicBotClient(
   {
     makeCache: Options.cacheWithLimits({
@@ -36,23 +34,6 @@ const client = new VkMusicBotClient(
   },
   nodes
 )
-
-client.once('ready', () => {
-  client.manager.init(client.user?.id)
-  logger.info({ shard_id: client.cluster.id }, `Logged in as ${client.user?.tag} successfully`)
-})
-
-client.on('raw', (d) => client.manager.updateVoiceState(d))
-
-client.on('guildDelete', (guild) => {
-  logger.info({ guild_id: guild.id, shard_id: client.cluster.id }, 'Bot leaves')
-  const player = client.manager.get(guild.id)
-
-  if (player) player.destroy()
-
-  const timer = client.timers.get(guild.id)
-  if (timer) clearTimeout(timer)
-})
 
 await client.initDb()
 logger.info('DB initialized.')

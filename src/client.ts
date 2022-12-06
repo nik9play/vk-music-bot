@@ -46,6 +46,23 @@ export class VkMusicBotClient extends Client {
     if (!process.env.MONGO_URL || !process.env.REDIS_URL) throw new Error('Env not set')
     this.db = new DB(process.env.MONGO_URL, process.env.REDIS_URL)
 
+    this.once('ready', () => {
+      this.manager.init(this.user?.id)
+      logger.info({ shard_id: this.cluster.id }, `Logged in as ${this.user?.tag} successfully`)
+    })
+
+    this.on('guildDelete', (guild) => {
+      logger.info({ guild_id: guild.id, shard_id: this.cluster.id }, 'Bot leaves')
+      const player = this.manager.get(guild.id)
+
+      player?.destroy()
+
+      const timer = this.timers.get(guild.id)
+      if (timer) clearTimeout(timer)
+    })
+
+    this.on('raw', (d) => this.manager.updateVoiceState(d))
+
     this.manager = new Manager({
       nodes: this.nodes,
       send: (id, payload) => {
