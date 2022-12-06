@@ -1,6 +1,5 @@
 import { startShardManager } from './shardManager/manager.js'
 import { startApiServer } from './shardManager/api/apiServer.js'
-import * as util from 'util'
 import logger from './logger.js'
 
 startShardManager()
