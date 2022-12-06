@@ -3,7 +3,7 @@ import Cluster from 'discord-hybrid-sharding-vk'
 import { Manager, NodeOptions } from 'erela.js-vk'
 import Utils from './utils.js'
 import logger from './logger.js'
-import DB from './DB.js'
+import BotConfigDb from './BotConfigDb.js'
 import { CommandType } from './slashCommandManager.js'
 import cross from 'discord-cross-ratelimit'
 const { RequestManager } = cross
@@ -31,7 +31,7 @@ export class VkMusicBotClient extends Client {
   public captcha: Collection<string, CaptchaInfo> = new Collection()
   public timers: Collection<string, NodeJS.Timeout> = new Collection()
   public cluster: Cluster.Client = new Cluster.Client(this)
-  public db: DB
+  public db: BotConfigDb
   public nodes?: NodeOptions[]
   public manager: Manager
   public playerTrackErrorTrackers: Collection<string, PlayerTrackErrorTracker> = new Collection()
@@ -44,7 +44,7 @@ export class VkMusicBotClient extends Client {
     this.nodes = nodes
 
     if (!process.env.MONGO_URL || !process.env.REDIS_URL) throw new Error('Env not set')
-    this.db = new DB(process.env.MONGO_URL, process.env.REDIS_URL)
+    this.db = new BotConfigDb(process.env.MONGO_URL, process.env.REDIS_URL)
 
     this.once('ready', () => {
       this.manager.init(this.user?.id)

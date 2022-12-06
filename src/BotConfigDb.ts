@@ -2,7 +2,7 @@ import { Collection, Db, MongoClient } from 'mongodb'
 import { createClient, RedisClientType } from 'redis'
 import { Snowflake } from 'discord.js'
 
-export default class DB {
+export default class BotConfigDb {
   private readonly mongoURL: string
   private readonly redisURL: string
   private mongoClient: MongoClient
