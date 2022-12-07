@@ -30,7 +30,7 @@ export default new Command({
 
     let removedTracks: (Track | UnresolvedTrack)[] = []
 
-    const a = interaction.options.getString('треки') as string
+    const a = interaction.options.getString('треки', true)
 
     if (a.includes('-')) {
       const first = parseInt(a.split('-')[0])

@@ -13,7 +13,7 @@ export default new Command({
   execute: async (params) => {
     const captcha = params.client.captcha.get(params.guild.id)
     if (captcha) {
-      captcha.captcha_key = params.interaction.options.getString('код') as string
+      captcha.captcha_key = params.interaction.options.getString('код', true)
       params.captcha = captcha
 
       if (captcha.type === 'play') {

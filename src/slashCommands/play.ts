@@ -10,7 +10,7 @@ export default new Command({
   deferred: true,
   cooldown: 2,
   execute: async (params) => {
-    const query = params.interaction.options.getString('название') as string
+    const query = params.interaction.options.getString('название', true)
     const count = params.interaction.options.getInteger('количество')
     const offset = params.interaction.options.getInteger('отступ')
 

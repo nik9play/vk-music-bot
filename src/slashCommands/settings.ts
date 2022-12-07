@@ -10,7 +10,7 @@ export default new Command({
   execute: async ({ guild, client, respond, interaction }) => {
     const type = interaction.options.getSubcommand()
     if (type === 'prefix') {
-      const prefix = interaction.options.getString('префикс') as string
+      const prefix = interaction.options.getString('префикс', true)
       const length = prefix.length
 
       if (length < 1 || length > 5) {
@@ -30,7 +30,7 @@ export default new Command({
         ]
       })
     } else if (type === 'dj') {
-      const enable = interaction.options.getBoolean('включен') as boolean
+      const enable = interaction.options.getBoolean('включен', true)
 
       await client.db.setAccessRoleEnabled(enable, guild.id)
       await respond({
@@ -48,8 +48,8 @@ export default new Command({
         ]
       })
     } else if (type === 'djrole') {
-      const role = interaction.options.getRole('роль')
-      const name = role?.name as string
+      const role = interaction.options.getRole('роль', true)
+      const name = role.name
 
       if (name === '@everyone' || name === '@here') {
         await respond({
@@ -67,7 +67,7 @@ export default new Command({
         ]
       })
     } else if (type === 'announcements') {
-      const enable = interaction.options.getBoolean('включены')
+      const enable = interaction.options.getBoolean('включены', true)
 
       await client.db.setDisableAnnouncements(!enable, guild.id)
       await respond({
