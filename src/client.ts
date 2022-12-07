@@ -89,7 +89,7 @@ export class VkMusicBotClient extends Client {
         if (await this.db.get247(player.guild)) return
         if (!player?.voiceChannel) return
         const voiceChannel = this.channels.cache.get(player.voiceChannel)
-        if (!voiceChannel?.isVoice()) return
+        if (!voiceChannel?.isVoiceBased()) return
 
         const memberCount = voiceChannel.members.filter((member) => !member.user.bot).size
 
@@ -102,7 +102,7 @@ export class VkMusicBotClient extends Client {
           if (!player.textChannel) return
 
           const textChannel = this.channels.cache.get(player.textChannel)
-          if (!textChannel?.isText()) return
+          if (!textChannel?.isTextBased()) return
 
           try {
             const message = await textChannel.send({
@@ -131,7 +131,7 @@ export class VkMusicBotClient extends Client {
           if (player.textChannel) {
             const channel = this.channels.cache.get(player.textChannel)
 
-            if (channel?.isText() && track?.author && track?.title) {
+            if (channel?.isTextBased() && track?.author && track?.title) {
               try {
                 const message = await channel.send({
                   embeds: [
@@ -163,7 +163,7 @@ export class VkMusicBotClient extends Client {
         if (!(await this.db.get247(player.guild)))
           if (player) {
             logger.info({ guild_id: player.guild, shard_id: this.cluster.id }, 'set timeout')
-            this.timers.set(player.guild, Utils.getExitTimeout(player, this))
+            this.timers.set(player.guild, Utils.getExitTimeout(player))
           }
       })
       .on('playerMove', (player, initChannel, newChannel) => {

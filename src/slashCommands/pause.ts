@@ -39,7 +39,7 @@ export default new Command({
       return
     }
 
-    if (!(await client.db.get247(guild.id))) client.timers.set(guild.id, Utils.getExitTimeout(player, client))
+    if (!(await client.db.get247(guild.id))) client.timers.set(guild.id, Utils.getExitTimeout(player))
 
     await respond({
       embeds: [Utils.generateErrorMessage('⏸️ Пауза поставлена.', ErrorMessageType.NoTitle)]

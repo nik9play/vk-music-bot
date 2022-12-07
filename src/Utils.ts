@@ -1,6 +1,5 @@
-import { MessageEmbed, VoiceBasedChannel } from 'discord.js'
+import { EmbedBuilder, VoiceBasedChannel } from 'discord.js'
 import { Player } from 'erela.js-vk'
-import { VkMusicBotClient } from './client.js'
 import logger from './logger.js'
 import { RespondFunction } from './slashCommandManager.js'
 
@@ -128,7 +127,7 @@ export default class Utils {
     message: string,
     type: ErrorMessageType = ErrorMessageType.Error,
     escapeFormatting = false
-  ): MessageEmbed {
+  ): EmbedBuilder {
     let title
     let color
 
@@ -154,7 +153,7 @@ export default class Utils {
       message = this.escapeFormat(message)
     }
 
-    return new MessageEmbed({
+    return new EmbedBuilder({
       description: `${title}\n${message}`,
       color
     })
@@ -164,13 +163,13 @@ export default class Utils {
     return `&r=${Math.random().toString(36).substring(2, 15)}`
   }
 
-  public static getExitTimeout(player: Player, client: VkMusicBotClient): NodeJS.Timeout {
+  public static getExitTimeout(player: Player): NodeJS.Timeout {
     logger.info(`Exit timeout set ${player.guild}`)
 
     return setTimeout(async () => {
       if (player) {
         player.destroy()
-        console.log(client)
+        //console.log(client)
 
         // if (player.textChannel == null) return
 

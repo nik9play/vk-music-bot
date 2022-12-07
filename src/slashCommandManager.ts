@@ -1,5 +1,7 @@
 import {
+  BaseMessageOptions,
   ButtonInteraction,
+  ChatInputCommandInteraction,
   CommandInteraction,
   Guild,
   GuildMember,
@@ -7,8 +9,7 @@ import {
   InteractionReplyOptions,
   InteractionUpdateOptions,
   Message,
-  MessageOptions,
-  Permissions,
+  PermissionsBitField,
   TextBasedChannel,
   User,
   VoiceBasedChannel
@@ -45,8 +46,8 @@ export class Command {
   }
 }
 
-export type RespondFunction = (data: MessageOptions | InteractionReplyOptions, timeout?: number) => Promise<void>
-export type SendFunction = (data: MessageOptions, timeout?: number) => Promise<void>
+export type RespondFunction = (data: BaseMessageOptions | InteractionReplyOptions, timeout?: number) => Promise<void>
+export type SendFunction = (data: BaseMessageOptions, timeout?: number) => Promise<void>
 
 export interface CommandExecuteParams {
   guild: Guild
@@ -54,7 +55,7 @@ export interface CommandExecuteParams {
   voice?: VoiceBasedChannel | null
   text: TextBasedChannel
   client: VkMusicBotClient
-  interaction: CommandInteraction
+  interaction: ChatInputCommandInteraction
   respond: RespondFunction
   send: SendFunction
   message?: Message
@@ -128,7 +129,7 @@ export default class {
       guild_id: guild?.id
     }
 
-    const respond = async (data: MessageOptions | InteractionReplyOptions, timeout?: number): Promise<void> => {
+    const respond = async (data: BaseMessageOptions | InteractionReplyOptions, timeout?: number): Promise<void> => {
       if (interaction.deferred) {
         await interaction.editReply(data).catch((err) => logger.error({ err, ...meta }, "Can't edit reply"))
         return
@@ -152,15 +153,15 @@ export default class {
       }
     }
 
-    const send = async (data: MessageOptions, timeout?: number): Promise<void> => {
-      if (!text.permissionsFor(this.client.user as User)?.has(Permissions.FLAGS.SEND_MESSAGES)) return
+    const send = async (data: BaseMessageOptions, timeout?: number): Promise<void> => {
+      if (!text.permissionsFor(this.client.user as User)?.has(PermissionsBitField.Flags.SendMessages)) return
 
       try {
         const message = await text.send(data)
 
         if (timeout) {
           setTimeout(async () => {
-            if (!message.channel.isText()) return
+            if (!message.channel.isTextBased()) return
 
             try {
               if (message.deletable) await message.delete()
@@ -175,6 +176,8 @@ export default class {
     }
 
     if (interaction.isCommand()) {
+      if (!interaction.isChatInputCommand()) return
+
       const command = this.client.commands.get(interaction.commandName)
 
       if (!command) {
@@ -188,7 +191,7 @@ export default class {
       if (command.deferred && !interaction.deferred) await interaction.deferReply()
 
       // проверка на админа
-      if (command.adminOnly && !member.permissions.has(Permissions.FLAGS.MANAGE_GUILD)) {
+      if (command.adminOnly && !member.permissions.has(PermissionsBitField.Flags.ManageGuild)) {
         await respond({
           embeds: [
             Utils.generateErrorMessage(
@@ -205,7 +208,7 @@ export default class {
         const djRole = await this.client.db.getAccessRole(guild.id)
 
         if (
-          !member.permissions.has(Permissions.FLAGS.MANAGE_GUILD) &&
+          !member.permissions.has(PermissionsBitField.Flags.ManageGuild) &&
           !member.roles.cache.some((role) => role.name === djRole)
         ) {
           await respond({

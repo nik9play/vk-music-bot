@@ -1,11 +1,11 @@
 import { Player } from 'erela.js-vk'
 import {
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  EmbedBuilder,
   InteractionReplyOptions,
-  InteractionUpdateOptions,
-  MessageActionRow,
-  MessageActionRowComponentResolvable,
-  MessageButton,
-  MessageEmbed
+  InteractionUpdateOptions
 } from 'discord.js'
 import Utils from '../utils.js'
 import { Duration } from 'luxon'
@@ -22,7 +22,7 @@ export function generateQueueResponse(
     }
 
   const queue = player.queue
-  const embed = new MessageEmbed().setAuthor({ name: 'Треки в очереди' }).setColor(0x5181b8)
+  const embed = new EmbedBuilder().setAuthor({ name: 'Треки в очереди' }).setColor(0x5181b8)
 
   const multiple = 10
   page = page < 0 ? 1 : page
@@ -56,30 +56,30 @@ export function generateQueueResponse(
     text: `Страница ${page > maxPages ? maxPages : page} из ${maxPages}`
   })
 
-  const buttons: MessageActionRowComponentResolvable[] = []
+  const buttons = []
 
   if (page - 1 > 0) {
     buttons.push(
-      new MessageButton()
+      new ButtonBuilder()
         .setCustomId(`queue_${page - 1}`)
         .setEmoji('◀️')
-        .setStyle('PRIMARY')
+        .setStyle(ButtonStyle.Primary)
     )
   }
 
   if (page + 1 <= maxPages) {
     buttons.push(
-      new MessageButton()
+      new ButtonBuilder()
         .setCustomId(`queue_${page + 1}`)
         .setEmoji('▶️')
-        .setStyle('PRIMARY')
+        .setStyle(ButtonStyle.Primary)
     )
   }
 
   const components = []
 
   if (buttons.length > 0) {
-    const row = new MessageActionRow().addComponents(buttons)
+    const row = new ActionRowBuilder<ButtonBuilder>().addComponents(buttons)
     components.push(row)
   }
 

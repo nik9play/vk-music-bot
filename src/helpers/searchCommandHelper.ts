@@ -2,7 +2,7 @@ import { CommandExecuteParams } from '../slashCommandManager.js'
 import VK, { APIResponse, ManyTracksResponse } from '../apis/VK.js'
 import logger from '../logger.js'
 import Utils from '../utils.js'
-import { MessageActionRow, MessageButton } from 'discord.js'
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js'
 
 export async function searchCommand(params: CommandExecuteParams, queryParam: string) {
   const { guild, client, captcha, respond, meta } = params
@@ -69,14 +69,14 @@ export async function searchCommand(params: CommandExecuteParams, queryParam: st
 
   let description = ''
 
-  const buttonRow = new MessageActionRow()
+  const buttonRow = new ActionRowBuilder<ButtonBuilder>()
   buttonRow.addComponents(
     reqTracks.tracks.map((value, index) => {
       description += `${index + 1}. ${value.author} — ${value.title}\n`
-      return new MessageButton()
+      return new ButtonBuilder()
         .setLabel((index + 1).toString())
         .setCustomId('search,' + value.id)
-        .setStyle('PRIMARY')
+        .setStyle(ButtonStyle.Primary)
     })
   )
 

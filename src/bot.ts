@@ -1,4 +1,4 @@
-import { Intents, Options } from 'discord.js'
+import { Options, GatewayIntentBits, Partials } from 'discord.js'
 import { VkMusicBotClient } from './client.js'
 import Cluster from 'discord-hybrid-sharding-vk'
 
@@ -23,14 +23,14 @@ const nodes: NodeOptions[] = LavalinkServersString.split(';').map((val): NodeOpt
 const client = new VkMusicBotClient(
   {
     makeCache: Options.cacheWithLimits({
-      ...Options.defaultMakeCacheSettings,
+      ...Options.DefaultMakeCacheSettings,
       MessageManager: 50,
       PresenceManager: 0,
       ThreadManager: 20
     }),
     shards: Cluster.Client.getInfo().SHARD_LIST,
     shardCount: Cluster.Client.getInfo().TOTAL_SHARDS,
-    intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_VOICE_STATES, Intents.FLAGS.GUILD_MESSAGES]
+    intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildVoiceStates, GatewayIntentBits.GuildMessages]
   },
   nodes
 )

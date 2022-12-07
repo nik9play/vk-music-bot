@@ -1,3 +1,4 @@
+import { ChannelType } from 'discord.js'
 import { Command } from '../slashCommandManager.js'
 import Utils, { ErrorMessageType } from '../utils.js'
 
@@ -27,14 +28,15 @@ export default new Command({
     //if (channel.id !== player.voiceChannel) return message.reply("вы находитесь не в том голосовом канале.")
 
     let textChannel = text
-    const channelParam = interaction.options.getChannel('канал')
+    const channelParam = interaction.options.getChannel('канал', true)
+    const channel = client.channels.cache.get(channelParam?.id)
 
-    if (channelParam) {
+    if (channel) {
       if (
-        channelParam.type !== 'GUILD_TEXT' &&
-        channelParam.type !== 'GUILD_VOICE' &&
-        channelParam.type !== 'GUILD_PUBLIC_THREAD' &&
-        channelParam.type !== 'GUILD_PRIVATE_THREAD'
+        channel.type !== ChannelType.GuildText &&
+        channel.type !== ChannelType.GuildVoice &&
+        channel.type !== ChannelType.PublicThread &&
+        channel.type !== ChannelType.PrivateThread
       ) {
         await respond({
           embeds: [Utils.generateErrorMessage('Необходимо указать текстовый канал.', ErrorMessageType.Error)]
@@ -42,18 +44,11 @@ export default new Command({
         return
       }
 
-      if (channelParam.isText()) {
-        if (channelParam.guild.id === guild.id) {
-          textChannel = channelParam
-        } else {
-          await respond({
-            embeds: [Utils.generateErrorMessage('Необходимо указать текстовый канал.', ErrorMessageType.Error)]
-          })
-          return
-        }
+      if (channel.guild.id === guild.id) {
+        textChannel = channel
       } else {
         await respond({
-          embeds: [Utils.generateErrorMessage('Не удалось найти такой канал.', ErrorMessageType.Error)]
+          embeds: [Utils.generateErrorMessage('Необходимо указать текстовый канал.', ErrorMessageType.Error)]
         })
         return
       }

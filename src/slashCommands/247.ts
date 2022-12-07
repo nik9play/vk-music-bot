@@ -25,7 +25,7 @@ export default new Command({
       })
       const player = client.manager.get(guild.id)
       if (player)
-        if (player.paused || player.queue.length == 0) client.timers.set(guild.id, Utils.getExitTimeout(player, client))
+        if (player.paused || player.queue.length == 0) client.timers.set(guild.id, Utils.getExitTimeout(player))
     }
   }
 })
