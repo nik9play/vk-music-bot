@@ -1,7 +1,7 @@
-import { Client, ClientOptions, Collection } from 'discord.js'
+import { Client, ClientOptions, Collection, VoiceChannel } from 'discord.js'
 import Cluster from 'discord-hybrid-sharding-vk'
 import { Manager, NodeOptions } from 'erela.js-vk'
-import Utils from './utils.js'
+import Utils, { ErrorMessageType } from './utils.js'
 import logger from './logger.js'
 import BotConfigDb from './botConfigDb.js'
 import { CommandType } from './slashCommandManager.js'
@@ -85,6 +85,47 @@ export class VkMusicBotClient extends Client {
       .on('nodeReconnect', (node) => {
         logger.info({ shard: this.cluster.id }, `Node "${node.options.identifier}" reconnected.`)
       })
+      .on('trackEnd', async (player, track, payload) => {
+        if (await this.db.get247(player.guild)) return
+        if (!player?.voiceChannel) return
+        const voiceChannel = this.channels.cache.get(player.voiceChannel)
+        if (!voiceChannel?.isVoice()) return
+
+        const memberCount = voiceChannel.members.filter((member) => !member.user.bot).size
+
+        logger.info({ memberCount })
+
+        if (memberCount === 0) {
+          player.queue.clear()
+          player.stop()
+
+          if (!player.textChannel) return
+
+          const textChannel = this.channels.cache.get(player.textChannel)
+          if (!textChannel?.isText()) return
+
+          try {
+            const message = await textChannel.send({
+              embeds: [
+                Utils.generateErrorMessage(
+                  'Бот скоро выйдет из канала, так как в нём никого нет. Если хотите, чтобы бот оставался, приобретите **Премиум** и включите режим 24/7. Подробности: `/donate`.',
+                  ErrorMessageType.Info
+                )
+              ]
+            })
+
+            setTimeout(async () => {
+              try {
+                if (message.deletable) await message.delete()
+              } catch (err) {
+                logger.error({ err }, "Can't delete message")
+              }
+            }, 30000)
+          } catch {
+            logger.error("Can't send message")
+          }
+        }
+      })
       .on('trackStart', async (player, track) => {
         if (!(await this.db.getDisableAnnouncements(player.guild))) {
           if (player.textChannel) {
@@ -105,7 +146,7 @@ export class VkMusicBotClient extends Client {
 
                 setTimeout(async () => {
                   try {
-                    await message.delete()
+                    if (message.deletable) await message.delete()
                   } catch (err) {
                     logger.error({ err }, "Can't delete message")
                   }
@@ -125,8 +166,9 @@ export class VkMusicBotClient extends Client {
             this.timers.set(player.guild, Utils.getExitTimeout(player, this))
           }
       })
-      .on('playerMove', (player) => {
+      .on('playerMove', (player, initChannel, newChannel) => {
         logger.info({ guild_id: player.guild, shard_id: this.cluster.id }, 'moved player')
+        logger.info({ cur: player.voiceChannel, initChannel, newChannel })
         player.pause(true)
         setTimeout(() => player.pause(false), 2000)
       })
