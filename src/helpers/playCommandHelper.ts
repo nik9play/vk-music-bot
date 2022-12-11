@@ -76,7 +76,7 @@ export async function playCommand(
   const timer = client.timers.get(guild.id)
   if (timer) clearTimeout(timer)
 
-  const search = queryParam as string
+  const search = queryParam.trim()
 
   const count = countParam ?? 10
   let offset = offsetParam ?? 1
