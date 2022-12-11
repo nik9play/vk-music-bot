@@ -158,7 +158,7 @@ export default class VK {
    * Получить первый трек из поиска либо трек по ID
    */
   static async GetOne(opts: any): Promise<APIResponse | OneTrackResponse> {
-    if (/^-?[0-9]+_[0-9]+$/g.test(opts.q)) {
+    if (/^-?[0-9]+_[0-9]+_?[A-Za-z0-9]+$/g.test(opts.q)) {
       return await this.tryID(opts)
     }
 
