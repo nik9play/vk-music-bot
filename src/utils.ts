@@ -35,7 +35,8 @@ export default class Utils {
   private static urlRegex2 = /audio_playlist([0-9]+)(_|\/)([0-9]+)((_|\/)([A-Za-z0-9]*))?/
 
   public static parsePlaylistURL(url: URL): PlaylistURL | null {
-    const match1 = url.pathname.match(this.urlRegex1)
+    const match1 = url.toString().match(this.urlRegex1)
+
     if (match1)
       return {
         id: match1[3],
@@ -43,7 +44,8 @@ export default class Utils {
         access_key: match1[5]
       }
 
-    const match2 = url.pathname.match(this.urlRegex2)
+    const match2 = url.toString().match(this.urlRegex2)
+
     if (match2)
       return {
         id: match2[3],
@@ -168,7 +170,7 @@ export default class Utils {
     return setTimeout(async () => {
       if (player) {
         player.destroy()
-        console.log(client)
+        //console.log(client)
 
         // if (player.textChannel == null) return
 

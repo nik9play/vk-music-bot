@@ -103,8 +103,8 @@ export async function playCommand(
       break
     case 'playlist':
       req = await VK.getPlaylist({
-        owner_id: arg.id,
-        album_id: arg.owner_id,
+        owner_id: arg.owner_id,
+        album_id: arg.id,
         count,
         offset,
         access_key: arg.access_key,
