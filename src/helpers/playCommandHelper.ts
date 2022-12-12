@@ -96,7 +96,7 @@ export async function playCommand(
   switch (arg.type) {
     case 'track':
       req = await VK.GetOne({
-        q: search,
+        q: arg.query,
 
         ...query
       })

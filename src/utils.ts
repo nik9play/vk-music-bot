@@ -6,6 +6,7 @@ import { RespondFunction } from './slashCommandManager.js'
 
 export interface ArgType {
   type: 'group' | 'playlist' | 'user' | 'track' | 'unknown'
+  query?: string
   id?: string
   owner_id?: string
   access_key?: string
@@ -68,6 +69,16 @@ export default class Utils {
       try {
         const url = new URL(arg)
 
+        const trackRegex = /\/audio([0-9]+)_([0-9]+)(_([A-Za-z0-9]*))?/
+
+        const match = arg.match(trackRegex)
+        if (match) {
+          return {
+            type: 'track',
+            query: `${match[1]}_${match[2]}${match[4] ? '_' + match[4] : ''}`
+          }
+        }
+
         if (!url.searchParams.has('z')) {
           if (url.pathname.startsWith('/audios-') && !url.searchParams.has('z'))
             return {
@@ -98,7 +109,8 @@ export default class Utils {
         }
       } catch {
         return {
-          type: 'track'
+          type: 'track',
+          query: arg
         }
       }
     }
