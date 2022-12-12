@@ -103,11 +103,11 @@ export async function playCommand(
       break
     case 'playlist':
       req = await VK.GetPlaylist({
-        owner_id: arg.parsedURL?.id?.split('_')[0],
-        album_id: arg.parsedURL?.id?.split('_')[1],
+        owner_id: arg.id,
+        album_id: arg.owner_id,
         count,
         offset,
-        access_key: arg.parsedURL?.access_key,
+        access_key: arg.access_key,
 
         ...query
       })
@@ -115,7 +115,7 @@ export async function playCommand(
     case 'group':
     case 'user':
       req = await VK.GetUser({
-        owner_id: arg.id,
+        owner_id: arg.owner_id,
         count,
         offset,
 

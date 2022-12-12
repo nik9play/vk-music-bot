@@ -7,12 +7,14 @@ import { RespondFunction } from './slashCommandManager.js'
 export interface ArgType {
   type: 'group' | 'playlist' | 'user' | 'track' | 'unknown'
   id?: string
-  parsedURL?: PlaylistURL
+  owner_id?: string
+  access_key?: string
 }
 
 export interface PlaylistURL {
-  id: string | null
-  access_key: string | null
+  id?: string
+  owner_id?: string
+  access_key?: string
 }
 
 export enum ErrorMessageType {
@@ -28,50 +30,39 @@ export default class Utils {
     return titles[number % 100 > 4 && number % 100 < 20 ? 2 : cases[number % 10 < 5 ? number % 10 : 5]]
   }
 
-  public static parsePlaylistURL(url: URL): PlaylistURL {
-    if (url.pathname.includes('/music/playlist/') || url.pathname.includes('/music/album/')) {
-      const query = url.pathname.split('/')[3]
-      let id = null,
-        access_key = null
+  public static parsePlaylistURL(url: URL): PlaylistURL | null {
+    const urlRegex1 = /\/music\/(playlist|album)\/([0-9]+)_([0-9]+)(_([A-Za-z0-9]*))?/
+    const urlRegex2 = /audio_playlist([0-9]+)(_|\/)([0-9]+)((_|\/)([A-Za-z0-9]*))?/
 
-      if (query) {
-        const queryArr = query.split('_')
-
-        id = `${queryArr[0]}_${queryArr[1]}`
-        access_key = queryArr[2]
-      }
-
+    const match1 = url.pathname.match(urlRegex1)
+    if (match1)
       return {
-        id,
-        access_key
-      }
-    } else {
-      const query = url.searchParams.get('z')
-      let id = null,
-        access_key = null
-
-      if (query) {
-        id = query.split('/')[0].replace('audio_playlist', '')
-        access_key = query.split('/')[1]
+        id: match1[3],
+        owner_id: match1[2],
+        access_key: match1[5]
       }
 
+    const match2 = url.pathname.match(urlRegex2)
+    if (match2)
       return {
-        id,
-        access_key
+        id: match2[3],
+        owner_id: match2[1],
+        access_key: url.searchParams.get('access_key') ?? match2[6]
       }
-    }
+
+    return null
   }
 
   public static detectArgType(arg: string): ArgType {
     if (arg.startsWith('>-')) {
       return {
         type: 'group',
-        id: arg.slice(1)
+        owner_id: arg.slice(1)
       }
     } else if (arg.startsWith('>')) {
       return {
         type: 'user',
-        id: arg.slice(1)
+        owner_id: arg.slice(1)
       }
     } else {
       try {
@@ -81,26 +72,19 @@ export default class Utils {
           if (url.pathname.startsWith('/audios-') && !url.searchParams.has('z'))
             return {
               type: 'group',
-              id: url.pathname.slice(7)
+              owner_id: url.pathname.slice(7)
             }
 
           if (url.pathname.startsWith('/audios') && !url.searchParams.has('z'))
             return {
               type: 'user',
-              id: url.pathname.slice(7)
+              owner_id: url.pathname.slice(7)
             }
         }
 
-        // if (url.searchParams.has("w")) {
-        //   return {
-        //     type: "wall",
-        //     id: url.get("w").slice(4)
-        //   }
-        // }
-
         const parsedURL = this.parsePlaylistURL(url)
 
-        if (!parsedURL.id) {
+        if (!parsedURL || !parsedURL.id || !parsedURL.owner_id) {
           return {
             type: 'unknown'
           }
@@ -108,7 +92,9 @@ export default class Utils {
 
         return {
           type: 'playlist',
-          parsedURL
+          id: parsedURL.id,
+          owner_id: parsedURL.owner_id,
+          access_key: parsedURL.access_key
         }
       } catch {
         return {
