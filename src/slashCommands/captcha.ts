@@ -12,8 +12,12 @@ export default new Command({
   cooldown: 5,
   execute: async (params) => {
     const captcha = params.client.captcha.get(params.guild.id)
+
     if (captcha) {
+      params.client.captcha.delete(params.guild.id)
+
       captcha.captcha_key = params.interaction.options.getString('код', true)
+
       params.captcha = captcha
 
       if (captcha.type === 'play') {
@@ -23,8 +27,6 @@ export default new Command({
       if (captcha.type === 'search') {
         await searchCommand(params, captcha.query)
       }
-
-      params.client.captcha.delete(params.guild.id)
     } else {
       await params.respond({
         embeds: [Utils.generateErrorMessage('В данный момент капчу вводить не надо.', ErrorMessageType.Info)],

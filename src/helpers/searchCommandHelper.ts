@@ -22,7 +22,7 @@ export async function searchCommand(params: CommandExecuteParams, queryParam: st
   })
 
   if (req.status === 'error') {
-    logger.warn({ req, ...meta }, 'VK Request error: %O')
+    logger.warn({ req, ...meta }, 'VK Request error')
 
     const reqError = req as APIResponse
 
@@ -38,8 +38,8 @@ export async function searchCommand(params: CommandExecuteParams, queryParam: st
       const captcha = client.captcha.get(guild.id)
       const embed = {
         description:
-          'Ошибка! Требуется капча. Введите команду `/captcha`, а после код с картинки.' +
-          `Если картинки не видно, перейдите по [ссылке](${captcha?.url})`,
+          'Ошибка! Требуется капча. Введите команду `/captcha`, а после код с картинки. ' +
+          `Если картинки не видно, перейдите по [ссылке](${captcha?.url})  (только один раз).`,
         color: 0x5181b8,
         image: {
           url: captcha?.url + Utils.generateRandomCaptchaString()
