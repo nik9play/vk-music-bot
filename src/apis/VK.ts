@@ -157,7 +157,7 @@ export default class VK {
   /**
    * Получить первый трек из поиска либо трек по ID
    */
-  static async GetOne(opts: any): Promise<APIResponse | OneTrackResponse> {
+  static async getOne(opts: any): Promise<APIResponse | OneTrackResponse> {
     if (/^-?[0-9]+_[0-9]+_?[A-Za-z0-9]+$/g.test(opts.q)) {
       return await this.tryID(opts)
     }
@@ -190,7 +190,7 @@ export default class VK {
   /**
    * Получение треков из плейлиста по ID создателя и ID плейлиста
    */
-  static async GetPlaylist(opts: any): Promise<APIResponse | PlaylistResponse> {
+  static async getPlaylist(opts: any): Promise<APIResponse | PlaylistResponse> {
     const res = await this.sendRequest(`albums/${opts.album_id}`, opts)
     if (res.status === 'error') {
       return res
@@ -239,7 +239,7 @@ export default class VK {
   /**
    * Получение треков пользователя или группы по ID
    */
-  static async GetUser(opts: any): Promise<APIResponse | UserResponse> {
+  static async getUser(opts: any): Promise<APIResponse | UserResponse> {
     let res
 
     if (opts.owner_id.startsWith('-')) {
@@ -299,7 +299,7 @@ export default class VK {
   /**
    * Получение 5 треков по запросу
    */
-  static async GetMany(opts: any): Promise<APIResponse | ManyTracksResponse> {
+  static async getMany(opts: any): Promise<APIResponse | ManyTracksResponse> {
     opts.count = 5
 
     const res = await this.sendRequest('search', opts)

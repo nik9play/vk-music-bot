@@ -31,11 +31,11 @@ export default class Utils {
     return titles[number % 100 > 4 && number % 100 < 20 ? 2 : cases[number % 10 < 5 ? number % 10 : 5]]
   }
 
-  public static parsePlaylistURL(url: URL): PlaylistURL | null {
-    const urlRegex1 = /\/music\/(playlist|album)\/([0-9]+)_([0-9]+)(_([A-Za-z0-9]*))?/
-    const urlRegex2 = /audio_playlist([0-9]+)(_|\/)([0-9]+)((_|\/)([A-Za-z0-9]*))?/
+  private static urlRegex1 = /\/music\/(playlist|album)\/([0-9]+)_([0-9]+)(_([A-Za-z0-9]*))?/
+  private static urlRegex2 = /audio_playlist([0-9]+)(_|\/)([0-9]+)((_|\/)([A-Za-z0-9]*))?/
 
-    const match1 = url.pathname.match(urlRegex1)
+  public static parsePlaylistURL(url: URL): PlaylistURL | null {
+    const match1 = url.pathname.match(this.urlRegex1)
     if (match1)
       return {
         id: match1[3],
@@ -43,7 +43,7 @@ export default class Utils {
         access_key: match1[5]
       }
 
-    const match2 = url.pathname.match(urlRegex2)
+    const match2 = url.pathname.match(this.urlRegex2)
     if (match2)
       return {
         id: match2[3],
@@ -53,6 +53,8 @@ export default class Utils {
 
     return null
   }
+
+  private static trackRegex = /\/audio([0-9]+)_([0-9]+)(_([A-Za-z0-9]*))?/
 
   public static detectArgType(arg: string): ArgType {
     if (arg.startsWith('>-')) {
@@ -69,9 +71,7 @@ export default class Utils {
       try {
         const url = new URL(arg)
 
-        const trackRegex = /\/audio([0-9]+)_([0-9]+)(_([A-Za-z0-9]*))?/
-
-        const match = arg.match(trackRegex)
+        const match = arg.match(this.trackRegex)
         if (match) {
           return {
             type: 'track',

@@ -15,7 +15,7 @@ export async function searchCommand(params: CommandExecuteParams, queryParam: st
     query.captcha_index = captcha.index
   }
 
-  const req = await VK.GetMany({
+  const req = await VK.getMany({
     q: queryParam,
 
     ...query

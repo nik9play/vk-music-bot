@@ -95,14 +95,14 @@ export async function playCommand(
 
   switch (arg.type) {
     case 'track':
-      req = await VK.GetOne({
+      req = await VK.getOne({
         q: arg.query,
 
         ...query
       })
       break
     case 'playlist':
-      req = await VK.GetPlaylist({
+      req = await VK.getPlaylist({
         owner_id: arg.id,
         album_id: arg.owner_id,
         count,
@@ -114,7 +114,7 @@ export async function playCommand(
       break
     case 'group':
     case 'user':
-      req = await VK.GetUser({
+      req = await VK.getUser({
         owner_id: arg.owner_id,
         count,
         offset,
