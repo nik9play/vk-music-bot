@@ -37,7 +37,7 @@ export default new Command({
         channelParam.type !== 'GUILD_PRIVATE_THREAD'
       ) {
         await respond({
-          embeds: [Utils.generateErrorMessage('Необходимо указать текстовый канал.', ErrorMessageType.Error)]
+          embeds: [Utils.generateErrorMessage('Тип канала не подходит.', ErrorMessageType.Error)]
         })
         return
       }
