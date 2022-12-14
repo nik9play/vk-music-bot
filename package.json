@@ -16,6 +16,7 @@
   "dependencies": {
     "@sinclair/typebox": "^0.25.10",
     "bufferutil": "^4.0.3",
+    "dayjs": "^1.11.7",
     "discord-cross-ratelimit": "^0.0.4",
     "discord-hybrid-sharding-vk": "github:nik9play/discord-hybrid-sharding",
     "discord.js": "^13.6.0",
@@ -24,7 +25,6 @@
     "express": "^4.18.2",
     "fastify": "^4.10.2",
     "glob": "^8.0.1",
-    "luxon": "^2.3.2",
     "mongodb": "^4.5.0",
     "pino": "^8.1.0",
     "redis": "^4.0.6",

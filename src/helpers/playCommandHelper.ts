@@ -3,7 +3,8 @@ import Utils, { ErrorMessageType } from '../utils.js'
 import { User } from 'discord.js'
 import logger from '../logger.js'
 import VK, { APIResponse, GroupInfo, OneTrackResponse, PlaylistResponse, UserResponse } from '../apis/VK.js'
-import { Duration } from 'luxon'
+import dayjs from 'dayjs'
+
 import { Player, TrackUtils } from 'erela.js-vk'
 
 async function fillQueue(newArray: OneTrackResponse[], player: Player, wrongTracks: OneTrackResponse[]) {
@@ -223,7 +224,7 @@ export async function playCommand(
       fields: [
         {
           name: 'Длительность',
-          value: Duration.fromObject({ seconds: req.duration }).toFormat('mm:ss')
+          value: dayjs(0).second(req.duration).format('mm:ss')
         }
       ]
     }

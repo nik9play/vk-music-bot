@@ -8,7 +8,7 @@ import {
   MessageEmbed
 } from 'discord.js'
 import Utils from '../utils.js'
-import { Duration } from 'luxon'
+import dayjs from 'dayjs'
 
 export function generateQueueResponse(
   page: number,
@@ -35,9 +35,11 @@ export function generateQueueResponse(
   if (queue.current)
     embed.addFields({
       name: 'Сейчас играет',
-      value: `${queue.current.author} — ${queue.current.title} (${Duration.fromMillis(player.position).toFormat(
-        'mm:ss'
-      )}/${Duration.fromMillis(queue.current.duration ?? 0).toFormat('mm:ss')})`
+      value: `${queue.current.author} — ${queue.current.title} (${dayjs(0)
+        .millisecond(player.position)
+        .format('mm:ss')}/${dayjs(0)
+        .millisecond(queue.current.duration ?? 0)
+        .format('mm:ss')})`
     })
   //console.log(queue.current)
 
@@ -56,7 +58,7 @@ export function generateQueueResponse(
     text: `Страница ${page > maxPages ? maxPages : page} из ${maxPages}`
   })
 
-  const buttons: MessageActionRowComponentResolvable[] = []
+  const buttons = []
 
   if (page - 1 > 0) {
     buttons.push(
