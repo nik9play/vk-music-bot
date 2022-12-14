@@ -45,7 +45,7 @@ export class Command {
   }
 }
 
-export type RespondFunction = (data: MessageOptions | InteractionReplyOptions, timeout?: number) => Promise<void>
+export type RespondFunction = (data: InteractionReplyOptions, timeout?: number) => Promise<void>
 export type SendFunction = (data: MessageOptions, timeout?: number) => Promise<void>
 
 export interface CommandExecuteParams {
