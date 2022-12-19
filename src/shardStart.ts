@@ -9,7 +9,7 @@ import { Client } from 'discord.js'
 import { RatelimitManager } from 'discord-cross-ratelimit'
 
 const manager = new Cluster.Manager('./dist/index.js', {
-  totalShards: 'auto',
+  totalShards: 128,
   shardsPerClusters: 2,
   mode: 'process',
   token: process.env.DISCORD_TOKEN,
