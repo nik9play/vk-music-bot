@@ -300,7 +300,7 @@ export default class VK {
    * Получение 5 треков по запросу
    */
   static async getMany(opts: any): Promise<APIResponse | ManyTracksResponse> {
-    opts.count = 5
+    opts.count ?? (opts.count = 5)
 
     const res = await this.sendRequest('search', opts)
 

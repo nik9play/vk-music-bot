@@ -2,7 +2,7 @@ import { CommandExecuteParams } from '../slashCommandManager.js'
 import VK, { APIResponse, ManyTracksResponse } from '../apis/VK.js'
 import logger from '../logger.js'
 import Utils from '../utils.js'
-import { MessageActionRow, MessageButton } from 'discord.js'
+import { MessageActionRow, MessageSelectMenu } from 'discord.js'
 
 export async function searchCommand(params: CommandExecuteParams, queryParam: string) {
   const { guild, client, captcha, respond, meta } = params
@@ -17,6 +17,7 @@ export async function searchCommand(params: CommandExecuteParams, queryParam: st
 
   const req = await VK.getMany({
     q: queryParam,
+    count: 10,
 
     ...query
   })
@@ -49,7 +50,7 @@ export async function searchCommand(params: CommandExecuteParams, queryParam: st
       return respond({ embeds: [embed], ephemeral: true })
     } else if (reqError.type === 'empty') {
       return respond({
-        embeds: [Utils.generateErrorMessage('Не удалось ничего найти по запросу или плейлиста не существует.')],
+        embeds: [Utils.generateErrorMessage('Не удалось ничего найти по запросу.')],
         ephemeral: true
       })
     } else if (reqError.type === 'api') {
@@ -59,7 +60,7 @@ export async function searchCommand(params: CommandExecuteParams, queryParam: st
       })
     } else if (reqError.type === 'request') {
       return respond({
-        embeds: [Utils.generateErrorMessage('Ошибка запроса к ВК.')],
+        embeds: [Utils.generateErrorMessage('Ошибка отправки запроса на стороне бота. Свяжитесь с поддержкой.')],
         ephemeral: true
       })
     }
@@ -67,26 +68,25 @@ export async function searchCommand(params: CommandExecuteParams, queryParam: st
 
   const reqTracks = req as ManyTracksResponse
 
-  let description = ''
-
-  const buttonRow = new MessageActionRow()
-  buttonRow.addComponents(
-    reqTracks.tracks.map((value, index) => {
-      description += `${index + 1}. ${value.author} — ${value.title}\n`
-      return new MessageButton()
-        .setLabel((index + 1).toString())
-        .setCustomId('search,' + value.id)
-        .setStyle('PRIMARY')
-    })
+  const selectMenu = new MessageActionRow().addComponents(
+    new MessageSelectMenu()
+      .setCustomId('search')
+      .setPlaceholder('Выберите трек')
+      .addOptions(
+        reqTracks.tracks.map((value) => {
+          return {
+            label: value.title,
+            description: value.author,
+            value: 'search,' + value.id
+          }
+        })
+      )
   )
-
-  description += '\n**Чтобы выбрать трек, нажмите на его номер**'
 
   const embed = {
     color: 0x5181b8,
-    title: 'Результаты поиска',
-    description
+    title: 'Найдены треки'
   }
 
-  await respond({ embeds: [embed], components: [buttonRow] }, 30000)
+  await respond({ embeds: [embed], components: [selectMenu] }, 30000)
 }

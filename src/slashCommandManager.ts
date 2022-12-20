@@ -9,6 +9,7 @@ import {
   Message,
   MessageOptions,
   Permissions,
+  SelectMenuInteraction,
   TextBasedChannel,
   User,
   VoiceBasedChannel
@@ -88,7 +89,7 @@ export default class {
       //console.log(interaction.options.data)
       if (!interaction.inGuild()) return
 
-      if (interaction.isCommand() || interaction.isButton())
+      if (interaction.isCommand() || interaction.isButton() || interaction.isSelectMenu())
         this.executeSlash(interaction).catch((err) =>
           logger.error(
             {
@@ -116,7 +117,7 @@ export default class {
   /*
    * Слэш команды
    */
-  async executeSlash(interaction: CommandInteraction | ButtonInteraction) {
+  async executeSlash(interaction: CommandInteraction | ButtonInteraction | SelectMenuInteraction) {
     const guild = interaction.guild as Guild
     const user = interaction.member?.user as User
     const member = interaction.member as GuildMember
@@ -128,7 +129,7 @@ export default class {
       guild_id: guild?.id
     }
 
-    const respond = async (data: MessageOptions | InteractionReplyOptions, timeout?: number): Promise<void> => {
+    const respond = async (data: InteractionReplyOptions, timeout?: number): Promise<void> => {
       if (interaction.deferred) {
         await interaction.editReply(data).catch((err) => logger.error({ err, ...meta }, "Can't edit reply"))
         return
@@ -136,7 +137,7 @@ export default class {
 
       if (interaction.isRepliable()) {
         try {
-          await interaction.reply(data as InteractionReplyOptions)
+          await interaction.reply(data)
         } catch (err) {
           logger.error({ err, ...meta }, "Can't send reply")
         }
@@ -280,13 +281,24 @@ export default class {
     }
 
     if (interaction.isButton()) {
-      if (interaction?.customId.startsWith('search')) {
-        logger.info({ ...meta }, 'Search button pressed')
+      if (interaction?.customId.startsWith('queue')) {
+        logger.info({ ...meta }, 'Queue button pressed')
 
-        const id = interaction.customId.split(',')[1]
+        const page = parseInt(interaction?.customId.split('_')[1])
+
+        if (page) {
+          const player = this.client.manager.get(guild.id)
+          await interaction.update(generateQueueResponse(page, player) as InteractionUpdateOptions)
+        }
+      }
+    }
+
+    if (interaction.isSelectMenu()) {
+      if (interaction?.customId === 'search') {
+        const id = interaction.values[0].split(',')[1]
+        logger.info({ ...meta }, 'Search result selected')
 
         if (id) {
-          // редактировать ответ если команда отложена
           if (!interaction.deferred) await interaction.deferReply()
 
           const partialParams: Partial<CommandExecuteParams> = {
@@ -303,17 +315,6 @@ export default class {
           playCommand(partialParams as CommandExecuteParams, id).catch((err: any) =>
             logger.error({ err, ...meta }, 'Error executing command from button')
           )
-        }
-      }
-
-      if (interaction?.customId.startsWith('queue')) {
-        logger.info({ ...meta }, 'Queue button pressed')
-
-        const page = parseInt(interaction?.customId.split('_')[1])
-
-        if (page) {
-          const player = this.client.manager.get(guild.id)
-          await interaction.update(generateQueueResponse(page, player) as InteractionUpdateOptions)
         }
       }
     }
