@@ -1,3 +1,4 @@
+import CustomPlayer from '../kagazumo/CustomPlayer.js'
 import { Command } from '../slashCommandManager.js'
 import Utils, { ErrorMessageType } from '../utils.js'
 
@@ -23,7 +24,7 @@ export default new Command({
         embeds: [Utils.generateErrorMessage('Режим 24/7 выключен.', ErrorMessageType.NoTitle)],
         ephemeral: true
       })
-      const player = client.manager.get(guild.id)
+      const player = client.kagazumo.getPlayer<CustomPlayer>(guild.id)
       if (player)
         if (player.paused || player.queue.length == 0) client.timers.set(guild.id, Utils.getExitTimeout(player, client))
     }

@@ -121,4 +121,12 @@ export default class BotConfigDb {
   async checkPremium(guild_id: string | Snowflake): Promise<boolean> {
     return await this.getValue(guild_id, 'premium', false)
   }
+
+  async setMenuMessageId(id: string | Snowflake, guild_id: string | Snowflake): Promise<void> {
+    await this.setValueUpsert(guild_id, 'menuMessageId', id)
+  }
+
+  async getMenuMessageId(guild_id: string | Snowflake): Promise<string | Snowflake> {
+    return await this.getValue(guild_id, 'menuMessageId', null)
+  }
 }

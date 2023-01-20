@@ -4,19 +4,20 @@ import Cluster from 'discord-hybrid-sharding-vk'
 
 import SlashCommandManager from './slashCommandManager.js'
 import logger from './logger.js'
-import { NodeOptions } from 'erela.js-vk'
+import { NodeOption } from 'shoukaku'
+import { prisma, prismaConnect } from './db.js'
 
 const LavalinkServersString = process.env.LAVALINK_NODES
 
 if (LavalinkServersString == null) throw new Error('poshel ti')
 
-const nodes: NodeOptions[] = LavalinkServersString.split(';').map((val): NodeOptions => {
+const nodes: NodeOption[] = LavalinkServersString.split(';').map((val): NodeOption => {
   const arr = val.split(',')
   return {
-    host: arr[1],
-    port: parseInt(arr[2]),
-    password: arr[3],
-    retryAmount: 128
+    name: arr[0],
+    url: `${arr[1]}:${arr[2]}`,
+    auth: arr[3],
+    secure: false
   }
 })
 
@@ -35,11 +36,16 @@ const client = new VkMusicBotClient(
   nodes
 )
 
-await client.initDb()
-logger.info('DB initialized.')
+async function bot() {
+  await client.initDb()
+  await prismaConnect()
+  logger.info('DB initialized.')
 
-const slashCommandManager = new SlashCommandManager(client)
-await slashCommandManager.init()
-logger.info(`Loaded ${client.commands.size} commands.`)
+  const slashCommandManager = new SlashCommandManager(client)
+  await slashCommandManager.init()
+  logger.info(`Loaded ${client.commands.size} commands.`)
 
-await client.login(process.env.DISCORD_TOKEN)
+  await client.login(process.env.DISCORD_TOKEN)
+}
+
+bot()

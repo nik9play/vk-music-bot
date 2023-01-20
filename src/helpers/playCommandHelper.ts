@@ -1,23 +1,25 @@
 import { CommandExecuteParams } from '../slashCommandManager.js'
 import Utils, { ErrorMessageType } from '../utils.js'
-import { User } from 'discord.js'
+import { MessageEmbed, User } from 'discord.js'
 import logger from '../logger.js'
 import VK, { APIResponse, GroupInfo, OneTrackResponse, PlaylistResponse, UserResponse } from '../apis/VK.js'
-import dayjs from 'dayjs'
+import { KazagumoTrack } from 'kazagumo'
+import { RawTrack } from 'kazagumo/dist/Modules/Interfaces.js'
+import CustomPlayer from '../kagazumo/CustomPlayer.js'
 
-import { Player, TrackUtils } from 'erela.js-vk'
-
-async function fillQueue(newArray: OneTrackResponse[], player: Player, wrongTracks: OneTrackResponse[]) {
+async function fillQueue(newArray: OneTrackResponse[], player: CustomPlayer, wrongTracks: OneTrackResponse[]) {
   for await (const e of newArray) {
     if (!e.url || e.duration > 1800) {
       wrongTracks.push(e)
       continue
     }
 
-    const unresolvedTrack = TrackUtils.buildUnresolvedQuery(e.url)
+    const unresolvedTrack = new KazagumoTrack({ info: {} } as RawTrack, undefined)
 
+    unresolvedTrack.uri = e.url
     unresolvedTrack.title = e.title
     unresolvedTrack.author = e.author
+    unresolvedTrack.thumbnail = e.thumb
 
     player.queue.add(unresolvedTrack)
     if (!player.playing && !player.paused && !player.queue.size) await player.play()
@@ -46,28 +48,23 @@ export async function playCommand(
     })
   }
 
-  const player = client.manager.create({
-    guild: guild.id,
-    voiceChannel: voice.id,
-    textChannel: text.id,
-    selfDeafen: true
+  const player = await client.kagazumo.createPlayer<CustomPlayer>({
+    guildId: guild.id,
+    voiceId: voice.id,
+    textId: text.id,
+    deaf: true,
+    shardId: guild.shardId,
+    loadBalancer: false
   })
-
-  if (player.state !== 'CONNECTED') player.connect()
-
-  if (!player.voiceChannel) {
-    player.setVoiceChannel(voice.id)
-    player.connect()
-  }
 
   logger.info(
     {
-      guild_id: player.guild,
-      voice: player.voiceChannel,
+      guild_id: player.guildId,
+      voice: player.voiceId,
       state: player.state,
       ...meta
     },
-    'player created'
+    'Player created'
   )
   //if (channel.id !== player.voiceChannel) return message.reply("вы находитесь не в том голосовом канале.")
 
@@ -80,8 +77,8 @@ export async function playCommand(
   const search = queryParam.trim()
 
   const count = countParam ?? 10
-  let offset = offsetParam ?? 1
-  offset--
+  const offset = offsetParam ?? 1
+  //offset--
 
   const arg = Utils.detectArgType(search)
   let req
@@ -211,30 +208,29 @@ export async function playCommand(
       return
     }
 
-    const songEmbed = {
-      color: 0x5181b8,
-      title: Utils.escapeFormat(req.title),
-      author: {
+    const songEmbed = new MessageEmbed()
+      .setTitle(Utils.escapeFormat(req.title))
+      .setURL(Utils.generateTrackUrl(req.id, req.access_key))
+      .setColor(0x5181b8)
+      .setAuthor({
         name: 'Трек добавлен!'
-      },
-      thumbnail: {
-        url: req.thumb
-      },
-      description: Utils.escapeFormat(req.author),
-      fields: [
+      })
+      .setDescription(Utils.escapeFormat(req.author))
+      .addFields([
         {
           name: 'Длительность',
-          value: dayjs(0).second(req.duration).format('mm:ss')
+          value: Utils.formatTime(req.duration)
         }
-      ]
-    }
+      ])
+
+    if (req.thumb) songEmbed.setThumbnail(req.thumb)
 
     let res
 
     try {
       res = await player.search(req.url)
 
-      if (res.loadType === 'LOAD_FAILED') {
+      if (!res.tracks.length) {
         logger.error({ ...meta }, 'LOAD_FAILED')
         if (!player.queue.current) player.destroy()
         await respond({
@@ -252,20 +248,15 @@ export async function playCommand(
       return
     }
 
-    switch (res.loadType) {
-      case 'NO_MATCHES':
-        if (!player.queue.current) player.destroy()
-        await respond({
-          embeds: [Utils.generateErrorMessage('Неизвестная ошибка.')],
-          ephemeral: true
-        })
-        return
-      case 'TRACK_LOADED':
+    switch (res.type) {
+      case 'TRACK':
         res.tracks[0].title = req.title
         res.tracks[0].author = req.author
+        res.tracks[0].thumbnail = req.thumb
 
         player.queue.add(res.tracks[0])
 
+        // TODO: check if size check is needed
         if (!player.playing && !player.paused && !player.queue.size) await player.play()
     }
 
@@ -373,15 +364,14 @@ export async function playCommand(
       })
       .join('\n')
 
-    desc = `${desc}\n${
-      wrongTracks.length > 5
-        ? `...\nи еще ${wrongTracks.length - 5} ${Utils.declOfNum(wrongTracks.length - 5, [
-            'трек',
-            'трека',
-            'треков'
-          ])}.`
-        : ''
-    }`
+    desc = `${desc}\n${wrongTracks.length > 5
+      ? `...\nи еще ${wrongTracks.length - 5} ${Utils.declOfNum(wrongTracks.length - 5, [
+        'трек',
+        'трека',
+        'треков'
+      ])}.`
+      : ''
+      }`
 
     await send(
       {
@@ -402,12 +392,12 @@ export async function playCommand(
   if (!(await client.db.checkPremium(guild.id))) {
     if (player)
       if (player.queue.totalSize > 200) {
-        player.queue.remove(199, player.queue.totalSize - 1)
+        player.queue.length = 200
         await send({
           embeds: [
             Utils.generateErrorMessage(
               'В очереди было больше 200 треков, поэтому лишние треки были удалены. ' +
-                'Хотите больше треков? Приобретите Премиум, подробности: `/donate`.',
+              'Хотите больше треков? Приобретите Премиум, подробности: `/donate`.',
               ErrorMessageType.Warning
             )
           ]

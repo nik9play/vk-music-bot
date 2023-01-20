@@ -21,6 +21,8 @@ import Utils from './utils.js'
 import glob from 'glob'
 import { promisify } from 'util'
 import { generateQueueResponse } from './helpers/queueCommandHelper.js'
+import CustomPlayer from './kagazumo/CustomPlayer.js'
+import { generateMenuResponse, MenuButtonType } from './helpers/menuCommandHelper.js'
 
 const globPromise = promisify(glob)
 
@@ -287,9 +289,49 @@ export default class {
         const page = parseInt(interaction?.customId.split('_')[1])
 
         if (page) {
-          const player = this.client.manager.get(guild.id)
+          const player = this.client.kagazumo.getPlayer<CustomPlayer>(guild.id)
           await interaction.update(generateQueueResponse(page, player) as InteractionUpdateOptions)
         }
+      }
+
+      if (interaction?.customId.startsWith('menu')) {
+        const id = interaction?.customId
+        const player = this.client.kagazumo.getPlayer<CustomPlayer>(guild.id)
+
+        if (!player) {
+          await interaction.update(generateMenuResponse(player) as InteractionUpdateOptions)
+          return
+        }
+
+        if (!voice) {
+          await interaction.update(generateMenuResponse(player) as InteractionUpdateOptions)
+          return
+        }
+
+        switch (id) {
+          case MenuButtonType.Stop:
+            player.setLoop('none')
+            player.queue.clear()
+            player.skip()
+            break
+          case MenuButtonType.Queue:
+            await respond(generateQueueResponse(1, player) as InteractionReplyOptions)
+            return
+          case MenuButtonType.Skip:
+            player.skip()
+            break
+          case MenuButtonType.Repeat:
+            if (player.loop === 'none') {
+              player.setLoop('track')
+            } else if (player.loop === 'track') {
+              player.setLoop('queue')
+            } else if (player.loop === 'queue') {
+              player.setLoop('none')
+            }
+            break
+        }
+
+        await interaction.update(generateMenuResponse(player) as InteractionUpdateOptions)
       }
     }
 

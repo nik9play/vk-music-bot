@@ -1,3 +1,4 @@
+import CustomPlayer from '../kagazumo/CustomPlayer.js'
 import { Command } from '../slashCommandManager.js'
 import Utils, { ErrorMessageType } from '../utils.js'
 
@@ -8,7 +9,7 @@ export default new Command({
   adminOnly: false,
   premium: false,
   execute: async function ({ guild, voice, client, interaction, respond }) {
-    const player = client.manager.get(guild.id)
+    const player = client.kagazumo.getPlayer<CustomPlayer>(guild.id)
     if (!player) {
       await respond({
         embeds: [Utils.generateErrorMessage('Сейчас ничего не играет.')],
@@ -29,22 +30,21 @@ export default new Command({
 
     if (repeatParam) {
       if (repeatParam === 'очередь') {
-        player.setQueueRepeat(true)
+        player.setLoop('queue')
         await respond({
           embeds: [Utils.generateErrorMessage('🔁 Включен повтор очереди.', ErrorMessageType.NoTitle)]
         })
         return
       }
       if (repeatParam === 'трек') {
-        player.setTrackRepeat(true)
+        player.setLoop('track')
         await respond({
           embeds: [Utils.generateErrorMessage('🔁 Включен повтор трека.', ErrorMessageType.NoTitle)]
         })
         return
       }
       if (repeatParam === 'выкл') {
-        player.setQueueRepeat(false)
-        player.setTrackRepeat(false)
+        player.setLoop('none')
         await respond({
           embeds: [Utils.generateErrorMessage('🔁 Повтор выключен.', ErrorMessageType.NoTitle)]
         })
@@ -53,8 +53,8 @@ export default new Command({
     }
 
     let msg
-    if (player.trackRepeat) msg = 'Повтор текущего трека'
-    else if (player.queueRepeat) msg = 'Повтор очереди'
+    if (player.loop === 'track') msg = 'Повтор текущего трека'
+    if (player.loop === 'queue') msg = 'Повтор очереди'
 
     if (msg)
       await respond({

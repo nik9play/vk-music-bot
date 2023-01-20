@@ -1,18 +1,16 @@
-import { Player } from 'erela.js-vk'
 import {
   InteractionReplyOptions,
   InteractionUpdateOptions,
   MessageActionRow,
-  MessageActionRowComponentResolvable,
   MessageButton,
   MessageEmbed
 } from 'discord.js'
 import Utils from '../utils.js'
-import dayjs from 'dayjs'
+import CustomPlayer from '../kagazumo/CustomPlayer.js'
 
 export function generateQueueResponse(
   page: number,
-  player: Player | undefined
+  player: CustomPlayer | undefined
 ): InteractionReplyOptions | InteractionUpdateOptions {
   if (!player)
     return {
@@ -35,11 +33,9 @@ export function generateQueueResponse(
   if (queue.current)
     embed.addFields({
       name: 'Сейчас играет',
-      value: `${queue.current.author} — ${queue.current.title} (${dayjs(0)
-        .millisecond(player.position)
-        .format('mm:ss')}/${dayjs(0)
-        .millisecond(queue.current.duration ?? 0)
-        .format('mm:ss')})`
+      value: `${queue.current.author} — ${queue.current.title} (${Utils.formatTime(player.position)}/${Utils.formatTime(
+        queue.current.length ?? 0
+      )})`
     })
   //console.log(queue.current)
 

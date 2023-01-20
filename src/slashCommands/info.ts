@@ -11,23 +11,19 @@ export default new Command({
     totalServers = totalServers.reduce((acc, guildCount) => acc + guildCount, 0)
 
     let totalPlayers = 0
-    client.manager.nodes.each((e) => {
-      totalPlayers += e.stats.playingPlayers
+    let totalRam = 0
+
+    let avgCPU = 0
+    let count = 0
+
+    client.kagazumo.shoukaku.nodes.forEach((e) => {
+      totalPlayers += e.stats?.playingPlayers ?? 0
+      totalRam += e.stats?.memory.used ?? 0
+      avgCPU += e.stats?.cpu.lavalinkLoad ?? 0
+      count++
     })
 
-    let RamLl = 0
-    client.manager.nodes.each((e) => {
-      RamLl += e.stats.memory.used
-    })
-
-    let avCPULl = 0
-    let llcount = 0
-    client.manager.nodes.each((e) => {
-      avCPULl += e.stats.cpu.lavalinkLoad
-      llcount++
-    })
-
-    avCPULl /= llcount
+    avgCPU /= count
 
     const embed = {
       author: {
@@ -42,12 +38,12 @@ export default new Command({
         },
         {
           name: 'Lavalink RAM',
-          value: `\`\`\`js\n${Math.round((RamLl / 1024 / 1024) * 100) / 100} MB\`\`\``,
+          value: `\`\`\`js\n${Math.round((totalRam / 1024 / 1024) * 100) / 100} MB\`\`\``,
           inline: true
         },
         {
           name: 'Загрузка Lavalink',
-          value: `\`\`\`js\n${avCPULl.toFixed(3)}\`\`\``,
+          value: `\`\`\`js\n${avgCPU.toFixed(3)}\`\`\``,
           inline: true
         },
         {

@@ -1,3 +1,4 @@
+import CustomPlayer from '../kagazumo/CustomPlayer.js'
 import { Command } from '../slashCommandManager.js'
 import Utils, { ErrorMessageType } from '../utils.js'
 
@@ -9,7 +10,7 @@ export default new Command({
   adminOnly: false,
   djOnly: true,
   execute: async function ({ respond, client, guild, voice, interaction }) {
-    const player = client.manager.get(guild.id)
+    const player = client.kagazumo.getPlayer<CustomPlayer>(guild.id)
     if (!player) {
       await respond({
         embeds: [Utils.generateErrorMessage('Сейчас ничего не играет.')],
@@ -50,7 +51,7 @@ export default new Command({
 
       const bands = new Array(3).fill(null).map((_, i) => ({ band: i, gain }))
 
-      player.setEQ(...bands)
+      player.shoukaku.setEqualizer(bands)
 
       await respond({
         embeds: [

@@ -15,6 +15,7 @@ export interface OneTrackResponse {
   duration: number
   thumb?: string
   id: string
+  access_key?: string
 }
 
 export interface PlaylistInfo {
@@ -149,7 +150,9 @@ export default class VK {
         title: song.title,
         url: song.stream,
         duration: song.duration,
-        thumb: song?.cover_url_small
+        thumb: song?.cover_url_small,
+        id: song.source_id,
+        access_key: song.access_key
       }
     }
   }
@@ -182,7 +185,9 @@ export default class VK {
         title: song.title,
         url: song.stream,
         duration: song.duration,
-        thumb: song?.cover_url_small
+        thumb: song?.cover_url_small,
+        id: song.source_id,
+        access_key: song.access_key
       }
     }
   }
@@ -212,7 +217,8 @@ export default class VK {
           url: e.stream,
           duration: e.duration,
           thumb: e?.cover_url_small,
-          id: e.source_id
+          id: e.source_id,
+          access_key: e.access_key
         }
       })
 
@@ -284,7 +290,8 @@ export default class VK {
           url: e.stream,
           duration: e.duration,
           thumb: e?.cover_url_small,
-          id: e.source_id
+          id: e.source_id,
+          access_key: e.access_key
         }
       })
 
@@ -321,7 +328,8 @@ export default class VK {
             url: e.stream,
             duration: e.duration,
             thumb: e?.cover_url_small,
-            id: e.source_id
+            id: e.source_id,
+            access_key: e.access_key
           }
         })
       }

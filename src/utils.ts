@@ -1,6 +1,6 @@
 import { MessageEmbed, VoiceBasedChannel } from 'discord.js'
-import { Player } from 'erela.js-vk'
 import { VkMusicBotClient } from './client.js'
+import CustomPlayer from './kagazumo/CustomPlayer.js'
 import logger from './logger.js'
 import { RespondFunction } from './slashCommandManager.js'
 
@@ -164,8 +164,8 @@ export default class Utils {
     return `&r=${Math.random().toString(36).substring(2, 15)}`
   }
 
-  public static getExitTimeout(player: Player, client: VkMusicBotClient): NodeJS.Timeout {
-    logger.info(`Exit timeout set ${player.guild}`)
+  public static getExitTimeout(player: CustomPlayer, client: VkMusicBotClient): NodeJS.Timeout {
+    logger.info(`Exit timeout set ${player.guildId}`)
 
     return setTimeout(async () => {
       if (player) {
@@ -201,7 +201,7 @@ export default class Utils {
 
   public static async checkPlayerState(
     respond: RespondFunction,
-    player?: Player,
+    player?: CustomPlayer,
     voice?: VoiceBasedChannel | null,
     checkPlayer = true,
     checkVoice = true,
@@ -235,5 +235,18 @@ export default class Utils {
       }
 
     return true
+  }
+
+  public static generateTrackUrl(source_id: string, access_key?: string): string {
+    return `https://vk.com/audio${source_id}${access_key ? '_' + access_key : ''}`
+  }
+
+  public static formatTime(milliseconds: number): string {
+    const seconds = milliseconds / 1000
+
+    const minutes = Math.floor(seconds / 60)
+    const remainingSeconds = Math.round(seconds % 60)
+
+    return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`
   }
 }

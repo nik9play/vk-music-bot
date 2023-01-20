@@ -1,3 +1,4 @@
+import CustomPlayer from '../kagazumo/CustomPlayer.js'
 import { Command } from '../slashCommandManager.js'
 import Utils, { ErrorMessageType } from '../utils.js'
 
@@ -8,7 +9,7 @@ export default new Command({
   premium: false,
   adminOnly: false,
   execute: async ({ guild, voice, client, respond }) => {
-    const player = client.manager.get(guild.id)
+    const player = client.kagazumo.getPlayer<CustomPlayer>(guild.id)
     if (!player) {
       await respond({
         embeds: [Utils.generateErrorMessage('Сейчас ничего не играет.')],

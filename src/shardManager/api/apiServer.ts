@@ -22,10 +22,10 @@ server.get<{ Params: ReclusterOptionsType }>(
   }
 )
 
-server.get('/api/clear-queues', async () => {
+server.get('/api/players/:action', async (req) => {
   function clearQueues(c: Client) {
     const botClient = c as VkMusicBotClient
-    for (const player of botClient.manager.players.values()) {
+    for (const player of botClient.kagazumo.players.values()) {
       player.destroy()
       //player.queue.clear()
     }

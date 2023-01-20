@@ -1,6 +1,7 @@
 import { Command } from '../slashCommandManager.js'
-import { Track, UnresolvedTrack } from 'erela.js-vk'
 import Utils, { ErrorMessageType } from '../utils.js'
+import CustomPlayer from '../kagazumo/CustomPlayer.js'
+import { KazagumoTrack } from 'kazagumo'
 
 export default new Command({
   name: 'remove',
@@ -9,7 +10,7 @@ export default new Command({
   adminOnly: false,
   premium: false,
   execute: async function ({ guild, voice, client, interaction, respond }) {
-    const player = client.manager.get(guild.id)
+    const player = client.kagazumo.getPlayer<CustomPlayer>(guild.id)
     if (!player) {
       await respond({
         embeds: [Utils.generateErrorMessage('Сейчас ничего не играет.')],
@@ -27,22 +28,30 @@ export default new Command({
     }
 
     const queue = player.queue
+    const beforeRemove = player.queue.size
 
-    let removedTracks: (Track | UnresolvedTrack)[] = []
+    let removedTracks = 0
 
-    const a = interaction.options.getString('треки', true)
+    const arg = interaction.options.getString('треки', true)
 
-    if (a.includes('-')) {
-      const first = parseInt(a.split('-')[0])
-      const last = parseInt(a.split('-')[1])
-      if (last && first && last > first) removedTracks = [...removedTracks, ...queue.remove(first - 1, last)]
+    if (arg.includes('-')) {
+      const first = parseInt(arg.split('-')[0])
+      const last = parseInt(arg.split('-')[1])
+
+      queue.splice(first - 1, last - first + 1)
+
+      const afterRemove = player.queue.size
+      if (last && first && last > first) removedTracks = beforeRemove - afterRemove
     } else {
-      const inta = parseInt(a)
-      if (inta >= 1) removedTracks = [...removedTracks, ...queue.remove(inta - 1)]
+      const intArg = parseInt(arg)
+      queue.remove(intArg - 1)
+      const afterRemove = player.queue.size
+
+      if (intArg >= 1) removedTracks = beforeRemove - afterRemove
     }
 
     await respond({
-      embeds: [Utils.generateErrorMessage(`🗑️ Удалено треков: ${removedTracks.length}.`, ErrorMessageType.NoTitle)]
+      embeds: [Utils.generateErrorMessage(`🗑️ Удалено треков: ${removedTracks}.`, ErrorMessageType.NoTitle)]
     })
   }
 })
