@@ -1,6 +1,6 @@
 import { CommandExecuteParams } from '../slashCommandManager.js'
 import Utils, { ErrorMessageType } from '../utils.js'
-import { MessageEmbed, User } from 'discord.js'
+import { EmbedBuilder, PermissionsBitField, User } from 'discord.js'
 import logger from '../logger.js'
 import VK, { APIResponse, GroupInfo, OneTrackResponse, PlaylistResponse, UserResponse } from '../apis/VK.js'
 import { KazagumoTrack } from 'kazagumo'
@@ -41,7 +41,13 @@ export async function playCommand(
     })
 
   const permissions = voice.permissionsFor(client.user as User)
-  if (permissions && (!permissions.has('CONNECT') || !permissions.has('SPEAK') || !permissions.has('VIEW_CHANNEL'))) {
+  if (
+    !permissions?.has([
+      PermissionsBitField.Flags.Speak,
+      PermissionsBitField.Flags.Connect,
+      PermissionsBitField.Flags.ViewChannel
+    ])
+  ) {
     return respond({
       embeds: [Utils.generateErrorMessage('Мне нужны права, чтобы войти в канал.')],
       ephemeral: true
@@ -208,7 +214,7 @@ export async function playCommand(
       return
     }
 
-    const songEmbed = new MessageEmbed()
+    const songEmbed = new EmbedBuilder()
       .setTitle(Utils.escapeFormat(req.title))
       .setURL(Utils.generateTrackUrl(req.id, req.access_key))
       .setColor(0x5181b8)
@@ -266,17 +272,12 @@ export async function playCommand(
 
     const newArray = req.newArray
 
-    const playlistEmbed = {
-      title: Utils.escapeFormat(req.info.title),
-      description: Utils.escapeFormat(req.info.description),
-      color: 0x5181b8,
-      thumbnail: {
-        url: req.info.imgUrl
-      },
-      author: {
-        name: 'Добавлены треки из плейлиста'
-      },
-      fields: [
+    const playlistEmbed = new EmbedBuilder()
+      .setTitle(Utils.escapeFormat(req.info.title))
+      .setDescription(Utils.escapeFormat(req.info.description))
+      .setColor(0x5181b8)
+      .setAuthor({ name: 'Добавлены треки из плейлиста' })
+      .addFields([
         {
           name: 'Добавлено треков',
           value: newArray.length.toString(),
@@ -287,11 +288,10 @@ export async function playCommand(
           value: req.info.count.toString(),
           inline: true
         }
-      ],
-      footer: {
+      ])
+      .setFooter({
         text: 'Чтобы добавить больше 10 треков, введите количество треков в аргумент "количество".'
-      }
-    }
+      })
 
     await fillQueue(newArray, player, wrongTracks)
 
@@ -301,26 +301,22 @@ export async function playCommand(
 
     const newArray = req.newArray
 
-    const playlistEmbed = {
-      title: Utils.escapeFormat(req.info.name),
-      thumbnail: {
-        url: req.info.img
-      },
-      color: 0x5181b8,
-      author: {
+    const playlistEmbed = new EmbedBuilder()
+      .setTitle(Utils.escapeFormat(req.info.name))
+      .setColor(0x5181b8)
+      .setAuthor({
         name: 'Добавлены треки пользователя'
-      },
-      fields: [
+      })
+      .addFields([
         {
           name: 'Добавлено треков',
           value: newArray.length.toString(),
           inline: true
         }
-      ],
-      footer: {
+      ])
+      .setFooter({
         text: 'Чтобы добавить больше 10 треков, введите количество треков в аргумент "количество".'
-      }
-    }
+      })
 
     await fillQueue(newArray, player, wrongTracks)
 
@@ -329,27 +325,23 @@ export async function playCommand(
     req = req as UserResponse
     const newArray = req.newArray
 
-    const playlistEmbed = {
-      title: Utils.escapeFormat(req.info.name),
-      description: Utils.escapeFormat((req.info as GroupInfo).description),
-      thumbnail: {
-        url: req.info.img
-      },
-      color: 0x5181b8,
-      author: {
+    const playlistEmbed = new EmbedBuilder()
+      .setTitle(Utils.escapeFormat(req.info.name))
+      .setDescription(Utils.escapeFormat((req.info as GroupInfo).description))
+      .setColor(0x5181b8)
+      .setAuthor({
         name: 'Добавлены треки из сообщества'
-      },
-      fields: [
+      })
+      .addFields([
         {
           name: 'Добавлено треков',
           value: newArray.length.toString(),
           inline: true
         }
-      ],
-      footer: {
+      ])
+      .setFooter({
         text: 'Чтобы добавить больше 10 треков, введите количество треков в аргумент `количество`.'
-      }
-    }
+      })
 
     await fillQueue(newArray, player, wrongTracks)
 
@@ -364,14 +356,15 @@ export async function playCommand(
       })
       .join('\n')
 
-    desc = `${desc}\n${wrongTracks.length > 5
-      ? `...\nи еще ${wrongTracks.length - 5} ${Utils.declOfNum(wrongTracks.length - 5, [
-        'трек',
-        'трека',
-        'треков'
-      ])}.`
-      : ''
-      }`
+    desc = `${desc}\n${
+      wrongTracks.length > 5
+        ? `...\nи еще ${wrongTracks.length - 5} ${Utils.declOfNum(wrongTracks.length - 5, [
+            'трек',
+            'трека',
+            'треков'
+          ])}.`
+        : ''
+    }`
 
     await send(
       {
@@ -397,7 +390,7 @@ export async function playCommand(
           embeds: [
             Utils.generateErrorMessage(
               'В очереди было больше 200 треков, поэтому лишние треки были удалены. ' +
-              'Хотите больше треков? Приобретите Премиум, подробности: `/donate`.',
+                'Хотите больше треков? Приобретите Премиум, подробности: `/donate`.',
               ErrorMessageType.Warning
             )
           ]

@@ -1,3 +1,4 @@
+import { ChannelType } from 'discord.js'
 import CustomPlayer from '../kagazumo/CustomPlayer.js'
 import { Command } from '../slashCommandManager.js'
 import Utils, { ErrorMessageType } from '../utils.js'
@@ -27,15 +28,19 @@ export default new Command({
     }
     //if (channel.id !== player.voiceChannel) return message.reply("вы находитесь не в том голосовом канале.")
 
-    let textChannel = text
-    const channelParam = interaction.options.getChannel('канал')
+    let textChannelId = text.id
 
-    if (channelParam) {
+    const channel = interaction.options.getChannel('канал', true)
+
+    if (channel) {
       if (
-        channelParam.type !== 'GUILD_TEXT' &&
-        channelParam.type !== 'GUILD_VOICE' &&
-        channelParam.type !== 'GUILD_PUBLIC_THREAD' &&
-        channelParam.type !== 'GUILD_PRIVATE_THREAD'
+        channel.type !== ChannelType.GuildText &&
+        channel.type !== ChannelType.GuildVoice &&
+        channel.type !== ChannelType.PublicThread &&
+        channel.type !== ChannelType.PrivateThread
+        // !channel.isTextBased() &&
+        // !channel.isVoiceBased() &&
+        // !channel.isThread()
       ) {
         await respond({
           embeds: [Utils.generateErrorMessage('Тип канала не подходит.', ErrorMessageType.Error)]
@@ -43,29 +48,23 @@ export default new Command({
         return
       }
 
-      if (channelParam.isText()) {
-        if (channelParam.guild.id === guild.id) {
-          textChannel = channelParam
-        } else {
-          await respond({
-            embeds: [Utils.generateErrorMessage('Необходимо указать текстовый канал.', ErrorMessageType.Error)]
-          })
-          return
-        }
+      if (channel.guild.id === guild.id) {
+        channel.isThread
+        textChannelId = channel.id
       } else {
         await respond({
-          embeds: [Utils.generateErrorMessage('Не удалось найти такой канал.', ErrorMessageType.Error)]
+          embeds: [Utils.generateErrorMessage('Необходимо указать текстовый канал.', ErrorMessageType.Error)]
         })
         return
       }
     }
 
-    player.setTextChannel(textChannel.id)
+    player.setTextChannel(textChannelId)
 
     await respond({
       embeds: [
         Utils.generateErrorMessage(
-          `Для уведомлений установлен текстовый канал <#${textChannel.id}>`,
+          `Для уведомлений установлен текстовый канал <#${textChannelId}>`,
           ErrorMessageType.NoTitle
         )
       ]

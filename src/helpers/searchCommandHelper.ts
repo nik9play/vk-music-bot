@@ -2,7 +2,7 @@ import { CommandExecuteParams } from '../slashCommandManager.js'
 import VK, { APIResponse, ManyTracksResponse } from '../apis/VK.js'
 import logger from '../logger.js'
 import Utils from '../utils.js'
-import { MessageActionRow, MessageSelectMenu } from 'discord.js'
+import { ActionRowBuilder, StringSelectMenuBuilder } from 'discord.js'
 
 export async function searchCommand(params: CommandExecuteParams, queryParam: string) {
   const { guild, client, captcha, respond, meta } = params
@@ -68,8 +68,8 @@ export async function searchCommand(params: CommandExecuteParams, queryParam: st
 
   const reqTracks = req as ManyTracksResponse
 
-  const selectMenu = new MessageActionRow().addComponents(
-    new MessageSelectMenu()
+  const selectMenu = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
+    new StringSelectMenuBuilder()
       .setCustomId('search')
       .setPlaceholder('Выберите трек')
       .addOptions(

@@ -1,4 +1,4 @@
-import { MessageEmbed, VoiceBasedChannel } from 'discord.js'
+import { EmbedBuilder, VoiceBasedChannel } from 'discord.js'
 import { VkMusicBotClient } from './client.js'
 import CustomPlayer from './kagazumo/CustomPlayer.js'
 import logger from './logger.js'
@@ -128,7 +128,7 @@ export default class Utils {
     message: string,
     type: ErrorMessageType = ErrorMessageType.Error,
     escapeFormatting = false
-  ): MessageEmbed {
+  ): EmbedBuilder {
     let title
     let color
 
@@ -154,7 +154,7 @@ export default class Utils {
       message = this.escapeFormat(message)
     }
 
-    return new MessageEmbed({
+    return new EmbedBuilder({
       description: `${title}\n${message}`,
       color
     })

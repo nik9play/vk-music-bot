@@ -1,9 +1,10 @@
 import {
   InteractionReplyOptions,
   InteractionUpdateOptions,
-  MessageActionRow,
-  MessageButton,
-  MessageEmbed
+  ActionRowBuilder,
+  ButtonBuilder,
+  EmbedBuilder,
+  ButtonStyle
 } from 'discord.js'
 import CustomPlayer from '../kagazumo/CustomPlayer.js'
 import Utils from '../utils.js'
@@ -16,7 +17,7 @@ export enum MenuButtonType {
 }
 
 export function generateMenuResponse(player?: CustomPlayer): InteractionReplyOptions | InteractionUpdateOptions {
-  const embed = new MessageEmbed().setTitle('Меню')
+  const embed = new EmbedBuilder().setTitle('Меню')
 
   if (player) {
     embed.setDescription(
@@ -56,32 +57,32 @@ export function generateMenuResponse(player?: CustomPlayer): InteractionReplyOpt
     track: '<:repeat_one_btn:1052960682666102815>'
   }
 
-  const row1 = new MessageActionRow().addComponents([
-    new MessageButton()
+  const row1 = new ActionRowBuilder<ButtonBuilder>().addComponents([
+    new ButtonBuilder()
       .setCustomId(`menu_pause`)
       .setEmoji(player?.paused ? '<:play_btn:1052960565674393640>' : '<:pause_btn:1052960594065641502>')
-      .setStyle('PRIMARY')
+      .setStyle(ButtonStyle.Primary)
       .setDisabled(!player?.queue.current),
-    new MessageButton()
+    new ButtonBuilder()
       .setCustomId(MenuButtonType.Skip)
       .setEmoji('<:skip:1052960924996223037>')
-      .setStyle('PRIMARY')
+      .setStyle(ButtonStyle.Primary)
       .setDisabled(!player?.queue.current),
-    new MessageButton()
+    new ButtonBuilder()
       .setCustomId(MenuButtonType.Stop)
       .setEmoji('<:stop_btn:1052960619940302868>')
-      .setStyle('PRIMARY')
+      .setStyle(ButtonStyle.Primary)
       .setDisabled(!player?.queue.current),
-    new MessageButton()
+    new ButtonBuilder()
       .setCustomId(MenuButtonType.Queue)
       .setEmoji('<:queue:1052960903047426099>')
-      .setStyle('PRIMARY')
+      .setStyle(ButtonStyle.Primary)
       .setDisabled(!player?.queue),
-    //new MessageButton().setCustomId('menu_update').setEmoji('🔃').setStyle('PRIMARY'),
-    new MessageButton()
+    //new MessageButton().setCustomId('menu_update').setEmoji('🔃').setStyle(ButtonStyle.Primary),
+    new ButtonBuilder()
       .setCustomId(MenuButtonType.Repeat)
       .setEmoji(repeatEmojis[player?.loop ?? 'none'])
-      .setStyle('PRIMARY')
+      .setStyle(ButtonStyle.Primary)
   ])
 
   console.log(player?.loop)
@@ -91,12 +92,12 @@ export function generateMenuResponse(player?: CustomPlayer): InteractionReplyOpt
   //   new MessageButton()
   //     .setCustomId(`menu_pause`)
   //     .setEmoji(player?.paused ? '▶️' : '⏸️')
-  //     .setStyle('PRIMARY')
+  //     .setStyle(ButtonStyle.Primary)
   //     .setDisabled(!player?.playing),
-  //   new MessageButton().setCustomId('menu_skip').setEmoji('⏩').setStyle('PRIMARY').setDisabled(!player?.queue.current),
-  //   new MessageButton().setCustomId('menu_stop').setEmoji('⏹️').setStyle('PRIMARY').setDisabled(!player?.queue.current),
-  //   new MessageButton().setCustomId('menu_queue').setEmoji('📃').setStyle('PRIMARY').setDisabled(!player?.queue),
-  //   new MessageButton().setCustomId('menu_update').setEmoji('🔃').setStyle('PRIMARY')
+  //   new MessageButton().setCustomId('menu_skip').setEmoji('⏩').setStyle(ButtonStyle.Primary).setDisabled(!player?.queue.current),
+  //   new MessageButton().setCustomId('menu_stop').setEmoji('⏹️').setStyle(ButtonStyle.Primary).setDisabled(!player?.queue.current),
+  //   new MessageButton().setCustomId('menu_queue').setEmoji('📃').setStyle(ButtonStyle.Primary).setDisabled(!player?.queue),
+  //   new MessageButton().setCustomId('menu_update').setEmoji('🔃').setStyle(ButtonStyle.Primary)
   // ])
 
   const components = [row1]

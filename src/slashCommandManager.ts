@@ -1,5 +1,7 @@
 import {
+  BaseMessageOptions,
   ButtonInteraction,
+  ChatInputCommandInteraction,
   CommandInteraction,
   Guild,
   GuildMember,
@@ -7,9 +9,8 @@ import {
   InteractionReplyOptions,
   InteractionUpdateOptions,
   Message,
-  MessageOptions,
-  Permissions,
-  SelectMenuInteraction,
+  PermissionsBitField,
+  StringSelectMenuInteraction,
   TextBasedChannel,
   User,
   VoiceBasedChannel
@@ -49,15 +50,15 @@ export class Command {
 }
 
 export type RespondFunction = (data: InteractionReplyOptions, timeout?: number) => Promise<void>
-export type SendFunction = (data: MessageOptions, timeout?: number) => Promise<void>
+export type SendFunction = (data: BaseMessageOptions, timeout?: number) => Promise<void>
 
 export interface CommandExecuteParams {
   guild: Guild
   user: User
   voice?: VoiceBasedChannel | null
-  text: TextBasedChannel
+  text: GuildTextBasedChannel
   client: VkMusicBotClient
-  interaction: CommandInteraction
+  interaction: ChatInputCommandInteraction<'cached'>
   respond: RespondFunction
   send: SendFunction
   message?: Message
@@ -89,9 +90,9 @@ export default class {
 
     this.client.on('interactionCreate', async (interaction) => {
       //console.log(interaction.options.data)
-      if (!interaction.inGuild()) return
+      if (!interaction.inCachedGuild()) return
 
-      if (interaction.isCommand() || interaction.isButton() || interaction.isSelectMenu())
+      if (interaction.isChatInputCommand() || interaction.isButton() || interaction.isStringSelectMenu())
         this.executeSlash(interaction).catch((err) =>
           logger.error(
             {
@@ -119,12 +120,19 @@ export default class {
   /*
    * Слэш команды
    */
-  async executeSlash(interaction: CommandInteraction | ButtonInteraction | SelectMenuInteraction) {
+  async executeSlash(
+    interaction:
+      | ChatInputCommandInteraction<'cached'>
+      | ButtonInteraction<'cached'>
+      | StringSelectMenuInteraction<'cached'>
+  ) {
     const guild = interaction.guild as Guild
     const user = interaction.member?.user as User
     const member = interaction.member as GuildMember
-    const text = interaction.channel as GuildTextBasedChannel
+    const text = interaction.channel
     const voice = member?.voice?.channel
+
+    if (!text) return
 
     const meta: Meta = {
       shard_id: this.client.cluster.id,
@@ -155,15 +163,15 @@ export default class {
       }
     }
 
-    const send = async (data: MessageOptions, timeout?: number): Promise<void> => {
-      if (!text.permissionsFor(this.client.user as User)?.has(Permissions.FLAGS.SEND_MESSAGES)) return
+    const send = async (data: BaseMessageOptions, timeout?: number): Promise<void> => {
+      if (!text?.permissionsFor(this.client.user as User)?.has(PermissionsBitField.Flags.SendMessages)) return
 
       try {
         const message = await text.send(data)
 
         if (timeout) {
           setTimeout(async () => {
-            if (!message.channel.isText()) return
+            if (!message.channel.isTextBased()) return
 
             try {
               if (message.deletable) await message.delete()
@@ -191,7 +199,7 @@ export default class {
       if (command.deferred && !interaction.deferred) await interaction.deferReply()
 
       // проверка на админа
-      if (command.adminOnly && !member.permissions.has(Permissions.FLAGS.MANAGE_GUILD)) {
+      if (command.adminOnly && !member.permissions.has(PermissionsBitField.Flags.ManageGuild)) {
         await respond({
           embeds: [
             Utils.generateErrorMessage(
@@ -208,7 +216,7 @@ export default class {
         const djRole = await this.client.db.getAccessRole(guild.id)
 
         if (
-          !member.permissions.has(Permissions.FLAGS.MANAGE_GUILD) &&
+          !member.permissions.has(PermissionsBitField.Flags.ManageGuild) &&
           !member.roles.cache.some((role) => role.name === djRole)
         ) {
           await respond({
@@ -335,7 +343,7 @@ export default class {
       }
     }
 
-    if (interaction.isSelectMenu()) {
+    if (interaction.isStringSelectMenu()) {
       if (interaction?.customId === 'search') {
         const id = interaction.values[0].split(',')[1]
         logger.info({ ...meta }, 'Search result selected')

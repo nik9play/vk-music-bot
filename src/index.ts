@@ -10,9 +10,9 @@ process.on('unhandledRejection', (e) => logger.error(e, 'Unhandled rejection'))
 process.on('uncaughtException', (e, origin) => logger.error({ e, origin }, 'Unhandled exception'))
 //}
 
-process.on('SIGTERM', () => {
-  console.log(1233)
-})
-process.on('SIGINT', () => {
-  console.log(12343)
-})
+// process.on('SIGTERM', () => {
+//   console.log(1233)
+// })
+// process.on('SIGINT', () => {
+//   console.log(12343)
+// })

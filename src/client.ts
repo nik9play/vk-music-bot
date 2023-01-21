@@ -1,4 +1,4 @@
-import { Client, ClientOptions, Collection, MessageEmbed } from 'discord.js'
+import { Client, ClientOptions, Collection, EmbedBuilder } from 'discord.js'
 import Cluster from 'discord-hybrid-sharding-vk'
 import Utils from './utils.js'
 import logger from './logger.js'
@@ -193,12 +193,12 @@ export class VkMusicBotClient extends Client {
           if (player.textId) {
             const channel = this.channels.cache.get(player.textId)
 
-            if (!channel?.isText()) return
+            if (!channel?.isTextBased()) return
 
             try {
               const message = await channel.send({
                 embeds: [
-                  new MessageEmbed().setColor(0x5181b8).setAuthor({
+                  new EmbedBuilder().setColor(0x5181b8).setAuthor({
                     name: `Сейчас играет ${Utils.escapeFormat(track.author)} — ${Utils.escapeFormat(track.title)}.`,
                     iconURL: track.thumbnail
                   })
