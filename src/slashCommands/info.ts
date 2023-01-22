@@ -7,8 +7,7 @@ export default new Command({
   djOnly: false,
   cooldown: 10,
   execute: async function ({ client, respond, guild }) {
-    let totalServers = await client.cluster.fetchClientValues('guilds.cache.size')
-    totalServers = totalServers.reduce((acc, guildCount) => acc + guildCount, 0)
+    const totalServers = 0
 
     let totalPlayers = 0
     let totalRam = 0
@@ -16,7 +15,7 @@ export default new Command({
     let avgCPU = 0
     let count = 0
 
-    client.kagazumo.shoukaku.nodes.forEach((e) => {
+    client.kazagumo.shoukaku.nodes.forEach((e) => {
       totalPlayers += e.stats?.playingPlayers ?? 0
       totalRam += e.stats?.memory.used ?? 0
       avgCPU += e.stats?.cpu.lavalinkLoad ?? 0
@@ -58,12 +57,12 @@ export default new Command({
         },
         {
           name: 'Кол-во кластеров',
-          value: `\`\`\`js\n${client.cluster.count}\`\`\``,
+          value: `\`\`\`js\n${process.env.CLUSTER_TOTAL}\`\`\``,
           inline: true
         },
         {
           name: 'Номер кластера',
-          value: `\`\`\`js\n${client.cluster.id}\`\`\``,
+          value: `\`\`\`js\n${process.env.CLUSTER}\`\`\``,
           inline: true
         },
         {

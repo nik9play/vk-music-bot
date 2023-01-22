@@ -2,7 +2,6 @@ import {
   BaseMessageOptions,
   ButtonInteraction,
   ChatInputCommandInteraction,
-  CommandInteraction,
   Guild,
   GuildMember,
   GuildTextBasedChannel,
@@ -11,7 +10,6 @@ import {
   Message,
   PermissionsBitField,
   StringSelectMenuInteraction,
-  TextBasedChannel,
   User,
   VoiceBasedChannel
 } from 'discord.js'
@@ -22,14 +20,14 @@ import Utils from './utils.js'
 import glob from 'glob'
 import { promisify } from 'util'
 import { generateQueueResponse } from './helpers/queueCommandHelper.js'
-import CustomPlayer from './kagazumo/CustomPlayer.js'
+import CustomPlayer from './kazagumo/CustomPlayer.js'
 import { generateMenuResponse, MenuButtonType } from './helpers/menuCommandHelper.js'
 
 const globPromise = promisify(glob)
 
 export interface Meta {
   guild_id?: string
-  shard_id: number
+  shard_id?: number
 }
 
 export type CommandType = {
@@ -96,7 +94,7 @@ export default class {
         this.executeSlash(interaction).catch((err) =>
           logger.error(
             {
-              shard_id: this.client.cluster.id,
+              shard_id: 0,
               err
             },
             'executeSlash'
@@ -126,17 +124,17 @@ export default class {
       | ButtonInteraction<'cached'>
       | StringSelectMenuInteraction<'cached'>
   ) {
-    const guild = interaction.guild as Guild
-    const user = interaction.member?.user as User
-    const member = interaction.member as GuildMember
+    const guild = interaction.guild
+    const user = interaction.member?.user
+    const member = interaction.member
     const text = interaction.channel
     const voice = member?.voice?.channel
 
     if (!text) return
 
     const meta: Meta = {
-      shard_id: this.client.cluster.id,
-      guild_id: guild?.id
+      guild_id: guild?.id,
+      shard_id: guild?.shardId
     }
 
     const respond = async (data: InteractionReplyOptions, timeout?: number): Promise<void> => {
@@ -185,7 +183,7 @@ export default class {
       }
     }
 
-    if (interaction.isCommand()) {
+    if (interaction.isChatInputCommand()) {
       const command = this.client.commands.get(interaction.commandName)
 
       if (!command) {
@@ -297,21 +295,16 @@ export default class {
         const page = parseInt(interaction?.customId.split('_')[1])
 
         if (page) {
-          const player = this.client.kagazumo.getPlayer<CustomPlayer>(guild.id)
+          const player = this.client.kazagumo.getPlayer<CustomPlayer>(guild.id)
           await interaction.update(generateQueueResponse(page, player) as InteractionUpdateOptions)
         }
       }
 
       if (interaction?.customId.startsWith('menu')) {
         const id = interaction?.customId
-        const player = this.client.kagazumo.getPlayer<CustomPlayer>(guild.id)
+        const player = this.client.kazagumo.getPlayer<CustomPlayer>(guild.id)
 
-        if (!player) {
-          await interaction.update(generateMenuResponse(player) as InteractionUpdateOptions)
-          return
-        }
-
-        if (!voice) {
+        if (!player || !voice) {
           await interaction.update(generateMenuResponse(player) as InteractionUpdateOptions)
           return
         }

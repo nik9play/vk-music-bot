@@ -1,7 +1,6 @@
 import { Command } from '../slashCommandManager.js'
 import Utils, { ErrorMessageType } from '../utils.js'
-import CustomPlayer from '../kagazumo/CustomPlayer.js'
-import { KazagumoTrack } from 'kazagumo'
+import CustomPlayer from '../kazagumo/CustomPlayer.js'
 
 export default new Command({
   name: 'remove',
@@ -10,7 +9,7 @@ export default new Command({
   adminOnly: false,
   premium: false,
   execute: async function ({ guild, voice, client, interaction, respond }) {
-    const player = client.kagazumo.getPlayer<CustomPlayer>(guild.id)
+    const player = client.kazagumo.getPlayer<CustomPlayer>(guild.id)
     if (!player) {
       await respond({
         embeds: [Utils.generateErrorMessage('Сейчас ничего не играет.')],

@@ -1,7 +1,7 @@
 import { Command } from '../slashCommandManager.js'
 import { generateQueueResponse } from '../helpers/queueCommandHelper.js'
 import { InteractionReplyOptions } from 'discord.js'
-import CustomPlayer from '../kagazumo/CustomPlayer.js'
+import CustomPlayer from '../kazagumo/CustomPlayer.js'
 
 export default new Command({
   name: 'queue',
@@ -10,7 +10,7 @@ export default new Command({
   adminOnly: false,
   premium: false,
   execute: async ({ guild, respond, interaction, client }) => {
-    const player = client.kagazumo.getPlayer<CustomPlayer>(guild.id)
+    const player = client.kazagumo.getPlayer<CustomPlayer>(guild.id)
     const pageParam = interaction.options.getInteger('страница')
     const page = pageParam ?? 1
 

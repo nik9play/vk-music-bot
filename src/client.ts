@@ -1,14 +1,13 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import { Client, ClientOptions, Collection, EmbedBuilder } from 'discord.js'
-import Cluster from 'discord-hybrid-sharding-vk'
 import Utils from './utils.js'
 import logger from './logger.js'
 import BotConfigDb from './botConfigDb.js'
-import { CommandType } from './slashCommandManager.js'
-import cross from 'discord-cross-ratelimit'
+import SlashCommandManager, { CommandType } from './slashCommandManager.js'
 import { Events, Kazagumo, KazagumoError, Plugins } from 'kazagumo'
 import { Connectors, NodeOption } from 'shoukaku'
-import CustomPlayer from './kagazumo/CustomPlayer.js'
-const { RequestManager } = cross
+import CustomPlayer from './kazagumo/CustomPlayer.js'
+import { ShardClientUtil } from 'indomitable'
 
 export interface CaptchaInfo {
   type: 'play' | 'search'
@@ -27,51 +26,67 @@ export interface PlayerTrackErrorTracker {
 }
 
 export class VkMusicBotClient extends Client {
+  private exiting = false
+
   //public cooldowns: Collection<string, any> = new Collection()
-  public commands: Collection<string, CommandType> = new Collection()
+  public commands = new Collection<string, CommandType>()
   //public slashOverwrites: Collection<string, CommandType> = new Collection()
-  public captcha: Collection<string, CaptchaInfo> = new Collection()
-  public timers: Collection<string, NodeJS.Timeout> = new Collection()
-  public cluster: Cluster.Client = new Cluster.Client(this)
+  public captcha = new Collection<string, CaptchaInfo>()
+  public timers = new Collection<string, NodeJS.Timeout>()
+  //public cluster: Cluster.Client = new Cluster.Client(this)
   public db: BotConfigDb
   public nodes?: NodeOption[]
-  public kagazumo: Kazagumo
+  public kazagumo: Kazagumo
   public playerTrackErrorTrackers: Collection<string, PlayerTrackErrorTracker> = new Collection()
 
-  constructor(options: ClientOptions, nodes: NodeOption[]) {
+  constructor(options: ClientOptions) {
     super(options)
 
-    Object.assign(this, { rest: new RequestManager(this, this.cluster) })
+    const LavalinkServersString = process.env.LAVALINK_NODES
+
+    if (LavalinkServersString == null) throw new Error('Node env is null.')
+
+    const nodes: NodeOption[] = LavalinkServersString.split(';').map((val): NodeOption => {
+      const arr = val.split(',')
+      return {
+        name: arr[0],
+        url: `${arr[1]}:${arr[2]}`,
+        auth: arr[3],
+        secure: false
+      }
+    })
 
     this.nodes = nodes
 
     if (!process.env.MONGO_URL || !process.env.REDIS_URL) throw new Error('Env not set')
     this.db = new BotConfigDb(process.env.MONGO_URL, process.env.REDIS_URL)
 
-    this.once('ready', () => {
+    this.once('ready', async () => {
       //this.manager.init(this.user?.id)
-      logger.info({ shard_id: this.cluster.id }, `Logged in as ${this.user?.tag} successfully`)
-    })
+      await this.initDb()
+      const slashCommandManager = new SlashCommandManager(this)
+      await slashCommandManager.init()
+      logger.info(`Loaded ${this.commands.size} commands.`)
 
-    this.on('guildDelete', (guild) => {
-      logger.info({ guild_id: guild.id, shard_id: this.cluster.id }, 'Bot leaves')
-      this.kagazumo.destroyPlayer(guild.id)
+      logger.info(`Logged in as ${this.user?.tag} successfully`)
+    }).on('guildDelete', (guild) => {
+      logger.info({ guild_id: guild.id }, 'Bot leaves')
+      this.kazagumo.destroyPlayer(guild.id)
 
       const timer = this.timers.get(guild.id)
       if (timer) clearTimeout(timer)
     })
+
     // .on('voiceStateUpdate', (oldState, newState) => {
     //   logger.info({ newState: newState.channel?.members, oldState: oldState.channel?.members })
     // })
 
-    //this.on('raw', (d) => this.manager.updateVoiceState(d))
-
-    this.kagazumo = new Kazagumo(
+    this.kazagumo = new Kazagumo(
       {
         defaultSearchEngine: 'http',
         send: (id, payload) => {
           const guild = this.guilds.cache.get(id)
-          if (guild) guild.shard.send(payload)
+          guild?.shard.send(payload)
         },
 
         plugins: [new Plugins.PlayerMoved(this)],
@@ -117,15 +132,15 @@ export class VkMusicBotClient extends Client {
       }
     )
 
-    this.kagazumo.shoukaku
+    this.kazagumo.shoukaku
       .on('ready', (node) => {
-        logger.info({ shard: this.cluster.id }, `Node "${node}" connected.`)
+        logger.info({ shard: 0 }, `Node "${node}" connected.`)
       })
       .on('error', (node, error) =>
-        logger.error({ shard: this.cluster.id }, `Node "${node}" encountered an error: ${error.message}.`)
+        logger.error({ shard: 0 }, `Node "${node}" encountered an error: ${error.message}.`)
       )
       .on('close', (node, code, reason) => {
-        logger.info({ shard: this.cluster.id }, `Node "${node}" closed [${code}] [${reason}].`)
+        logger.info({ shard: 0 }, `Node "${node}" closed [${code}] [${reason}].`)
       })
       .on('disconnect', (name, players, moved) => {
         // logger.info({ guild_id: player.guild, shard_id: this.cluster.id }, 'moved player')
@@ -133,19 +148,17 @@ export class VkMusicBotClient extends Client {
         // player.pause(true)
         // setTimeout(() => player.pause(false), 2000)
         if (moved) {
-          logger.info({ shard_id: this.cluster.id }, `Node "${name}" moved`)
+          logger.info(`Node "${name}" moved`)
           return
         }
-        logger.info({ shard: this.cluster.id }, `Node "${name}" disconnected.`)
+        logger.info({ shard: 0 }, `Node "${name}" disconnected.`)
         players.map((player) => player.connection.disconnect())
       })
       .on('debug', (name, info) => {
-        logger.info({ name, info })
+        logger.debug({ name, info }, 'Shoukaku debug')
       })
-    // .on('nodeReconnect', (node) => {
-    //   logger.info({ shard: this.cluster.id }, `Node "${node.options.identifier}" reconnected.`)
-    // })
-    this.kagazumo
+
+    this.kazagumo
       // .on('playerEnd', async (player, track) => {
       //   if (await this.db.get247(player.guild)) return
       //   if (!player?.voiceChannel) return
@@ -219,16 +232,16 @@ export class VkMusicBotClient extends Client {
         }
       })
       .on('playerEmpty', async (player) => {
-        logger.info({ guild_id: player.guildId, shard_id: this.cluster.id }, 'End of queue')
+        logger.info({ guild_id: player.guildId }, 'End of queue')
         if (!(await this.db.get247(player.guildId)))
           if (player) {
-            logger.info({ guild_id: player.guildId, shard_id: this.cluster.id }, 'set timeout')
+            logger.info({ guild_id: player.guildId }, 'set timeout')
             this.timers.set(player.guildId, Utils.getExitTimeout(player, this))
           }
       })
       .on('playerMoved', (player, state, channels) => {
         if (state === 'LEFT') {
-          logger.info({ guild_id: player.guildId, shard_id: this.cluster.id }, 'player disconnected')
+          logger.info({ guild_id: player.guildId }, 'player disconnected')
 
           const timer = this.timers.get(player.guildId)
           if (timer) clearTimeout(timer)
@@ -238,23 +251,22 @@ export class VkMusicBotClient extends Client {
 
         if (state === 'MOVED') {
           logger.info(
-            { guild_id: player.guildId, shard_id: this.cluster.id },
+            { guild_id: player.guildId },
             `player moved new: ${channels.newChannelId}, old: ${channels.oldChannelId}`
           )
         }
       })
       .on('playerDestroy', (player) => {
-        logger.info({ guild_id: player.guildId, shard_id: this.cluster.id }, 'player destroyed')
+        logger.info({ guild_id: player.guildId }, 'player destroyed')
       })
       .on('playerStuck', (player, state) => {
-        logger.warn({ guild_id: state.guildId, shard_id: this.cluster.id }, `Track stuck ${state.type}`)
+        logger.warn({ guild_id: state.guildId }, `Track stuck ${state.type}`)
       })
       .on('playerResolveError', (player, track, message) => {
         logger.error(
           {
             error: message,
             guild_id: player.guildId,
-            shard_id: this.cluster.id,
             name: track.title,
             author: track.author,
             url: track.uri
@@ -291,12 +303,59 @@ export class VkMusicBotClient extends Client {
       })
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       //@ts-ignore
-      .on('debug', (obg) => {
-        logger.info(obg)
+      .on('debug', (obj) => {
+        logger.debug({ obj }, 'Kazagumo debug.')
       })
+    //;['beforeExit', 'SIGUSR1', 'SIGUSR2', 'SIGINT', 'SIGTERM'].map((event) => process.once(event, this.exit.bind(this)))
   }
 
   async initDb() {
     await this.db.init()
+  }
+
+  async login(token?: string | undefined) {
+    await super.login(token)
+
+    setTimeout(() => {
+      new Promise((resolve, reject) => {
+        reject()
+      })
+    }, 5000)
+
+    // @ts-ignore
+    const shardClientUtil = this.shard as ShardClientUtil
+    shardClientUtil.on('message', (msg) => {
+      // @ts-ignore
+      if (msg?.content?.op === 'serverCount' && msg?.repliable) msg.reply(this.guilds.cache.size)
+      // @ts-ignore
+      if (msg?.content?.op === 'clientId' && msg?.repliable) msg.reply(this.user.id)
+      // @ts-ignore
+      if (msg?.content?.op === 'setPresence') {
+        this.user?.setPresence({
+          activities: [
+            {
+              // @ts-ignore
+              name: msg?.content?.data,
+              type: 2
+            }
+          ]
+        })
+      }
+    })
+
+    return this.constructor.name
+  }
+
+  async exit() {
+    this.exiting = true
+    if (this.exiting) return
+
+    logger.info('Cluster shutting down...')
+
+    for (const player of this.kazagumo.players.values()) {
+      player.destroy()
+    }
+    await this.db.close()
+    this.destroy()
   }
 }

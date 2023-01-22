@@ -1,5 +1,7 @@
 import pino from 'pino'
 
+import cluster from 'cluster'
+
 let transport
 
 if (process.env.NODE_ENV === 'development') {
@@ -13,7 +15,15 @@ if (process.env.NODE_ENV === 'development') {
   })
 }
 
-const logger = pino(transport)
+const logger = pino(
+  {
+    level: process.env.NODE_ENV === 'development' ? 'debug' : 'info',
+    formatters: {
+      log: (obj) => ({ cluster_id: cluster.isPrimary ? 'Master' : process.env.CLUSTER, ...obj })
+    }
+  },
+  transport
+)
 logger.info('Logger initialized.')
 
 export default logger

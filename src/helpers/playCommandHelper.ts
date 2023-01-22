@@ -5,7 +5,7 @@ import logger from '../logger.js'
 import VK, { APIResponse, GroupInfo, OneTrackResponse, PlaylistResponse, UserResponse } from '../apis/VK.js'
 import { KazagumoTrack } from 'kazagumo'
 import { RawTrack } from 'kazagumo/dist/Modules/Interfaces.js'
-import CustomPlayer from '../kagazumo/CustomPlayer.js'
+import CustomPlayer from '../kazagumo/CustomPlayer.js'
 
 async function fillQueue(newArray: OneTrackResponse[], player: CustomPlayer, wrongTracks: OneTrackResponse[]) {
   for await (const e of newArray) {
@@ -54,7 +54,7 @@ export async function playCommand(
     })
   }
 
-  const player = await client.kagazumo.createPlayer<CustomPlayer>({
+  const player = await client.kazagumo.createPlayer<CustomPlayer>({
     guildId: guild.id,
     voiceId: voice.id,
     textId: text.id,

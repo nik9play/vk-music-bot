@@ -6,7 +6,7 @@ import {
   EmbedBuilder,
   ButtonStyle
 } from 'discord.js'
-import CustomPlayer from '../kagazumo/CustomPlayer.js'
+import CustomPlayer from '../kazagumo/CustomPlayer.js'
 import Utils from '../utils.js'
 
 export enum MenuButtonType {

@@ -7,7 +7,7 @@ import {
   ButtonStyle
 } from 'discord.js'
 import Utils from '../utils.js'
-import CustomPlayer from '../kagazumo/CustomPlayer.js'
+import CustomPlayer from '../kazagumo/CustomPlayer.js'
 
 export function generateQueueResponse(
   page: number,

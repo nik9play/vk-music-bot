@@ -1,5 +1,5 @@
 import { ChannelType } from 'discord.js'
-import CustomPlayer from '../kagazumo/CustomPlayer.js'
+import CustomPlayer from '../kazagumo/CustomPlayer.js'
 import { Command } from '../slashCommandManager.js'
 import Utils, { ErrorMessageType } from '../utils.js'
 
@@ -10,7 +10,7 @@ export default new Command({
   premium: false,
   cooldown: 1,
   execute: async ({ client, guild, respond, voice, text, interaction }) => {
-    const player = client.kagazumo.getPlayer<CustomPlayer>(guild.id)
+    const player = client.kazagumo.getPlayer<CustomPlayer>(guild.id)
     if (!player) {
       await respond({
         embeds: [Utils.generateErrorMessage('Сейчас ничего не играет.')],

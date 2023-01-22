@@ -1,6 +1,6 @@
 import { EmbedBuilder, VoiceBasedChannel } from 'discord.js'
 import { VkMusicBotClient } from './client.js'
-import CustomPlayer from './kagazumo/CustomPlayer.js'
+import CustomPlayer from './kazagumo/CustomPlayer.js'
 import logger from './logger.js'
 import { RespondFunction } from './slashCommandManager.js'
 
