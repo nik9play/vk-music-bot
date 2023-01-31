@@ -1,3 +1,4 @@
+import { getConfig } from '../db.js'
 import { Command } from '../slashCommandManager.js'
 
 export default new Command({
@@ -7,7 +8,9 @@ export default new Command({
   premium: false,
   djOnly: false,
   execute: async ({ client, guild, respond }) => {
-    const premium = await client.db.checkPremium(guild.id)
+    const config = await getConfig(guild.id)
+
+    const { premium } = config
 
     let info = `${premium ? '**Спасибо за поддержку бота!**\n' : ''}`
 

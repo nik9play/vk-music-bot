@@ -1,3 +1,5 @@
+import e from 'express'
+import { getConfig, updateConfig } from '../db.js'
 import { Command } from '../slashCommandManager.js'
 import Utils, { ErrorMessageType } from '../utils.js'
 
@@ -9,39 +11,42 @@ export default new Command({
   djOnly: false,
   execute: async ({ guild, client, respond, interaction }) => {
     const type = interaction.options.getSubcommand()
-    if (type === 'prefix') {
-      const prefix = interaction.options.getString('префикс', true)
-      const length = prefix.length
+    const config = await getConfig(guild.id)
 
-      if (length < 1 || length > 5) {
-        await respond({
-          embeds: [Utils.generateErrorMessage('Префикс может быть длиной от 1 до 5 символов.')]
-        })
-        return
-      }
+    // if (type === 'prefix') {
+    //   const prefix = interaction.options.getString('префикс', true)
+    //   const length = prefix.length
 
-      await client.db.setPrefix(prefix, guild.id)
-      await respond({
-        embeds: [
-          Utils.generateErrorMessage(
-            `Префикс \`${Utils.escapeFormat(prefix)}\`успешно установлен.`,
-            ErrorMessageType.NoTitle
-          )
-        ]
-      })
-    } else if (type === 'dj') {
+    //   if (length < 1 || length > 5) {
+    //     await respond({
+    //       embeds: [Utils.generateErrorMessage('Префикс может быть длиной от 1 до 5 символов.')]
+    //     })
+    //     return
+    //   }
+
+    //   await client.db.setPrefix(prefix, guild.id)
+    //   await respond({
+    //     embeds: [
+    //       Utils.generateErrorMessage(
+    //         `Префикс \`${Utils.escapeFormat(prefix)}\`успешно установлен.`,
+    //         ErrorMessageType.NoTitle
+    //       )
+    //     ]
+    //   })
+    // } else
+
+    if (type === 'dj') {
       const enable = interaction.options.getBoolean('включен', true)
 
-      await client.db.setAccessRoleEnabled(enable, guild.id)
+      await updateConfig(guild.id, { djMode: enable })
+
       await respond({
         embeds: [
           Utils.generateErrorMessage(
             '**DJ режим ' +
               (enable
                 ? 'включён.**' +
-                  `\nПри включенном DJ режиме **бот будет работать** только у пользователей с ролью \`${await client.db.getAccessRole(
-                    guild.id
-                  )}\`.`
+                  `\nПри включенном DJ режиме **бот будет работать** только у пользователей с ролью \`${config.djRoleName}\`.`
                 : 'выключён.**'),
             ErrorMessageType.NoTitle
           )
@@ -60,7 +65,7 @@ export default new Command({
         return
       }
 
-      await client.db.setAccessRole(name, guild.id)
+      await updateConfig(guild.id, { djRoleName: name })
       await respond({
         embeds: [
           Utils.generateErrorMessage(`DJ роль "${Utils.escapeFormat(name)}" установлена.`, ErrorMessageType.NoTitle)
@@ -69,39 +74,33 @@ export default new Command({
     } else if (type === 'announcements') {
       const enable = interaction.options.getBoolean('включены', true)
 
-      await client.db.setDisableAnnouncements(!enable, guild.id)
+      await updateConfig(guild.id, { announcements: enable })
       await respond({
         embeds: [
           Utils.generateErrorMessage('Оповещения ' + (enable ? 'включены.' : 'выключены.'), ErrorMessageType.NoTitle)
         ]
       })
     } else if (type === 'show') {
+      const { djMode, djRoleName, announcements } = config
+
       const embed = {
         title: '⚙ Настройки',
         color: 0x5181b8,
         fields: [
+          // {
+          //   name: `prefix: ${Utils.escapeFormat(await client.db.getPrefix(guild.id))}`,
+          //   value: 'Настройка префикса.'
+          // },
           {
-            name: `prefix: ${Utils.escapeFormat(await client.db.getPrefix(guild.id))}`,
-            value: 'Настройка префикса.'
-          },
-          {
-            name: `dj: ${
-              (await client.db.getAccessRoleEnabled(guild.id))
-                ? '<:yes2:835498559805063169>'
-                : '<:no2:835498572916195368>'
-            }`,
+            name: `dj: ${djMode ? '<:yes2:835498559805063169>' : '<:no2:835498572916195368>'}`,
             value: 'DJ режим. Позволяет пользоваться ботом только если у пользователя есть определенная роль.'
           },
           {
-            name: `djrole: ${Utils.escapeFormat(await client.db.getAccessRole(guild.id))}`,
+            name: `djrole: ${Utils.escapeFormat(djRoleName)}`,
             value: 'Установка имени роли для DJ режима.'
           },
           {
-            name: `announcements: ${
-              (await client.db.getDisableAnnouncements(guild.id))
-                ? '<:no2:835498572916195368>'
-                : '<:yes2:835498559805063169>'
-            }`,
+            name: `announcements: ${announcements ? '<:no2:835498572916195368>' : '<:yes2:835498559805063169>'}`,
             value: 'Включить/выключить сообщения о каждом играющем треке.'
           }
         ]

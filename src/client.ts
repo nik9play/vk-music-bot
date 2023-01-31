@@ -2,12 +2,12 @@
 import { Client, ClientOptions, Collection, EmbedBuilder } from 'discord.js'
 import Utils from './utils.js'
 import logger from './logger.js'
-import BotConfigDb from './botConfigDb.js'
 import SlashCommandManager, { CommandType } from './slashCommandManager.js'
 import { Events, Kazagumo, KazagumoError, Plugins } from 'kazagumo'
 import { Connectors, NodeOption } from 'shoukaku'
 import CustomPlayer from './kazagumo/CustomPlayer.js'
 import { ShardClientUtil } from 'indomitable'
+import { connectDb, getConfig } from './db.js'
 
 export interface CaptchaInfo {
   type: 'play' | 'search'
@@ -34,7 +34,6 @@ export class VkMusicBotClient extends Client {
   public captcha = new Collection<string, CaptchaInfo>()
   public timers = new Collection<string, NodeJS.Timeout>()
   //public cluster: Cluster.Client = new Cluster.Client(this)
-  public db: BotConfigDb
   public nodes?: NodeOption[]
   public kazagumo: Kazagumo
   public playerTrackErrorTrackers: Collection<string, PlayerTrackErrorTracker> = new Collection()
@@ -59,11 +58,11 @@ export class VkMusicBotClient extends Client {
     this.nodes = nodes
 
     if (!process.env.MONGO_URL || !process.env.REDIS_URL) throw new Error('Env not set')
-    this.db = new BotConfigDb(process.env.MONGO_URL, process.env.REDIS_URL)
+    //this.db = new BotConfigDb(process.env.MONGO_URL, process.env.REDIS_URL)
 
     this.once('ready', async () => {
       //this.manager.init(this.user?.id)
-      await this.initDb()
+      //await this.initDb()
       const slashCommandManager = new SlashCommandManager(this)
       await slashCommandManager.init()
       logger.info(`Loaded ${this.commands.size} commands.`)
@@ -202,7 +201,9 @@ export class VkMusicBotClient extends Client {
       // })
 
       .on('playerStart', async (player, track) => {
-        if (!(await this.db.getDisableAnnouncements(player.guildId))) {
+        const config = await getConfig(player.guildId)
+
+        if (config.announcements) {
           if (player.textId) {
             const channel = this.channels.cache.get(player.textId)
 
@@ -233,7 +234,9 @@ export class VkMusicBotClient extends Client {
       })
       .on('playerEmpty', async (player) => {
         logger.info({ guild_id: player.guildId }, 'End of queue')
-        if (!(await this.db.get247(player.guildId)))
+        const config = await getConfig(player.guildId)
+
+        if (!config.enable247)
           if (player) {
             logger.info({ guild_id: player.guildId }, 'set timeout')
             this.timers.set(player.guildId, Utils.getExitTimeout(player, this))
@@ -309,37 +312,45 @@ export class VkMusicBotClient extends Client {
     //;['beforeExit', 'SIGUSR1', 'SIGUSR2', 'SIGINT', 'SIGTERM'].map((event) => process.once(event, this.exit.bind(this)))
   }
 
-  async initDb() {
-    await this.db.init()
-  }
+  // async initDb() {
+  //   await this.db.init()
+  // }
 
   async login(token?: string | undefined) {
     await super.login(token)
 
-    setTimeout(() => {
-      new Promise((resolve, reject) => {
-        reject()
-      })
-    }, 5000)
+    // setTimeout(() => {
+    //   new Promise((resolve, reject) => {
+    //     reject()
+    //   })
+    // }, 5000)
+
+    await connectDb()
+    logger.info('DB connected.')
 
     // @ts-ignore
     const shardClientUtil = this.shard as ShardClientUtil
-    shardClientUtil.on('message', (msg) => {
-      // @ts-ignore
+    shardClientUtil.on('message', (msg: any) => {
       if (msg?.content?.op === 'serverCount' && msg?.repliable) msg.reply(this.guilds.cache.size)
-      // @ts-ignore
-      if (msg?.content?.op === 'clientId' && msg?.repliable) msg.reply(this.user.id)
-      // @ts-ignore
-      if (msg?.content?.op === 'setPresence') {
+      else if (msg?.content?.op === 'clientId' && msg?.repliable) msg.reply(this.user?.id)
+      else if (msg?.content?.op === 'setPresence') {
         this.user?.setPresence({
           activities: [
             {
-              // @ts-ignore
               name: msg?.content?.data,
               type: 2
             }
           ]
         })
+      } else if (msg?.content?.op === 'clearQueues') {
+        for (const player of this.kazagumo.players.values()) {
+          player.setLoop('none')
+          player.queue.clear()
+        }
+      } else if (msg?.content?.op === 'destroyAll') {
+        for (const player of this.kazagumo.players.values()) {
+          player.destroy()
+        }
       }
     })
 
@@ -355,7 +366,7 @@ export class VkMusicBotClient extends Client {
     for (const player of this.kazagumo.players.values()) {
       player.destroy()
     }
-    await this.db.close()
+    //await this.db.close()
     this.destroy()
   }
 }

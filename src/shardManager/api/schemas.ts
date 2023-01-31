@@ -1,7 +1,7 @@
 import { Static, Type } from '@sinclair/typebox'
 
-export const ReclusterOptions = Type.Object({
-  mode: Type.Union([Type.Literal('gracefulSwitch'), Type.Literal('rolling')])
+export const PlayersOptions = Type.Object({
+  action: Type.Union([Type.Literal('clear-queues'), Type.Literal('destroy-all')])
 })
 
-export type ReclusterOptionsType = Static<typeof ReclusterOptions>
+export type PlayersOptionsType = Static<typeof PlayersOptions>

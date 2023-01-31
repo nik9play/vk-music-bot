@@ -6,6 +6,7 @@ import VK, { APIResponse, GroupInfo, OneTrackResponse, PlaylistResponse, UserRes
 import { KazagumoTrack } from 'kazagumo'
 import { RawTrack } from 'kazagumo/dist/Modules/Interfaces.js'
 import CustomPlayer from '../kazagumo/CustomPlayer.js'
+import { getConfig } from '../db.js'
 
 async function fillQueue(newArray: OneTrackResponse[], player: CustomPlayer, wrongTracks: OneTrackResponse[]) {
   for await (const e of newArray) {
@@ -382,7 +383,9 @@ export async function playCommand(
     )
   }
 
-  if (!(await client.db.checkPremium(guild.id))) {
+  const config = await getConfig(guild.id)
+
+  if (!config.premium) {
     if (player)
       if (player.queue.totalSize > 200) {
         player.queue.length = 200

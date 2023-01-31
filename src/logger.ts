@@ -1,5 +1,4 @@
 import pino from 'pino'
-
 import cluster from 'cluster'
 
 let transport

@@ -14,19 +14,23 @@ const options: IndomitableOptions = {
   clientOptions: {
     makeCache: Options.cacheWithLimits({
       ...Options.DefaultMakeCacheSettings,
-      MessageManager: 50,
+      //MessageManager: 50,
+      //ThreadManager: 20,
       PresenceManager: 0,
-      ThreadManager: 20
+      GuildBanManager: 0,
+      GuildInviteManager: 0,
+      GuildEmojiManager: 0,
+      ReactionManager: 0
     }),
     intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildVoiceStates, GatewayIntentBits.GuildMessages]
   },
   autoRestart: true,
   spawnTimeout: 120_000,
   client: VkMusicBotClient as any,
-  token: process.env.DISCORD_TOKEN ?? ''
+  token: process.env.DISCORD_TOKEN
 }
 
-const manager = new Indomitable(options)
+export const manager = new Indomitable(options)
   .on('error', (err) => {
     logger.error({ err }, "Couldn't start shards")
   })
@@ -157,12 +161,16 @@ async function exit() {
   process.exit()
 }
 
-process.on('uncaughtException', (err, origin) => {
-  logger.error({ err, origin }, 'uncaughtException')
-})
+// process.on('uncaughtException', (err, origin) => {
+//   logger.error({ err, origin }, 'uncaughtException')
+// })
 
-process.on('unhandledRejection', (reason, promise) => {
-  logger.error({ reason, promise }, 'unhandledRejection')
+// process.on('unhandledRejection', (reason, promise) => {
+//   logger.error({ reason, promise }, 'unhandledRejection')
+// })
+
+cluster.on('exit', () => {
+  console.log('huita...')
 })
 
 export { startShardManager }

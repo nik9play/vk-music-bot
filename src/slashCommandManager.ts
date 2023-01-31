@@ -3,7 +3,6 @@ import {
   ButtonInteraction,
   ChatInputCommandInteraction,
   Guild,
-  GuildMember,
   GuildTextBasedChannel,
   InteractionReplyOptions,
   InteractionUpdateOptions,
@@ -22,6 +21,7 @@ import { promisify } from 'util'
 import { generateQueueResponse } from './helpers/queueCommandHelper.js'
 import CustomPlayer from './kazagumo/CustomPlayer.js'
 import { generateMenuResponse, MenuButtonType } from './helpers/menuCommandHelper.js'
+import { getConfig } from './db.js'
 
 const globPromise = promisify(glob)
 
@@ -210,8 +210,10 @@ export default class {
       }
 
       // проверка на dj роль
-      if (await this.client.db.getAccessRoleEnabled(guild.id)) {
-        const djRole = await this.client.db.getAccessRole(guild.id)
+      const config = await getConfig(guild.id)
+
+      if (config.djMode) {
+        const djRole = config.djRoleName
 
         if (
           !member.permissions.has(PermissionsBitField.Flags.ManageGuild) &&
@@ -230,7 +232,7 @@ export default class {
       }
 
       // проверка на премиум
-      if (command.premium && !(await this.client.db.checkPremium(guild.id))) {
+      if (command.premium && !config.premium) {
         await respond({
           embeds: [
             Utils.generateErrorMessage('Для выполнения этой команды требуется **Премиум**! Подробности: /donate.')
@@ -277,7 +279,7 @@ export default class {
         .execute({
           guild,
           user,
-          voice: member.voice.channel as VoiceBasedChannel,
+          voice,
           text,
           client: this.client,
           interaction,

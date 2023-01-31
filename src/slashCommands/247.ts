@@ -1,3 +1,4 @@
+import { getConfig, updateConfig } from '../db.js'
 import CustomPlayer from '../kazagumo/CustomPlayer.js'
 import { Command } from '../slashCommandManager.js'
 import Utils, { ErrorMessageType } from '../utils.js'
@@ -9,8 +10,10 @@ export default new Command({
   premium: true,
   djOnly: false,
   execute: async function ({ guild, client, respond }) {
-    if (!(await client.db.get247(guild.id))) {
-      await client.db.set247(true, guild.id)
+    const config = await getConfig(guild.id)
+
+    if (!config.enable247) {
+      await updateConfig(guild.id, { enable247: true })
       await respond({
         embeds: [Utils.generateErrorMessage('Режим 24/7 включён.', ErrorMessageType.NoTitle)],
         ephemeral: true
@@ -19,7 +22,7 @@ export default new Command({
       const timer = client.timers.get(guild.id)
       if (timer) clearTimeout(timer)
     } else {
-      await client.db.set247(false, guild.id)
+      await updateConfig(guild.id, { enable247: false })
       await respond({
         embeds: [Utils.generateErrorMessage('Режим 24/7 выключен.', ErrorMessageType.NoTitle)],
         ephemeral: true

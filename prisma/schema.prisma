@@ -16,7 +16,9 @@ model ServerConfig {
   premium       Boolean? @default(false)
   announcements Boolean? @default(true)
   djMode        Boolean? @default(false)
-  djRoleName    String?
+  djRoleName    String?  @default("DJ")
+  djRoleId      String?
   prefix        String?  @default("-v")
   enable247     Boolean? @default(false)
+  menuMessageId String?
 }

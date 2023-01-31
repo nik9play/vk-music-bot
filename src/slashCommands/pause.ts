@@ -1,3 +1,4 @@
+import { getConfig } from '../db.js'
 import CustomPlayer from '../kazagumo/CustomPlayer.js'
 import { Command } from '../slashCommandManager.js'
 import Utils, { ErrorMessageType } from '../utils.js'
@@ -40,7 +41,9 @@ export default new Command({
       return
     }
 
-    if (!(await client.db.get247(guild.id))) client.timers.set(guild.id, Utils.getExitTimeout(player, client))
+    const config = await getConfig(guild.id)
+
+    if (!config.enable247) client.timers.set(guild.id, Utils.getExitTimeout(player, client))
 
     await respond({
       embeds: [Utils.generateErrorMessage('⏸️ Пауза поставлена.', ErrorMessageType.NoTitle)]

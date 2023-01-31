@@ -1,39 +1,39 @@
 import fastify from 'fastify'
-import { Client } from 'discord.js'
-import { VkMusicBotClient } from '../../client.js'
 import logger from '../../logger.js'
-import { ReclusterOptions, ReclusterOptionsType } from './schemas.js'
 import { Type } from '@sinclair/typebox'
+import { manager } from '../manager.js'
+import { PlayersOptions, PlayersOptionsType } from './schemas.js'
 
 const server = fastify()
 
-// server.get<{ Params: ReclusterOptionsType }>(
-//   '/api/recluster/:mode',
-//   {
-//     schema: {
-//       params: Type.Strict(ReclusterOptions)
-//     }
-//   },
-//   async (req) => {
-//     manager.recluster?.start({ restartMode: req.params.mode })
+server.get('/api/recluster', async () => {
+  await manager.restartAll().catch((err) => {
+    logger.error({ err }, "Can't restart clusters with api.")
+    return { success: false, error: err.message }
+  })
 
-//     return { success: true }
-//   }
-// )
+  return { success: true }
+})
 
-// server.get('/api/players/:action', async (req) => {
-//   function clearQueues(c: Client) {
-//     const botClient = c as VkMusicBotClient
-//     for (const player of botClient.kagazumo.players.values()) {
-//       player.destroy()
-//       //player.queue.clear()
-//     }
-//   }
+server.get<{ Params: PlayersOptionsType }>(
+  '/api/players/:action',
+  { schema: { params: Type.Strict(PlayersOptions) } },
+  async (req) => {
+    if (req.params.action === 'clear-queues')
+      await manager.ipc?.broadcast({ content: { op: 'clearQueues' } }).catch((err) => {
+        logger.error({ err }, "Can't clear queues with api.")
+        return { success: false, error: err.message }
+      })
 
-//   await manager.broadcastEval(clearQueues)
+    if (req.params.action === 'destroy-all')
+      await manager.ipc?.broadcast({ content: { op: 'destroyAll' } }).catch((err) => {
+        logger.error({ err }, "Can't destroy players with api.")
+        return { success: false, error: err.message }
+      })
 
-//   return { success: true }
-// })
+    return { success: true }
+  }
+)
 
 const port = parseInt(process.env.API_PORT ?? '4000')
 
