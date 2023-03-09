@@ -4,7 +4,7 @@ import logger from '../logger.js'
 import Utils from '../utils.js'
 import { ActionRowBuilder, StringSelectMenuBuilder } from 'discord.js'
 
-export async function searchCommand(params: CommandExecuteParams, queryParam: string) {
+export async function searchCommandHandler(params: CommandExecuteParams, queryParam: string) {
   const { guild, client, captcha, respond, meta } = params
 
   const query: any = {}
@@ -27,6 +27,7 @@ export async function searchCommand(params: CommandExecuteParams, queryParam: st
 
     const reqError = req as APIResponse
 
+    // todo: переделать работу с капчей
     if (reqError.type === 'captcha') {
       client.captcha.set(guild.id, {
         type: 'search',

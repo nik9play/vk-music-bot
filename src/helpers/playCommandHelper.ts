@@ -27,7 +27,7 @@ async function fillQueue(newArray: OneTrackResponse[], player: CustomPlayer, wro
   }
 }
 
-export async function playCommand(
+export async function playCommandHandler(
   params: CommandExecuteParams,
   queryParam: string,
   countParam?: number | null,
@@ -293,6 +293,7 @@ export async function playCommand(
       .setFooter({
         text: 'Чтобы добавить больше 10 треков, введите количество треков в аргумент "количество".'
       })
+      .setThumbnail(req.info.imgUrl ?? null)
 
     await fillQueue(newArray, player, wrongTracks)
 
@@ -318,6 +319,7 @@ export async function playCommand(
       .setFooter({
         text: 'Чтобы добавить больше 10 треков, введите количество треков в аргумент "количество".'
       })
+      .setThumbnail(req.info.img ?? null)
 
     await fillQueue(newArray, player, wrongTracks)
 
@@ -343,6 +345,7 @@ export async function playCommand(
       .setFooter({
         text: 'Чтобы добавить больше 10 треков, введите количество треков в аргумент `количество`.'
       })
+      .setThumbnail(req.info.img ?? null)
 
     await fillQueue(newArray, player, wrongTracks)
 

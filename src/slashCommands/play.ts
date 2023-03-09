@@ -1,5 +1,5 @@
 import { Command } from '../slashCommandManager.js'
-import { playCommand } from '../helpers/playCommandHelper.js'
+import { playCommandHandler } from '../helpers/playCommandHelper.js'
 
 export default new Command({
   name: 'play',
@@ -14,6 +14,6 @@ export default new Command({
     const count = params.interaction.options.getInteger('количество')
     const offset = params.interaction.options.getInteger('отступ')
 
-    await playCommand(params, query, count, offset)
+    await playCommandHandler(params, query, count, offset)
   }
 })

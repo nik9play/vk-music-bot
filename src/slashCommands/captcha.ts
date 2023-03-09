@@ -1,5 +1,5 @@
-import { playCommand } from '../helpers/playCommandHelper.js'
-import { searchCommand } from '../helpers/searchCommandHelper.js'
+import { playCommandHandler } from '../helpers/playCommandHelper.js'
+import { searchCommandHandler } from '../helpers/searchCommandHelper.js'
 import { Command } from '../slashCommandManager.js'
 import Utils, { ErrorMessageType } from '../utils.js'
 
@@ -21,11 +21,11 @@ export default new Command({
       params.captcha = captcha
 
       if (captcha.type === 'play') {
-        await playCommand(params, captcha.query, captcha.count, captcha.offset)
+        await playCommandHandler(params, captcha.query, captcha.count, captcha.offset)
       }
 
       if (captcha.type === 'search') {
-        await searchCommand(params, captcha.query)
+        await searchCommandHandler(params, captcha.query)
       }
     } else {
       await params.respond({

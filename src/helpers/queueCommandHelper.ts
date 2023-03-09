@@ -55,32 +55,24 @@ export function generateQueueResponse(
     text: `Страница ${page > maxPages ? maxPages : page} из ${maxPages}`
   })
 
-  const buttons = []
-
-  if (page - 1 > 0) {
-    buttons.push(
+  const components = [
+    new ActionRowBuilder<ButtonBuilder>().addComponents([
       new ButtonBuilder()
         .setCustomId(`queue_${page - 1}`)
-        .setEmoji('◀️')
+        .setEmoji('<:chevron_left:1073665636741414922>')
         .setStyle(ButtonStyle.Primary)
-    )
-  }
-
-  if (page + 1 <= maxPages) {
-    buttons.push(
+        .setDisabled(page - 1 <= 0),
       new ButtonBuilder()
         .setCustomId(`queue_${page + 1}`)
-        .setEmoji('▶️')
+        .setEmoji('<:chevron_right:1073665639786487818>')
         .setStyle(ButtonStyle.Primary)
-    )
-  }
-
-  const components = []
-
-  if (buttons.length > 0) {
-    const row = new ActionRowBuilder<ButtonBuilder>().addComponents(buttons)
-    components.push(row)
-  }
+        .setDisabled(page + 1 > maxPages),
+      new ButtonBuilder()
+        .setCustomId('deleteMessage')
+        .setStyle(ButtonStyle.Danger)
+        .setEmoji('<:trash_btn:1073668424531709992>')
+    ])
+  ]
 
   return { embeds: [embed], components }
 }

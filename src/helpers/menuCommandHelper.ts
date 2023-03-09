@@ -10,10 +10,11 @@ import CustomPlayer from '../kazagumo/CustomPlayer.js'
 import Utils from '../utils.js'
 
 export enum MenuButtonType {
-  Skip = 'menu_skip',
-  Stop = 'menu_stop',
-  Queue = 'menu_queue',
-  Repeat = 'menu_repeat'
+  Skip = 'skip',
+  Stop = 'stop',
+  Queue = 'queue',
+  Repeat = 'repeat',
+  Pause = 'pause'
 }
 
 export function generateMenuResponse(player?: CustomPlayer): InteractionReplyOptions | InteractionUpdateOptions {
@@ -59,28 +60,28 @@ export function generateMenuResponse(player?: CustomPlayer): InteractionReplyOpt
 
   const row1 = new ActionRowBuilder<ButtonBuilder>().addComponents([
     new ButtonBuilder()
-      .setCustomId(`menu_pause`)
+      .setCustomId('menu_' + MenuButtonType.Pause)
       .setEmoji(player?.paused ? '<:play_btn:1052960565674393640>' : '<:pause_btn:1052960594065641502>')
       .setStyle(ButtonStyle.Primary)
       .setDisabled(!player?.queue.current),
     new ButtonBuilder()
-      .setCustomId(MenuButtonType.Skip)
+      .setCustomId('menu_' + MenuButtonType.Skip)
       .setEmoji('<:skip:1052960924996223037>')
       .setStyle(ButtonStyle.Primary)
       .setDisabled(!player?.queue.current),
     new ButtonBuilder()
-      .setCustomId(MenuButtonType.Stop)
+      .setCustomId('menu_' + MenuButtonType.Stop)
       .setEmoji('<:stop_btn:1052960619940302868>')
       .setStyle(ButtonStyle.Primary)
       .setDisabled(!player?.queue.current),
     new ButtonBuilder()
-      .setCustomId(MenuButtonType.Queue)
+      .setCustomId('menu_' + MenuButtonType.Queue)
       .setEmoji('<:queue:1052960903047426099>')
       .setStyle(ButtonStyle.Primary)
       .setDisabled(!player?.queue),
     //new MessageButton().setCustomId('menu_update').setEmoji('🔃').setStyle(ButtonStyle.Primary),
     new ButtonBuilder()
-      .setCustomId(MenuButtonType.Repeat)
+      .setCustomId('menu_' + MenuButtonType.Repeat)
       .setEmoji(repeatEmojis[player?.loop ?? 'none'])
       .setStyle(ButtonStyle.Primary)
   ])

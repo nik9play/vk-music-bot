@@ -7,7 +7,7 @@ export default new Command({
   adminOnly: true,
   premium: false,
   djOnly: false,
-  execute: async ({ client, guild, respond }) => {
+  execute: async ({ guild, respond }) => {
     const config = await getConfig(guild.id)
 
     const { premium } = config

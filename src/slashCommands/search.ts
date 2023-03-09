@@ -1,5 +1,5 @@
 import { Command } from '../slashCommandManager.js'
-import { searchCommand } from '../helpers/searchCommandHelper.js'
+import { searchCommandHandler } from '../helpers/searchCommandHelper.js'
 
 export default new Command({
   name: 'search',
@@ -11,6 +11,6 @@ export default new Command({
   execute: async function (params) {
     const search = params.interaction.options.getString('запрос') as string
 
-    await searchCommand(params, search)
+    await searchCommandHandler(params, search)
   }
 })
