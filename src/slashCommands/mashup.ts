@@ -1,15 +1,16 @@
-import Utils, { ErrorMessageType } from '../utils.js'
+import mashupList from '../lists/mashup.json' assert { type: 'json' }
+import { playCommandHandler } from '../helpers/playCommandHelper.js'
 import { Command } from '../slashCommandManager.js'
 
 export default new Command({
   name: 'mashup',
   djOnly: true,
-  premium: false,
   adminOnly: false,
-  cooldown: 1,
-  execute: async ({ respond }) => {
-    await respond({
-      embeds: [Utils.generateErrorMessage('Скоро™...', ErrorMessageType.NoTitle)]
-    })
+  premium: false,
+  deferred: true,
+  execute: async (params) => {
+    const id = mashupList[Math.floor(Math.random() * mashupList.length)]
+
+    await playCommandHandler(params, id)
   }
 })

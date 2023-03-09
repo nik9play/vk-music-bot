@@ -7,6 +7,7 @@ export default new Command({
   djOnly: true,
   adminOnly: false,
   premium: false,
+  deferred: true,
   execute: async (params) => {
     const id = gachiList[Math.floor(Math.random() * gachiList.length)]
 
