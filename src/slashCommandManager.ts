@@ -1,11 +1,11 @@
 import {
+  BaseInteraction,
   BaseMessageOptions,
   ButtonInteraction,
   ChatInputCommandInteraction,
   Guild,
   GuildTextBasedChannel,
   InteractionReplyOptions,
-  InteractionUpdateOptions,
   Message,
   PermissionsBitField,
   StringSelectMenuInteraction,
@@ -14,13 +14,10 @@ import {
 } from 'discord.js'
 import logger from './logger.js'
 import { CaptchaInfo, VkMusicBotClient } from './client.js'
-import { playCommand } from './helpers/playCommandHelper.js'
+import { playCommandHandler } from './helpers/playCommandHelper.js'
 import Utils from './utils.js'
 import glob from 'glob'
 import { promisify } from 'util'
-import { generateQueueResponse } from './helpers/queueCommandHelper.js'
-import CustomPlayer from './kazagumo/CustomPlayer.js'
-import { generateMenuResponse, MenuButtonType } from './helpers/menuCommandHelper.js'
 import { getConfig } from './db.js'
 
 const globPromise = promisify(glob)
@@ -28,6 +25,33 @@ const globPromise = promisify(glob)
 export interface Meta {
   guild_id?: string
   shard_id?: number
+}
+
+export type RespondFunction = (data: InteractionReplyOptions, timeout?: number) => Promise<void>
+export type SendFunction = (data: BaseMessageOptions, timeout?: number) => Promise<void>
+
+export interface BaseExecuteParams {
+  guild: Guild
+  user: User
+  voice?: VoiceBasedChannel | null
+  text: GuildTextBasedChannel
+  client: VkMusicBotClient
+  interaction: BaseInteraction<'cached'>
+  respond: RespondFunction
+  send: SendFunction
+  message?: Message
+  captcha?: CaptchaInfo
+  meta: Meta
+}
+
+export type ButtonCustomInteraction = {
+  name: string
+  execute(params: ButtonExecuteParams): Promise<void>
+}
+
+export interface ButtonExecuteParams extends BaseExecuteParams {
+  interaction: ButtonInteraction<'cached'>
+  customAction?: string
 }
 
 export type CommandType = {
@@ -47,21 +71,8 @@ export class Command {
   }
 }
 
-export type RespondFunction = (data: InteractionReplyOptions, timeout?: number) => Promise<void>
-export type SendFunction = (data: BaseMessageOptions, timeout?: number) => Promise<void>
-
-export interface CommandExecuteParams {
-  guild: Guild
-  user: User
-  voice?: VoiceBasedChannel | null
-  text: GuildTextBasedChannel
-  client: VkMusicBotClient
+export interface CommandExecuteParams extends BaseExecuteParams {
   interaction: ChatInputCommandInteraction<'cached'>
-  respond: RespondFunction
-  send: SendFunction
-  message?: Message
-  captcha?: CaptchaInfo
-  meta: Meta
 }
 
 export default class {
@@ -79,11 +90,20 @@ export default class {
       const command: CommandType = module.default
 
       this.client.commands.set(command.name, command)
-      if (command.aliases) {
-        command.aliases.forEach((alias: string) => {
-          this.client.commands.set(alias, command)
-        })
-      }
+      // if (command.aliases) {
+      //   command.aliases.forEach((alias: string) => {
+      //     this.client.commands.set(alias, command)
+      //   })
+      // }
+    }
+
+    const buttonInteractionFiles = await globPromise('**/dist/interactions/buttons/*.js')
+
+    for (const file of buttonInteractionFiles) {
+      const module = await import(`../${file}`)
+      const buttonInteraction: ButtonCustomInteraction = module.default
+
+      this.client.buttonInteractions.set(buttonInteraction.name, buttonInteraction)
     }
 
     this.client.on('interactionCreate', async (interaction) => {
@@ -152,11 +172,9 @@ export default class {
 
         if (timeout)
           setTimeout(async () => {
-            try {
-              await interaction.deleteReply()
-            } catch (err) {
+            await interaction.deleteReply().catch((err) => {
               logger.error({ err, ...meta }, 'Error deleting reply')
-            }
+            })
           }, timeout)
       }
     }
@@ -171,11 +189,10 @@ export default class {
           setTimeout(async () => {
             if (!message.channel.isTextBased()) return
 
-            try {
-              if (message.deletable) await message.delete()
-            } catch (err) {
-              logger.error({ err, ...meta }, "Can't delete message")
-            }
+            if (message.deletable)
+              await message.delete().catch((err) => {
+                logger.error({ err, ...meta }, "Can't delete message")
+              })
           }, timeout)
         }
       } catch (err) {
@@ -291,51 +308,26 @@ export default class {
     }
 
     if (interaction.isButton()) {
-      if (interaction?.customId.startsWith('queue')) {
-        logger.info({ ...meta }, 'Queue button pressed')
+      const customId = interaction.customId.split('_')
+      const name = customId[0]
+      const customAction = customId[1]
+      console.log(interaction.customId)
 
-        const page = parseInt(interaction?.customId.split('_')[1])
+      const buttonInteraction = this.client.buttonInteractions.get(name)
+      await buttonInteraction?.execute({
+        guild,
+        text,
+        voice,
+        client: this.client,
+        user,
+        respond,
+        send,
+        meta,
+        interaction,
+        customAction
+      })
 
-        if (page) {
-          const player = this.client.kazagumo.getPlayer<CustomPlayer>(guild.id)
-          await interaction.update(generateQueueResponse(page, player) as InteractionUpdateOptions)
-        }
-      }
-
-      if (interaction?.customId.startsWith('menu')) {
-        const id = interaction?.customId
-        const player = this.client.kazagumo.getPlayer<CustomPlayer>(guild.id)
-
-        if (!player || !voice) {
-          await interaction.update(generateMenuResponse(player) as InteractionUpdateOptions)
-          return
-        }
-
-        switch (id) {
-          case MenuButtonType.Stop:
-            player.setLoop('none')
-            player.queue.clear()
-            player.skip()
-            break
-          case MenuButtonType.Queue:
-            await respond(generateQueueResponse(1, player) as InteractionReplyOptions)
-            return
-          case MenuButtonType.Skip:
-            player.skip()
-            break
-          case MenuButtonType.Repeat:
-            if (player.loop === 'none') {
-              player.setLoop('track')
-            } else if (player.loop === 'track') {
-              player.setLoop('queue')
-            } else if (player.loop === 'queue') {
-              player.setLoop('none')
-            }
-            break
-        }
-
-        await interaction.update(generateMenuResponse(player) as InteractionUpdateOptions)
-      }
+      return
     }
 
     if (interaction.isStringSelectMenu()) {
@@ -357,7 +349,7 @@ export default class {
             meta
           }
 
-          playCommand(partialParams as CommandExecuteParams, id).catch((err: any) =>
+          playCommandHandler(partialParams as CommandExecuteParams, id).catch((err: any) =>
             logger.error({ err, ...meta }, 'Error executing command from button')
           )
         }
