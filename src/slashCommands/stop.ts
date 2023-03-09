@@ -28,6 +28,7 @@ export default new Command({
     }
     //if (channel.id !== player.voiceChannel) return message.reply("вы находитесь не в том голосовом канале.")
 
+    player.pause(false)
     player.setLoop('none')
     player.queue.clear()
     player.skip()

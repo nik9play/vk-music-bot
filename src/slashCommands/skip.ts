@@ -57,6 +57,7 @@ export default new Command({
     //   return
     // }
 
+    player.pause(false)
     player.skip(skipCount)
 
     await respond(
