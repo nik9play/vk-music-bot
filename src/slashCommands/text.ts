@@ -30,7 +30,7 @@ export default new Command({
 
     let textChannelId = text.id
 
-    const channel = interaction.options.getChannel('канал', true)
+    const channel = interaction.options.getChannel('канал')
 
     if (channel) {
       if (
