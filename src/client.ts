@@ -1,13 +1,14 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
-import { Client, ClientOptions, Collection, EmbedBuilder } from 'discord.js'
+import { Client, ClientOptions, Collection, Message } from 'discord.js'
 import Utils from './utils.js'
 import logger from './logger.js'
-import SlashCommandManager, { CommandType } from './slashCommandManager.js'
+import SlashCommandManager, { ButtonCustomInteraction, CommandType } from './slashCommandManager.js'
 import { Events, Kazagumo, KazagumoError, Plugins } from 'kazagumo'
 import { Connectors, NodeOption } from 'shoukaku'
 import CustomPlayer from './kazagumo/CustomPlayer.js'
 import { ShardClientUtil } from 'indomitable'
 import { connectDb, getConfig } from './db.js'
+import playerStart, { deletePreviousTrackStartMessage } from './events/kazagumo/playerStart.js'
 
 export interface CaptchaInfo {
   type: 'play' | 'search'
@@ -30,9 +31,12 @@ export class VkMusicBotClient extends Client {
 
   //public cooldowns: Collection<string, any> = new Collection()
   public commands = new Collection<string, CommandType>()
+  public buttonInteractions = new Collection<string, ButtonCustomInteraction>()
   //public slashOverwrites: Collection<string, CommandType> = new Collection()
   public captcha = new Collection<string, CaptchaInfo>()
   public timers = new Collection<string, NodeJS.Timeout>()
+  public latestMenus = new Collection<string, Message>()
+  //public latestMenusTimeouts = new Collection<string, NodeJS.Timeout>()
   //public cluster: Cluster.Client = new Cluster.Client(this)
   public nodes?: NodeOption[]
   public kazagumo: Kazagumo
@@ -66,19 +70,36 @@ export class VkMusicBotClient extends Client {
       const slashCommandManager = new SlashCommandManager(this)
       await slashCommandManager.init()
       logger.info(`Loaded ${this.commands.size} commands.`)
+      logger.info(`Loaded ${this.buttonInteractions.size} button interactions.`)
 
       logger.info(`Logged in as ${this.user?.tag} successfully`)
-    }).on('guildDelete', (guild) => {
-      logger.info({ guild_id: guild.id }, 'Bot leaves')
-      this.kazagumo.destroyPlayer(guild.id)
-
-      const timer = this.timers.get(guild.id)
-      if (timer) clearTimeout(timer)
     })
+      .on('guildDelete', (guild) => {
+        logger.info({ guild_id: guild.id }, 'Bot leaves')
+        this.kazagumo.destroyPlayer(guild.id)
 
-    // .on('voiceStateUpdate', (oldState, newState) => {
-    //   logger.info({ newState: newState.channel?.members, oldState: oldState.channel?.members })
-    // })
+        const timer = this.timers.get(guild.id)
+        if (timer) clearTimeout(timer)
+      })
+
+      .on('voiceStateUpdate', async (oldState, newState) => {
+        logger.info({ newState: newState.channel, oldState: oldState.channel })
+        const voiceChannel = oldState.channel || newState.channel
+        if (!voiceChannel) return
+
+        const config = await getConfig(voiceChannel.guildId)
+
+        if (config.enable247) return
+
+        const members = voiceChannel.members.filter((m) => !m.user.bot)
+        if (members.size === 0) {
+          const player = this.kazagumo.getPlayer(voiceChannel.guildId)
+          if (!player) return
+
+          await deletePreviousTrackStartMessage(this, player)
+          player.destroy()
+        }
+      })
 
     this.kazagumo = new Kazagumo(
       {
@@ -120,10 +141,10 @@ export class VkMusicBotClient extends Client {
       new Connectors.DiscordJS(this),
       this.nodes,
       {
-        reconnectTries: 128,
+        reconnectTries: 256,
         reconnectInterval: 10000,
         restTimeout: 60000,
-        moveOnDisconnect: true,
+        moveOnDisconnect: false,
         // resume: true,
         // resumeKey: `kazagumo_cluster_${this.cluster.id}`,
         // resumeTimeout: 30000,
@@ -200,38 +221,7 @@ export class VkMusicBotClient extends Client {
       //   }
       // })
 
-      .on('playerStart', async (player, track) => {
-        const config = await getConfig(player.guildId)
-
-        if (config.announcements) {
-          if (player.textId) {
-            const channel = this.channels.cache.get(player.textId)
-
-            if (!channel?.isTextBased()) return
-
-            try {
-              const message = await channel.send({
-                embeds: [
-                  new EmbedBuilder().setColor(0x5181b8).setAuthor({
-                    name: `Сейчас играет ${Utils.escapeFormat(track.author)} — ${Utils.escapeFormat(track.title)}.`,
-                    iconURL: track.thumbnail
-                  })
-                ]
-              })
-
-              setTimeout(async () => {
-                try {
-                  if (message.deletable) await message.delete()
-                } catch (err) {
-                  logger.error({ err }, "Can't delete message")
-                }
-              }, track.length)
-            } catch {
-              logger.error("Can't send message")
-            }
-          }
-        }
-      })
+      .on('playerStart', playerStart.bind(null, this))
       .on('playerEmpty', async (player) => {
         logger.info({ guild_id: player.guildId }, 'End of queue')
         const config = await getConfig(player.guildId)
@@ -241,6 +231,8 @@ export class VkMusicBotClient extends Client {
             logger.info({ guild_id: player.guildId }, 'set timeout')
             this.timers.set(player.guildId, Utils.getExitTimeout(player, this))
           }
+
+        deletePreviousTrackStartMessage(this, player)
       })
       .on('playerMoved', (player, state, channels) => {
         if (state === 'LEFT') {
