@@ -60,13 +60,16 @@ export async function getConfig(guildId: string): Promise<ServerConfigType> {
   if (configCache) {
     try {
       config = JSON.parse(configCache)
+      logger.debug({ guildId }, 'Config cache get')
     } catch {
       await redis.del(`config/${guildId}`)
 
       config = await ServerConfig.findOne({ guildId })
+      logger.debug({ guildId }, 'Config mongo get')
     }
   } else {
     config = await ServerConfig.findOne({ guildId })
+    logger.debug({ guildId }, 'Config mongo get')
 
     await redis.set(`config/${guildId}`, JSON.stringify(config))
   }
