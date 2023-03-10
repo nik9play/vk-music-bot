@@ -5,15 +5,12 @@ import generatePlayerStartMessage from '../../helpers/playerStartHelper.js'
 import { generateQueueResponse } from '../../helpers/queueCommandHelper.js'
 import CustomPlayer from '../../kazagumo/CustomPlayer.js'
 import { ButtonCustomInteraction } from '../../slashCommandManager.js'
+import Utils from '../../utils.js'
 
 const menu: ButtonCustomInteraction = {
   name: 'menu',
   execute: async ({ interaction, respond, client, guild, customAction }) => {
     const player = client.kazagumo.getPlayer<CustomPlayer>(guild.id)
-    const config = await getConfig(guild.id)
-    // if (!player || !voice) {
-    //   return
-    // }
 
     let action: 'update' | 'delete' = 'delete'
 
@@ -44,7 +41,9 @@ const menu: ButtonCustomInteraction = {
         break
       case MenuButtonType.Pause:
         player?.pause(!player?.paused)
-        //if (!config.enable247) this.client.timers.set(guild.id, Utils.getExitTimeout(player, this.client))
+
+        if (player && !(await getConfig(player?.guildId)).enable247)
+          client.timers.set(guild.id, Utils.getExitTimeout(player, client))
         action = 'update'
         break
     }
