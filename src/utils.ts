@@ -1,4 +1,4 @@
-import { EmbedBuilder, VoiceBasedChannel } from 'discord.js'
+import { EmbedBuilder, MessageCreateOptions, TextBasedChannel, VoiceBasedChannel } from 'discord.js'
 import { VkMusicBotClient } from './client.js'
 import CustomPlayer from './kazagumo/CustomPlayer.js'
 import logger from './logger.js'
@@ -197,6 +197,20 @@ export default class Utils {
         // }
       }
     }, 1200000)
+  }
+
+  public static async sendMessageToChannel(channel: TextBasedChannel, content: MessageCreateOptions, timeout?: number) {
+    try {
+      const message = await channel.send(content)
+
+      if (timeout)
+        setTimeout(async () => {
+          if (message.deletable) await message.delete().catch((err) => logger.error({ err }, "Can't delete message"))
+        }, timeout)
+      else if (message.deletable) await message.delete().catch((err) => logger.error({ err }, "Can't delete message"))
+    } catch {
+      logger.error("Can't send message")
+    }
   }
 
   public static async checkPlayerState(
