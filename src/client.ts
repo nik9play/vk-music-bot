@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { Client, ClientOptions, Collection, Message } from 'discord.js'
-import Utils from './utils.js'
+import Utils, { ErrorMessageType } from './utils.js'
 import logger from './logger.js'
 import SlashCommandManager, { ButtonCustomInteraction, CommandType } from './slashCommandManager.js'
 import { Events, Kazagumo, KazagumoError, Plugins } from 'kazagumo'
@@ -96,8 +96,26 @@ export class VkMusicBotClient extends Client {
           const player = this.kazagumo.getPlayer(voiceChannel.guildId)
           if (!player) return
 
+          const textId = player.textId
+
           await deletePreviousTrackStartMessage(this, player)
           player.destroy()
+
+          const channel = this.channels.cache.get(textId)
+          if (!channel?.isTextBased()) return
+
+          Utils.sendMessageToChannel(
+            channel,
+            {
+              embeds: [
+                Utils.generateErrorMessage(
+                  'Я вышел из канала, так как тут никого не осталось. Включите режим 24/7 (/247), если не хотите, чтобы это происходило.',
+                  ErrorMessageType.Info
+                )
+              ]
+            },
+            20000
+          )
         }
       })
 
