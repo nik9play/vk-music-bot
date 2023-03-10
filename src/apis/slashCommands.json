@@ -127,14 +127,6 @@
   {
     "name": "247",
     "description": "Переключение режима 24/7",
-    "options": [
-      {
-        "type": 5,
-        "name": "состояние",
-        "description": "Состояние режима",
-        "required": true
-      }
-    ],
     "dm_permission": false
   },
   {
