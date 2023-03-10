@@ -7,9 +7,9 @@ import { startApiServer } from './api/apiServer.js'
 
 const options: IndomitableOptions = {
   // Processes to run
-  clusterCount: 2,
+  clusterCount: 1,
   // Websocket shards to run
-  shardCount: 2,
+  shardCount: 1,
   // Discord.JS options
   clientOptions: {
     makeCache: Options.cacheWithLimits({
@@ -63,7 +63,7 @@ async function sendStats() {
   const serverResults = await manager.ipc
     ?.broadcast({ content: { op: 'serverCount' }, repliable: true })
     .catch((err) => {
-      logger.error({ err }, "Can't getting server count.")
+      logger.error({ err }, "Can't get server count.")
       return
     })
 
