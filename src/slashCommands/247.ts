@@ -4,8 +4,7 @@ import { Command } from '../slashCommandManager.js'
 import Utils, { ErrorMessageType } from '../utils.js'
 
 export default new Command({
-  name: '24/7',
-  aliases: ['247'],
+  name: '247',
   adminOnly: true,
   premium: true,
   djOnly: false,
@@ -29,7 +28,8 @@ export default new Command({
       })
       const player = client.kazagumo.getPlayer<CustomPlayer>(guild.id)
       if (player)
-        if (player.paused || player.queue.length == 0) client.timers.set(guild.id, Utils.getExitTimeout(player, client))
+        if (player.paused || (player.queue.length === 0 && !player.queue.current))
+          client.timers.set(guild.id, Utils.getExitTimeout(player, client))
     }
   }
 })
