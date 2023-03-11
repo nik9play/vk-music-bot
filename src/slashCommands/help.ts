@@ -81,11 +81,11 @@ export default new Command({
           value: 'Случайный гачи-ремикс',
           inline: true
         },
-        {
-          name: '`/mashup`',
-          value: 'Случайный мэшап',
-          inline: true
-        },
+        // {
+        //   name: '`/mashup`',
+        //   value: 'Случайный мэшап',
+        //   inline: true
+        // },
 
         {
           name: '⠀',
