@@ -79,8 +79,7 @@ export class VkMusicBotClient extends Client {
         logger.info({ guild_id: guild.id }, 'Bot leaves')
         this.kazagumo.destroyPlayer(guild.id)
 
-        const timer = this.timers.get(guild.id)
-        if (timer) clearTimeout(timer)
+        Utils.clearExitTimeout(guild.id, this)
       })
 
       .on('messageDelete', (message) => {
@@ -269,8 +268,7 @@ export class VkMusicBotClient extends Client {
 
         if (!config.enable247)
           if (player) {
-            logger.info({ guild_id: player.guildId }, 'set timeout')
-            this.timers.set(player.guildId, Utils.getExitTimeout(player, this))
+            Utils.setExitTimeout(player, this)
           }
 
         deletePreviousTrackStartMessage(this, player)
@@ -279,8 +277,7 @@ export class VkMusicBotClient extends Client {
         if (state === 'LEFT') {
           logger.info({ guild_id: player.guildId }, 'player disconnected')
 
-          const timer = this.timers.get(player.guildId)
-          if (timer) clearTimeout(timer)
+          Utils.clearExitTimeout(player.guildId, this)
 
           deletePreviousTrackStartMessage(this, player)
 
@@ -296,8 +293,7 @@ export class VkMusicBotClient extends Client {
       })
       .on('playerDestroy', (player) => {
         logger.info({ guild_id: player.guildId }, 'player destroyed')
-        const timer = this.timers.get(player.guildId)
-        if (timer) clearTimeout(timer)
+        Utils.clearExitTimeout(player.guildId, this)
       })
       .on('playerStuck', (player, state) => {
         logger.warn({ guild_id: state.guildId }, `Track stuck ${state.type}`)

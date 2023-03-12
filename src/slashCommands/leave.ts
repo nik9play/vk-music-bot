@@ -27,8 +27,7 @@ export default new Command({
     }
     //if (channel.id !== player.voiceChannel) return message.reply("вы находитесь не в том голосовом канале.")
 
-    const timer = client.timers.get(guild.id)
-    if (timer) clearTimeout(timer)
+    Utils.clearExitTimeout(guild.id, client)
 
     player.destroy()
 

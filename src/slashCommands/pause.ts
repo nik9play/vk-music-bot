@@ -30,8 +30,7 @@ export default new Command({
     //if (channel.id !== player.voiceChannel) return message.reply("вы находитесь не в том голосовом канале.")
 
     if (player.paused) {
-      const timer = client.timers.get(guild.id)
-      if (timer) clearTimeout(timer)
+      Utils.clearExitTimeout(guild.id, client)
 
       await respond({
         embeds: [Utils.generateErrorMessage('▶️ Пауза снята.', ErrorMessageType.NoTitle)]
@@ -43,7 +42,7 @@ export default new Command({
 
     const config = await getConfig(guild.id)
 
-    if (!config.enable247) client.timers.set(guild.id, Utils.getExitTimeout(player, client))
+    if (!config.enable247) Utils.setExitTimeout(player, client)
 
     await respond({
       embeds: [Utils.generateErrorMessage('⏸️ Пауза поставлена.', ErrorMessageType.NoTitle)]

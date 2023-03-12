@@ -41,15 +41,13 @@ const menu: ButtonCustomInteraction = {
         break
       case MenuButtonType.Pause:
         if (player?.paused) {
-          const timer = client.timers.get(guild.id)
-          if (timer) clearTimeout(timer)
+          Utils.clearExitTimeout(guild.id, client)
 
           player?.pause(false)
         } else {
           player?.pause(true)
 
-          if (player && !(await getConfig(player?.guildId)).enable247)
-            client.timers.set(guild.id, Utils.getExitTimeout(player, client))
+          if (player && !(await getConfig(player?.guildId)).enable247) Utils.setExitTimeout(player, client)
         }
 
         action = 'update'

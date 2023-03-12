@@ -80,8 +80,7 @@ export async function playCommandHandler(
   // сброс таймера и снятие с паузы при добавлении в очередь
   if (player.paused) player.pause(false)
 
-  const timer = client.timers.get(guild.id)
-  if (timer) clearTimeout(timer)
+  Utils.clearExitTimeout(guild.id, client)
 
   const search = queryParam.trim()
 

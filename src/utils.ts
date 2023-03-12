@@ -165,8 +165,6 @@ export default class Utils {
   }
 
   public static getExitTimeout(player: CustomPlayer, client: VkMusicBotClient): NodeJS.Timeout {
-    logger.info(`Exit timeout set ${player.guildId}`)
-
     return setTimeout(async () => {
       if (player) {
         player.destroy()
@@ -197,6 +195,24 @@ export default class Utils {
         // }
       }
     }, 1200000)
+  }
+
+  public static setExitTimeout(player: CustomPlayer, client: VkMusicBotClient) {
+    logger.info(`Exit timeout set ${player.guildId}`)
+
+    this.clearExitTimeout(player.guildId, client)
+
+    client.timers.set(
+      player.guildId,
+      setTimeout(async () => {
+        player?.destroy()
+      }, 1200000)
+    )
+  }
+
+  public static clearExitTimeout(guildId: string, client: VkMusicBotClient) {
+    const timer = client.timers.get(guildId)
+    if (timer) clearTimeout(timer)
   }
 
   public static async sendMessageToChannel(channel: TextBasedChannel, content: MessageCreateOptions, timeout?: number) {

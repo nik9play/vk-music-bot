@@ -12,8 +12,7 @@ export default new Command({
     const player = client.kazagumo.getPlayer<CustomPlayer>(guild.id)
     if (!player) return
 
-    const timer = client.timers.get(guild.id)
-    if (timer) clearTimeout(timer)
+    Utils.clearExitTimeout(guild.id, client)
 
     player.destroy()
 

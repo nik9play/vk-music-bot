@@ -18,8 +18,7 @@ export default new Command({
         ephemeral: true
       })
 
-      const timer = client.timers.get(guild.id)
-      if (timer) clearTimeout(timer)
+      Utils.clearExitTimeout(guild.id, client)
     } else {
       await updateConfig(guild.id, { enable247: false })
       await respond({
@@ -28,8 +27,7 @@ export default new Command({
       })
       const player = client.kazagumo.getPlayer<CustomPlayer>(guild.id)
       if (player)
-        if (player.paused || (player.queue.length === 0 && !player.queue.current))
-          client.timers.set(guild.id, Utils.getExitTimeout(player, client))
+        if (player.paused || (player.queue.length === 0 && !player.queue.current)) Utils.setExitTimeout(player, client)
     }
   }
 })
