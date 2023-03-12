@@ -51,7 +51,7 @@ export default new Command({
 
       const bands = new Array(3).fill(null).map((_, i) => ({ band: i, gain }))
 
-      player.shoukaku.setEqualizer(bands)
+      await player.shoukaku.setEqualizer(bands)
 
       await respond({
         embeds: [
