@@ -3,6 +3,7 @@ import { Player } from 'shoukaku'
 
 export default class CustomPlayer extends KazagumoPlayer {
   constructor(kazagumo: Kazagumo, player: Player, options: KazagumoPlayerOptions, customData: unknown) {
+    options.searchWithSameNode = false
     super(kazagumo, player, options, customData)
   }
 
