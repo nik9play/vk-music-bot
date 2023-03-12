@@ -24,14 +24,17 @@
     "glob": "^8.0.1",
     "indomitable": "^2.1.0",
     "ioredis": "^5.3.0",
-    "kazagumo": "^2.3.1",
+    "kazagumo": "github:nik9play/Kazagumo-custom#main",
     "mongodb": "^4.5.0",
     "mongoose": "^6.9.0",
     "pino": "^8.1.0",
     "redis": "^4.0.6",
-    "shoukaku": "^3.2.3",
+    "shoukaku": "github:Deivu/Shoukaku#59834d257c5447182144c58c5ab0d4a1328c1b25",
     "undici": "^5.12.0",
     "utf-8-validate": "^5.0.4"
+  },
+  "overrides": {
+    "discord-api-types": "0.37.20"
   },
   "devDependencies": {
     "@types/express": "^4.17.14",
