@@ -17,6 +17,7 @@ async function fillQueue(newArray: OneTrackResponse[], player: CustomPlayer, wro
 
     const unresolvedTrack = new KazagumoTrack({ info: {} } as RawTrack, undefined)
 
+    unresolvedTrack.identifier = e.url
     unresolvedTrack.uri = e.url
     unresolvedTrack.title = e.title
     unresolvedTrack.author = e.author
@@ -61,7 +62,8 @@ export async function playCommandHandler(
     textId: text.id,
     deaf: true,
     shardId: guild.shardId,
-    loadBalancer: false
+    loadBalancer: false,
+    nodeName: 'auto'
   })
 
   logger.info(
@@ -226,7 +228,7 @@ export async function playCommandHandler(
       .addFields([
         {
           name: 'Длительность',
-          value: Utils.formatTime(req.duration)
+          value: Utils.formatTime(req.duration * 1000)
         }
       ])
 
@@ -235,7 +237,7 @@ export async function playCommandHandler(
     let res
 
     try {
-      res = await player.search(req.url)
+      res = await player.search(req.url, { requester: undefined, nodeName: 'auto' })
 
       if (!res.tracks.length) {
         logger.error({ ...meta }, 'LOAD_FAILED')
