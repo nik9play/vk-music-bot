@@ -9,6 +9,7 @@ import CustomPlayer from './kazagumo/CustomPlayer.js'
 import { ShardClientUtil } from 'indomitable'
 import { connectDb, getConfig } from './db.js'
 import playerStart, { deletePreviousTrackStartMessage } from './events/kazagumo/playerStart.js'
+import generatePlayerStartMessage from './helpers/playerStartHelper.js'
 
 export interface CaptchaInfo {
   type: 'play' | 'search'
@@ -82,6 +83,16 @@ export class VkMusicBotClient extends Client {
         if (timer) clearTimeout(timer)
       })
 
+      .on('messageDelete', (message) => {
+        if (!message.inGuild()) return
+
+        const menuMessage = this.latestMenus.get(message.guildId)
+        if (!menuMessage) return
+
+        if (message.id === menuMessage.id) this.latestMenus.delete(message.guildId)
+      })
+
+      // TODO: fix this shit
       .on('voiceStateUpdate', async (oldState, newState) => {
         logger.info({ newState: newState.channel, oldState: oldState.channel })
         const voiceChannel = oldState.channel || newState.channel
@@ -129,26 +140,26 @@ export class VkMusicBotClient extends Client {
 
         plugins: [new Plugins.PlayerMoved(this)],
         trackResolver: async function (this, options) {
-          if (!this.kazagumo) throw new KazagumoError(1, 'Kazagumo is not set')
-          const node = this.kazagumo.shoukaku.getNode('auto')
+          // if (!this.kazagumo) throw new KazagumoError(1, 'Kazagumo is not set')
+          // const node = this.kazagumo.shoukaku.getNode('auto')
 
-          if (!node) throw new KazagumoError(3, 'No node is available')
+          // if (!node) throw new KazagumoError(3, 'No node is available')
 
-          this.kazagumo.emit(Events.Debug, `Resolving custom resolver track ${this.title}`)
-          const result = await node.rest.resolve(this.uri).catch((_) => null)
+          // this.kazagumo.emit(Events.Debug, `Resolving custom resolver track ${this.title}`)
+          // const result = await node.rest.resolve(this.uri).catch((_) => null)
 
-          if (!result?.tracks[0]) throw new KazagumoError(2, 'No results found')
+          // if (!result?.tracks[0]) throw new KazagumoError(2, 'No results found')
 
-          const track = result.tracks[0]
+          // const track = result.tracks[0]
 
-          this.track = track.track
-          this.realUri = track.info.uri
-          this.length = track.info.length
-          this.identifier = track.info.identifier
-          this.isSeekable = track.info.isSeekable
-          this.length = track.info.length
-          this.isStream = track.info.isStream
-          this.uri = track.info.uri
+          // this.track = track.track
+          // this.realUri = track.info.uri
+          // this.length = track.info.length
+          // this.identifier = track.info.identifier
+          // this.isSeekable = track.info.isSeekable
+          // this.length = track.info.length
+          // this.isStream = track.info.isStream
+          // this.uri = track.info.uri
 
           return true
         },
@@ -180,7 +191,7 @@ export class VkMusicBotClient extends Client {
       .on('close', (node, code, reason) => {
         logger.info({ shard: 0 }, `Node "${node}" closed [${code}] [${reason}].`)
       })
-      .on('disconnect', (name, players, moved) => {
+      .on('disconnect', (name, moved, count) => {
         // logger.info({ guild_id: player.guild, shard_id: this.cluster.id }, 'moved player')
         // logger.info({ cur: player.voiceChannel, initChannel, newChannel })
         // player.pause(true)
@@ -190,7 +201,7 @@ export class VkMusicBotClient extends Client {
           return
         }
         logger.info({ shard: 0 }, `Node "${name}" disconnected.`)
-        players.map((player) => player.connection.disconnect())
+        //players.map((player) => player.connection.disconnect())
       })
       .on('debug', (name, info) => {
         logger.debug({ name, info }, 'Shoukaku debug')
@@ -239,6 +250,18 @@ export class VkMusicBotClient extends Client {
       //   }
       // })
 
+      .on('playerUpdate', async (player, track) => {
+        logger.info({ track: track.state.position, player: player.position })
+        if (player?.queue.current) {
+          const message = this.latestMenus.get(player.guildId)
+          if (!message) return
+
+          if (message.editable)
+            message
+              .edit(generatePlayerStartMessage(player, player.queue.current))
+              .catch((err) => logger.error({ err }, "Can't edit player start message"))
+        }
+      })
       .on('playerStart', playerStart.bind(null, this))
       .on('playerEmpty', async (player) => {
         logger.info({ guild_id: player.guildId }, 'End of queue')
@@ -259,6 +282,8 @@ export class VkMusicBotClient extends Client {
           const timer = this.timers.get(player.guildId)
           if (timer) clearTimeout(timer)
 
+          deletePreviousTrackStartMessage(this, player)
+
           player.destroy()
         }
 
@@ -271,6 +296,8 @@ export class VkMusicBotClient extends Client {
       })
       .on('playerDestroy', (player) => {
         logger.info({ guild_id: player.guildId }, 'player destroyed')
+        const timer = this.timers.get(player.guildId)
+        if (timer) clearTimeout(timer)
       })
       .on('playerStuck', (player, state) => {
         logger.warn({ guild_id: state.guildId }, `Track stuck ${state.type}`)
