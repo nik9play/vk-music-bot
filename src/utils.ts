@@ -164,53 +164,21 @@ export default class Utils {
     return `&r=${Math.random().toString(36).substring(2, 15)}`
   }
 
-  public static getExitTimeout(player: CustomPlayer, client: VkMusicBotClient): NodeJS.Timeout {
-    return setTimeout(async () => {
-      if (player) {
-        player.destroy()
-        //console.log(client)
-
-        // if (player.textChannel == null) return
-
-        // const channel = client.channels.cache.get(player.textChannel)
-
-        // if (channel?.isText()) {
-        //   try {
-        //     const message = await channel.send({
-        //       embeds: [{
-        //         description: '**Я покинул канал, так как слишком долго был неактивен.**\n Хотите, чтобы я оставался? Включите режим 24/7 (доступен только для Премиум пользователей, подробности: `/donate`). ',
-        //         color: 0x5181b8
-        //       }]
-        //     })
-
-        //     setTimeout(() => {
-        //       if (message && typeof message.delete === 'function') {
-        //         message.delete().catch(err => logger.error({ err }, 'Can\'t delete message'))
-        //       }
-        //     }, 30000)
-        //   } catch (err) {
-        //     logger.error({ err }, 'Can\'t send timeout message')
-        //   }
-
-        // }
-      }
-    }, 1200000)
-  }
-
   public static setExitTimeout(player: CustomPlayer, client: VkMusicBotClient) {
-    logger.info(`Exit timeout set ${player.guildId}`)
-
     this.clearExitTimeout(player.guildId, client)
+    logger.info(`Exit timeout set ${player.guildId}`)
 
     client.timers.set(
       player.guildId,
       setTimeout(async () => {
         player?.destroy()
-      }, 1200000)
+      }, 1_200_000)
     )
   }
 
   public static clearExitTimeout(guildId: string, client: VkMusicBotClient) {
+    logger.info(`Exit timeout clear ${guildId}`)
+
     const timer = client.timers.get(guildId)
     if (timer) clearTimeout(timer)
   }
