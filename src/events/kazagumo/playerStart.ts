@@ -18,11 +18,15 @@ export async function deletePreviousTrackStartMessage(client: VkMusicBotClient, 
         }
         logger.error({ err: err.message }, "Can't delete the previous message")
       })
-      .finally(() => client.latestMenus.delete(player.guildId))
+      .finally(() => {
+        // client.latestMenus.delete(player.guildId)
+        // logger.debug('delete pr track msg')
+      })
   }
 }
 
 export default async function playerStart(client: VkMusicBotClient, player: KazagumoPlayer, track: KazagumoTrack) {
+  console.log(track)
   const config = await getConfig(player.guildId)
 
   if (config.announcements) {
