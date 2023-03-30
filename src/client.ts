@@ -88,7 +88,10 @@ export class VkMusicBotClient extends Client {
         const menuMessage = this.latestMenus.get(message.guildId)
         if (!menuMessage) return
 
-        if (message.id === menuMessage.id) this.latestMenus.delete(message.guildId)
+        if (message.id === menuMessage.id) {
+          this.latestMenus.delete(message.guildId)
+          logger.info('removed latestMenusMessage')
+        }
       })
 
       // TODO: fix this shit
@@ -169,13 +172,13 @@ export class VkMusicBotClient extends Client {
       new Connectors.DiscordJS(this),
       this.nodes,
       {
-        reconnectTries: 256,
-        reconnectInterval: 10000,
-        restTimeout: 60000,
+        reconnectTries: 1,
+        reconnectInterval: 10,
+        restTimeout: 60,
         moveOnDisconnect: false,
-        // resume: true,
-        // resumeKey: `kazagumo_cluster_${this.cluster.id}`,
-        // resumeTimeout: 30000,
+        resume: false,
+        resumeKey: `kazagumo_cluster_${this.shard?.ids[0]}`,
+        resumeTimeout: 30,
         resumeByLibrary: false
       }
     )
@@ -189,6 +192,9 @@ export class VkMusicBotClient extends Client {
       )
       .on('close', (node, code, reason) => {
         logger.info({ shard: 0 }, `Node "${node}" closed [${code}] [${reason}].`)
+
+        this.kazagumo.shoukaku.nodes.get(node)
+        //this.kazagumo.shoukaku.getNode(node)?.players.get('713734408930197524')?.clean()
       })
       .on('disconnect', (name, moved, count) => {
         // logger.info({ guild_id: player.guild, shard_id: this.cluster.id }, 'moved player')
@@ -199,7 +205,10 @@ export class VkMusicBotClient extends Client {
           logger.info(`Node "${name}" moved`)
           return
         }
-        logger.info({ shard: 0 }, `Node "${name}" disconnected.`)
+        logger.info({ shard: 0, count }, `Node "${name}" disconnected.`)
+        logger.info(this.kazagumo.shoukaku.players.get("713734408930197524"))
+        logger.info(this.kazagumo.getPlayer("713734408930197524")?.shoukaku)
+        //console.log(this.kazagumo.shoukaku.getNode(name))
         //players.map((player) => player.connection.disconnect())
       })
       .on('debug', (name, info) => {
@@ -207,6 +216,12 @@ export class VkMusicBotClient extends Client {
       })
 
     this.kazagumo
+      .on('playerClosed', (player) => {
+        console.log('kal1 ', player)
+      })
+      .on('playerException', (player, data) => {
+        console.log('kal2 ', player, data)
+      })
       // .on('playerEnd', async (player, track) => {
       //   if (await this.db.get247(player.guild)) return
       //   if (!player?.voiceChannel) return
@@ -251,7 +266,7 @@ export class VkMusicBotClient extends Client {
 
       .on('playerUpdate', async (player, track) => {
         logger.info({ track: track.state.position, player: player.position })
-        if (player?.queue.current) {
+        if (player.position >= 7_000 && player?.queue.current && !player.paused) {
           const message = this.latestMenus.get(player.guildId)
           if (!message) return
 
@@ -281,7 +296,8 @@ export class VkMusicBotClient extends Client {
 
           deletePreviousTrackStartMessage(this, player)
 
-          player.destroy()
+          // if (player.shoukaku.connection.state !== )
+          // player.destroy()
         }
 
         if (state === 'MOVED') {
@@ -294,6 +310,7 @@ export class VkMusicBotClient extends Client {
       .on('playerDestroy', (player) => {
         logger.info({ guild_id: player.guildId }, 'player destroyed')
         Utils.clearExitTimeout(player.guildId, this)
+        deletePreviousTrackStartMessage(this, player)
       })
       .on('playerStuck', (player, state) => {
         logger.warn({ guild_id: state.guildId }, `Track stuck ${state.type}`)
