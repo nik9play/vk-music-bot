@@ -40,46 +40,58 @@ export default new Command({
 
       await updateConfig(guild.id, { djMode: enable })
 
-      await respond({
-        embeds: [
-          Utils.generateErrorMessage(
-            '**DJ режим ' +
-              (enable
-                ? 'включён.**' +
-                  `\nПри включенном DJ режиме **бот будет работать** только у пользователей с ролью \`${config.djRoleName}\`.`
-                : 'выключён.**'),
-            ErrorMessageType.NoTitle
-          )
-        ]
-      })
+      await respond(
+        {
+          embeds: [
+            Utils.generateErrorMessage(
+              '**DJ режим ' +
+                (enable
+                  ? 'включён.**' +
+                    `\nПри включенном DJ режиме **бот будет работать** только у пользователей с ролью \`${config.djRoleName}\`.`
+                  : 'выключён.**'),
+              ErrorMessageType.NoTitle
+            )
+          ]
+        },
+        20_000
+      )
     } else if (type === 'djrole') {
       const role = interaction.options.getRole('роль', true)
       const name = role.name
 
       if (name === '@everyone' || name === '@here') {
-        await respond({
-          embeds: [
-            Utils.generateErrorMessage(`Нельзя установить роль ${Utils.escapeFormat(name)}.`, ErrorMessageType.Error)
-          ]
-        })
+        await respond(
+          {
+            embeds: [
+              Utils.generateErrorMessage(`Нельзя установить роль ${Utils.escapeFormat(name)}.`, ErrorMessageType.Error)
+            ]
+          },
+          10_000
+        )
         return
       }
 
       await updateConfig(guild.id, { djRoleName: name })
-      await respond({
-        embeds: [
-          Utils.generateErrorMessage(`DJ роль "${Utils.escapeFormat(name)}" установлена.`, ErrorMessageType.NoTitle)
-        ]
-      })
+      await respond(
+        {
+          embeds: [
+            Utils.generateErrorMessage(`DJ роль "${Utils.escapeFormat(name)}" установлена.`, ErrorMessageType.NoTitle)
+          ]
+        },
+        10_000
+      )
     } else if (type === 'announcements') {
       const enable = interaction.options.getBoolean('включены', true)
 
       await updateConfig(guild.id, { announcements: enable })
-      await respond({
-        embeds: [
-          Utils.generateErrorMessage('Оповещения ' + (enable ? 'включены.' : 'выключены.'), ErrorMessageType.NoTitle)
-        ]
-      })
+      await respond(
+        {
+          embeds: [
+            Utils.generateErrorMessage('Оповещения ' + (enable ? 'включены.' : 'выключены.'), ErrorMessageType.NoTitle)
+          ]
+        },
+        10_000
+      )
     } else if (type === 'show') {
       const { djMode, djRoleName, announcements } = config
 
@@ -100,13 +112,13 @@ export default new Command({
             value: 'Установка имени роли для DJ режима.'
           },
           {
-            name: `announcements: ${announcements ? '<:no2:835498572916195368>' : '<:yes2:835498559805063169>'}`,
+            name: `announcements: ${announcements ? '<:yes2:835498559805063169>' : '<:no2:835498572916195368>'}`,
             value: 'Включить/выключить сообщения о каждом играющем треке.'
           }
         ]
       }
 
-      await respond({ embeds: [embed] })
+      await respond({ embeds: [embed] }, 30_000)
     }
   }
 })
