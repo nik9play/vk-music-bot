@@ -159,7 +159,7 @@ export async function playCommandHandler(
 
       const embed = {
         description:
-          'Ошибка! Требуется капча. Введите команду `/captcha`, а после код с картинки.' +
+          'Ошибка! Требуется капча. Введите команду /captcha, а после код с картинки.' +
           `Если картинки не видно, перейдите по [ссылке](${captcha?.url})`,
         color: 0x5181b8,
         image: {
@@ -180,7 +180,11 @@ export async function playCommandHandler(
       })
     } else if (reqError.type === 'request') {
       await respond({
-        embeds: [Utils.generateErrorMessage('Ошибка запроса к серверам ВК.')],
+        embeds: [
+          Utils.generateErrorMessage(
+            'Ошибка запроса к серверам бота. Обратитесь за поддержкой в [группу ВК](https://vk.com/vkmusicbotds) или [сервер Discord](https://discord.com/invite/3ts2znePu7).'
+          )
+        ],
         ephemeral: true
       })
     } else if (reqError.type === 'access_denied') {
@@ -209,10 +213,13 @@ export async function playCommandHandler(
     req = req as OneTrackResponse
 
     if (req.duration > 1800) {
-      await respond({
-        embeds: [Utils.generateErrorMessage('Нельзя добавлять треки длиннее 30 минут.')],
-        ephemeral: true
-      })
+      await respond(
+        {
+          embeds: [Utils.generateErrorMessage('Нельзя добавлять треки длиннее 30 минут.')],
+          ephemeral: true
+        },
+        15_000
+      )
       return
     }
 
@@ -233,40 +240,7 @@ export async function playCommandHandler(
 
     if (req.thumb) songEmbed.setThumbnail(req.thumb)
 
-    let res
-
-    try {
-      res = await player.search(req.url, { requester: undefined, nodeName: 'auto' })
-
-      if (!res.tracks.length) {
-        logger.error({ ...meta }, 'LOAD_FAILED')
-        if (!player.queue.current) player.destroy()
-        await respond({
-          embeds: [Utils.generateErrorMessage('Ошибка загрузки.')],
-          ephemeral: true
-        })
-        return
-      }
-    } catch (err: any) {
-      logger.error({ err, ...meta }, 'Play error')
-      await respond({
-        embeds: [Utils.generateErrorMessage('Ошибка отправки запроса на стороне бота. Свяжитесь с поддержкой.')],
-        ephemeral: true
-      })
-      return
-    }
-
-    switch (res.type) {
-      case 'TRACK':
-        res.tracks[0].title = req.title
-        res.tracks[0].author = req.author
-        res.tracks[0].thumbnail = req.thumb
-
-        player.queue.add(res.tracks[0])
-
-        // TODO: check if size check is needed
-        if (!player.playing && !player.paused && !player.queue.size) await player.play()
-    }
+    await fillQueue([req], player, wrongTracks)
 
     await respond({ embeds: [songEmbed] })
   } else if (arg.type === 'playlist') {

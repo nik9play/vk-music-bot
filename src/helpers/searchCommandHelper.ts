@@ -40,7 +40,7 @@ export async function searchCommandHandler(params: CommandExecuteParams, queryPa
       const captcha = client.captcha.get(guild.id)
       const embed = {
         description:
-          'Ошибка! Требуется капча. Введите команду `/captcha`, а после код с картинки. ' +
+          'Ошибка! Требуется капча. Введите команду /captcha, а после код с картинки. ' +
           `Если картинки не видно, перейдите по [ссылке](${captcha?.url})  (только один раз).`,
         color: 0x5181b8,
         image: {
