@@ -1,8 +1,20 @@
-import { EmbedBuilder, MessageCreateOptions, TextBasedChannel, VoiceBasedChannel } from 'discord.js'
-import { VkMusicBotClient } from './client.js'
-import CustomPlayer from './kazagumo/CustomPlayer.js'
+import {
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  EmbedBuilder,
+  InteractionReplyOptions,
+  MessageCreateOptions,
+  ModalActionRowComponent,
+  ModalActionRowComponentBuilder,
+  TextBasedChannel,
+  TextInputBuilder,
+  TextInputComponent
+} from 'discord.js'
+import { CaptchaInfo, VkMusicBotClient } from './client.js'
 import logger from './logger.js'
-import { RespondFunction } from './slashCommandManager.js'
+import BotPlayer from './modules/botPlayer.js'
+import { RespondFunction } from './modules/slashCommandManager.js'
 
 export interface ArgType {
   type: 'group' | 'playlist' | 'user' | 'track' | 'unknown'
@@ -124,6 +136,36 @@ export default class Utils {
     return text.replace(/([_*~`|\\<>:!])/g, '\\$1').replace(/@(everyone|here|[!&]?[0-9]{17,21})/g, '@\u200b$1')
   }
 
+  public static generateCaptchaMessage(
+    guildId: string,
+    captchaInfo: CaptchaInfo,
+    client: VkMusicBotClient
+  ): InteractionReplyOptions {
+    client.captcha.set(guildId, captchaInfo)
+    const captcha = client.captcha.get(guildId)
+
+    const embed = {
+      description:
+        'Ошибка! Требуется капча. Нажмите на кнопку или введите команду /captcha, а после введите код с картинки. ' +
+        `Если картинки не видно, перейдите по [ссылке](${captcha?.url})`,
+      color: 0x5181b8,
+      image: {
+        url: captcha?.url + this.generateRandomCaptchaString()
+      }
+    }
+
+    const components = [
+      new ActionRowBuilder<ButtonBuilder>().addComponents(
+        new ButtonBuilder().setCustomId(`open_captcha_model`).setLabel('Ввести капчу').setStyle(ButtonStyle.Primary)
+      )
+    ]
+
+    return {
+      embeds: [embed],
+      components
+    }
+  }
+
   public static generateErrorMessage(
     message: string,
     type: ErrorMessageType = ErrorMessageType.Error,
@@ -164,7 +206,7 @@ export default class Utils {
     return `&r=${Math.random().toString(36).substring(2, 15)}`
   }
 
-  public static setExitTimeout(player: CustomPlayer, client: VkMusicBotClient) {
+  public static setExitTimeout(player: BotPlayer, client: VkMusicBotClient) {
     this.clearExitTimeout(player.guildId, client)
     logger.info(`Exit timeout set ${player.guildId}`)
 
@@ -197,42 +239,63 @@ export default class Utils {
     }
   }
 
-  public static async checkPlayerState(
-    respond: RespondFunction,
-    player?: CustomPlayer,
-    voice?: VoiceBasedChannel | null,
-    checkPlayer = true,
-    checkVoice = true,
-    checkQueue = false
-  ): Promise<boolean> {
-    if (checkPlayer)
-      if (!player) {
-        await respond({
-          embeds: [Utils.generateErrorMessage('Сейчас ничего не играет.')],
-          ephemeral: true
-        })
-        return false
-      }
+  // public static async checkPlayerState(
+  //   respond: RespondFunction,
+  //   player?: BotPlayer,
+  //   voice?: VoiceBasedChannel | null,
+  //   checkPlayer = true,
+  //   checkVoice = true,
+  //   checkQueue = false
+  // ): Promise<boolean> {
+  //   if (checkPlayer)
+  //     if (!player) {
+  //       await respond({
+  //         embeds: [Utils.generateErrorMessage('Сейчас ничего не играет.')],
+  //         ephemeral: true
+  //       })
+  //       return false
+  //     }
 
-    if (checkVoice)
-      if (!voice) {
-        await respond({
-          embeds: [Utils.generateErrorMessage('Необходимо находиться в голосовом канале.')],
-          ephemeral: true
-        })
-        return false
-      }
+  //   if (checkVoice)
+  //     if (!voice) {
+  //       await respond({
+  //         embeds: [Utils.generateErrorMessage('Необходимо находиться в голосовом канале.')],
+  //         ephemeral: true
+  //       })
+  //       return false
+  //     }
 
-    if (checkQueue)
-      if (!player?.queue.current) {
-        await respond({
-          embeds: [Utils.generateErrorMessage('Очередь пуста.')],
-          ephemeral: true
-        })
-        return false
-      }
+  //   if (checkQueue)
+  //     if (!player?.current) {
+  //       await respond({
+  //         embeds: [Utils.generateErrorMessage('Очередь пуста.')],
+  //         ephemeral: true
+  //       })
+  //       return false
+  //     }
 
-    return true
+  //   return true
+  // }
+
+  public static async sendNoPlayerMessage(respond: RespondFunction) {
+    await respond({
+      embeds: [Utils.generateErrorMessage('Сейчас ничего не играет.')],
+      ephemeral: true
+    })
+  }
+
+  public static async sendNoVoiceChannelMessage(respond: RespondFunction) {
+    await respond({
+      embeds: [Utils.generateErrorMessage('Необходимо находиться в голосовом канале.')],
+      ephemeral: true
+    })
+  }
+
+  public static async sendNoQueueMessage(respond: RespondFunction) {
+    await respond({
+      embeds: [Utils.generateErrorMessage('Очередь пуста.')],
+      ephemeral: true
+    })
   }
 
   public static generateTrackUrl(source_id: string, access_key?: string): string {

@@ -1,4 +1,4 @@
-import { Command } from '../slashCommandManager.js'
+import { Command } from '../modules/slashCommandManager.js'
 
 export default new Command({
   name: 'info',
@@ -15,7 +15,7 @@ export default new Command({
     let avgCPU = 0
     let count = 0
 
-    client.kazagumo.shoukaku.nodes.forEach((e) => {
+    client.shoukaku.nodes.forEach((e) => {
       totalPlayers += e.stats?.playingPlayers ?? 0
       totalRam += e.stats?.memory.used ?? 0
       avgCPU += e.stats?.cpu.lavalinkLoad ?? 0

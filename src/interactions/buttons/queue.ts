@@ -1,8 +1,7 @@
 import { InteractionUpdateOptions } from 'discord.js'
 import { generateQueueResponse } from '../../helpers/queueCommandHelper.js'
-import CustomPlayer from '../../kazagumo/CustomPlayer.js'
 import logger from '../../logger.js'
-import { ButtonCustomInteraction } from '../../slashCommandManager.js'
+import { ButtonCustomInteraction } from '../../modules/slashCommandManager.js'
 
 const queue: ButtonCustomInteraction = {
   name: 'queue',
@@ -12,7 +11,7 @@ const queue: ButtonCustomInteraction = {
     const page = parseInt(customAction ?? '1')
 
     if (page) {
-      const player = client.kazagumo.getPlayer<CustomPlayer>(guild.id)
+      const player = client.queue.get(guild.id)
       await interaction.update(generateQueueResponse(page, player) as InteractionUpdateOptions)
     }
   }

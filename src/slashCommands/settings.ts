@@ -1,6 +1,6 @@
 import e from 'express'
 import { getConfig, updateConfig } from '../db.js'
-import { Command } from '../slashCommandManager.js'
+import { Command } from '../modules/slashCommandManager.js'
 import Utils, { ErrorMessageType } from '../utils.js'
 
 export default new Command({

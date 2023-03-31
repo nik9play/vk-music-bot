@@ -1,4 +1,4 @@
-import { Command } from '../slashCommandManager.js'
+import { Command } from '../modules/slashCommandManager.js'
 import { playCommandHandler } from '../helpers/playCommandHelper.js'
 
 export default new Command({

@@ -1,6 +1,5 @@
 import Utils from '../utils.js'
-import CustomPlayer from '../kazagumo/CustomPlayer.js'
-import { Command } from '../slashCommandManager.js'
+import { Command } from '../modules/slashCommandManager.js'
 
 export default new Command({
   name: 'skip',
@@ -10,7 +9,7 @@ export default new Command({
   premium: false,
   cooldown: 1,
   execute: async ({ client, guild, voice, respond, interaction }) => {
-    const player = client.kazagumo.getPlayer<CustomPlayer>(guild.id)
+    const player = client.queue.get(guild.id)
     if (!player) {
       await respond({
         embeds: [Utils.generateErrorMessage('Сейчас ничего не играет.')],
@@ -27,15 +26,12 @@ export default new Command({
       return
     }
 
-    if (!player.queue.current) {
-      await respond({
-        embeds: [Utils.generateErrorMessage('Очередь пуста.')],
-        ephemeral: true
-      })
+    if (!player.current) {
+      await Utils.sendNoQueueMessage(respond)
       return
     }
 
-    const { title, author } = player.queue.current
+    const { title, author } = player.current
 
     let skipCount = interaction.options.getInteger('количество')
     if (!skipCount || skipCount < 1) skipCount = 1
@@ -57,7 +53,7 @@ export default new Command({
     //   return
     // }
 
-    player.pause(false)
+    player.player.setPaused(false)
     player.skip(skipCount)
 
     await respond(

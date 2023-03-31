@@ -12,13 +12,13 @@ import {
   User,
   VoiceBasedChannel
 } from 'discord.js'
-import logger from './logger.js'
-import { CaptchaInfo, VkMusicBotClient } from './client.js'
-import { playCommandHandler } from './helpers/playCommandHelper.js'
-import Utils from './utils.js'
+import logger from '../logger.js'
+import { CaptchaInfo, VkMusicBotClient } from '../client.js'
+import { playCommandHandler } from '../helpers/playCommandHelper.js'
+import Utils from '../utils.js'
 import glob from 'glob'
 import { promisify } from 'util'
-import { getConfig } from './db.js'
+import { getConfig } from '../db.js'
 
 const globPromise = promisify(glob)
 
@@ -75,7 +75,7 @@ export interface CommandExecuteParams extends BaseExecuteParams {
   interaction: ChatInputCommandInteraction<'cached'>
 }
 
-export default class {
+export default class SlashCommandManager {
   private readonly client: VkMusicBotClient
 
   constructor(client: VkMusicBotClient) {
@@ -86,7 +86,7 @@ export default class {
     const commandFiles = await globPromise('**/dist/slashCommands/*.js')
 
     for (const file of commandFiles) {
-      const module = await import(`../${file}`)
+      const module = await import(`../../${file}`)
       const command: CommandType = module.default
 
       this.client.commands.set(command.name, command)
@@ -100,7 +100,7 @@ export default class {
     const buttonInteractionFiles = await globPromise('**/dist/interactions/buttons/*.js')
 
     for (const file of buttonInteractionFiles) {
-      const module = await import(`../${file}`)
+      const module = await import(`../../${file}`)
       const buttonInteraction: ButtonCustomInteraction = module.default
 
       this.client.buttonInteractions.set(buttonInteraction.name, buttonInteraction)
@@ -308,7 +308,7 @@ export default class {
     }
 
     if (interaction.isButton()) {
-      const customId = interaction.customId.split('_')
+      const customId = interaction.customId.split(',')
       const name = customId[0]
       const customAction = customId[1]
       console.log(interaction.customId)

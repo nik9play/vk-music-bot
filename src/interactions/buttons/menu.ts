@@ -1,51 +1,53 @@
 import { InteractionReplyOptions } from 'discord.js'
 import { getConfig } from '../../db.js'
-import { MenuButtonType } from '../../helpers/menuCommandHelper.js'
-import generatePlayerStartMessage from '../../helpers/playerStartHelper.js'
+import {
+  deletePreviousTrackStartMessage,
+  generatePlayerStartMessage,
+  MenuButtonType
+} from '../../helpers/playerStartHelper.js'
 import { generateQueueResponse } from '../../helpers/queueCommandHelper.js'
-import CustomPlayer from '../../kazagumo/CustomPlayer.js'
-import { ButtonCustomInteraction } from '../../slashCommandManager.js'
+import { ButtonCustomInteraction } from '../../modules/slashCommandManager.js'
 import Utils from '../../utils.js'
 
 const menu: ButtonCustomInteraction = {
   name: 'menu',
   execute: async ({ interaction, respond, client, guild, customAction }) => {
-    const player = client.kazagumo.getPlayer<CustomPlayer>(guild.id)
+    const player = client.queue.get(guild.id)
+
+    if (!player) {
+      await deletePreviousTrackStartMessage(client, guild.id)
+      return
+    }
 
     let action: 'update' | 'delete' = 'delete'
 
     switch (customAction) {
       case MenuButtonType.Stop:
-        player?.pause(false)
-        player?.setLoop('none')
-        player?.queue.clear()
-        player?.skip()
-        action = 'delete'
+        await player.stop()
         break
       case MenuButtonType.Queue:
         await respond(generateQueueResponse(1, player) as InteractionReplyOptions)
         return
       case MenuButtonType.Skip:
-        player?.pause(false)
-        player?.skip()
+        await player.skip()
         break
       case MenuButtonType.Repeat:
-        if (player?.loop === 'none') {
-          player?.setLoop('track')
-        } else if (player?.loop === 'track') {
-          player?.setLoop('queue')
-        } else if (player?.loop === 'queue') {
-          player?.setLoop('none')
+        if (player.repeat === 'none') {
+          player.repeat = 'track'
+        } else if (player.repeat === 'track') {
+          player.repeat = 'queue'
+        } else if (player.repeat === 'queue') {
+          player.repeat = 'none'
         }
         action = 'update'
         break
       case MenuButtonType.Pause:
-        if (player?.paused) {
+        if (player.player.paused) {
           Utils.clearExitTimeout(guild.id, client)
 
-          player?.pause(false)
+          await player.player.setPaused(false)
         } else {
-          player?.pause(true)
+          await player.player.setPaused(true)
 
           if (player && !(await getConfig(player?.guildId)).enable247) Utils.setExitTimeout(player, client)
         }
@@ -56,8 +58,8 @@ const menu: ButtonCustomInteraction = {
     //await respond({ embeds: [Utils.generateErrorMessage(msg)], ephemeral: true })
 
     if (action === 'update') {
-      if (player?.queue.current) {
-        await interaction.update(generatePlayerStartMessage(player, player.queue.current))
+      if (player.current) {
+        await interaction.update(generatePlayerStartMessage(player, player.current))
         return
       }
 

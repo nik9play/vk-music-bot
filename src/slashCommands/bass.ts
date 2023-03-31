@@ -1,5 +1,4 @@
-import CustomPlayer from '../kazagumo/CustomPlayer.js'
-import { Command } from '../slashCommandManager.js'
+import { Command } from '../modules/slashCommandManager.js'
 import Utils, { ErrorMessageType } from '../utils.js'
 
 const levelTypes = ['выкл', 'слабый', 'средний', 'мощный']
@@ -10,23 +9,17 @@ export default new Command({
   adminOnly: false,
   djOnly: true,
   execute: async function ({ respond, client, guild, voice, interaction }) {
-    const player = client.kazagumo.getPlayer<CustomPlayer>(guild.id)
+    const player = client.queue.get(guild.id)
+
     if (!player) {
-      await respond({
-        embeds: [Utils.generateErrorMessage('Сейчас ничего не играет.')],
-        ephemeral: true
-      })
+      await Utils.sendNoPlayerMessage(respond)
       return
     }
 
-    if (!voice) {
-      await respond({
-        embeds: [Utils.generateErrorMessage('Необходимо находиться в голосовом канале.')],
-        ephemeral: true
-      })
+    if (!player.current) {
+      await Utils.sendNoQueueMessage(respond)
       return
     }
-
     //if (channel.id !== player.voiceChannel) return message.reply("вы находитесь не в том голосовом канале.")
 
     const level = interaction.options.getString('режим') as string
@@ -51,7 +44,7 @@ export default new Command({
 
       const bands = new Array(3).fill(null).map((_, i) => ({ band: i, gain }))
 
-      await player.shoukaku.setEqualizer(bands)
+      await player.player.setEqualizer(bands)
 
       await respond({
         embeds: [

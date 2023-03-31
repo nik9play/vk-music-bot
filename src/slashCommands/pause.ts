@@ -1,6 +1,5 @@
 import { getConfig } from '../db.js'
-import CustomPlayer from '../kazagumo/CustomPlayer.js'
-import { Command } from '../slashCommandManager.js'
+import { Command } from '../modules/slashCommandManager.js'
 import Utils, { ErrorMessageType } from '../utils.js'
 
 export default new Command({
@@ -10,33 +9,27 @@ export default new Command({
   premium: false,
   adminOnly: false,
   execute: async ({ guild, voice, client, respond }) => {
-    const player = client.kazagumo.getPlayer<CustomPlayer>(guild.id)
+    const player = client.queue.get(guild.id)
     if (!player) {
-      await respond({
-        embeds: [Utils.generateErrorMessage('Сейчас ничего не играет.')],
-        ephemeral: true
-      })
+      await Utils.sendNoPlayerMessage(respond)
       return
     }
 
     if (!voice) {
-      await respond({
-        embeds: [Utils.generateErrorMessage('Необходимо находиться в голосовом канале.')],
-        ephemeral: true
-      })
+      await Utils.sendNoVoiceChannelMessage(respond)
       return
     }
 
     //if (channel.id !== player.voiceChannel) return message.reply("вы находитесь не в том голосовом канале.")
 
-    if (player.paused) {
+    if (player.player.paused) {
       Utils.clearExitTimeout(guild.id, client)
 
       await respond({
         embeds: [Utils.generateErrorMessage('▶️ Пауза снята.', ErrorMessageType.NoTitle)]
       })
 
-      player.pause(false)
+      player.player.setPaused(false)
       return
     }
 
@@ -48,7 +41,7 @@ export default new Command({
       embeds: [Utils.generateErrorMessage('⏸️ Пауза поставлена.', ErrorMessageType.NoTitle)]
     })
 
-    player.pause(true)
+    player.player.setPaused(true)
     return
   }
 })

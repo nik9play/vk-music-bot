@@ -1,31 +1,56 @@
-import { CommandExecuteParams } from '../slashCommandManager.js'
+import { CommandExecuteParams } from '../modules/slashCommandManager.js'
 import Utils, { ErrorMessageType } from '../utils.js'
-import { EmbedBuilder, PermissionsBitField, User } from 'discord.js'
+import {
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  EmbedBuilder,
+  Guild,
+  PermissionsBitField,
+  User
+} from 'discord.js'
 import logger from '../logger.js'
 import VK, { APIResponse, GroupInfo, OneTrackResponse, PlaylistResponse, UserResponse } from '../apis/VK.js'
-import { KazagumoTrack } from 'kazagumo'
-import { RawTrack } from 'kazagumo/dist/Modules/Interfaces.js'
-import CustomPlayer from '../kazagumo/CustomPlayer.js'
 import { getConfig } from '../db.js'
+import BotTrack from '../structures/botTrack.js'
+import { VkMusicBotClient } from '../client.js'
+import { Node } from 'shoukaku'
+import BotPlayer from '../modules/botPlayer.js'
 
-async function fillQueue(newArray: OneTrackResponse[], player: CustomPlayer, wrongTracks: OneTrackResponse[]) {
-  for await (const e of newArray) {
-    if (!e.url || e.duration > 1800) {
-      wrongTracks.push(e)
-      continue
-    }
+async function fillQueue(
+  trackResponses: OneTrackResponse[],
+  client: VkMusicBotClient,
+  guild: Guild,
+  voiceChannelId: string,
+  textChannelId: string,
+  node: Node,
+  wrongTracks: OneTrackResponse[]
+) {
+  const tracks: BotTrack[] = trackResponses
+    .filter((e) => {
+      if (!e.url || e.duration > 1800) {
+        wrongTracks.push(e)
+        return false
+      } else {
+        return true
+      }
+    })
+    .map((e) => {
+      const unresolvedTrack = new BotTrack(undefined, e.url, {
+        author: e.author,
+        title: e.title,
+        thumb: e.thumb,
+        duration: e.duration
+      })
 
-    const unresolvedTrack = new KazagumoTrack({ info: {} } as RawTrack, undefined)
+      return unresolvedTrack
+    })
 
-    unresolvedTrack.identifier = e.url
-    unresolvedTrack.uri = e.url
-    unresolvedTrack.title = e.title
-    unresolvedTrack.author = e.author
-    unresolvedTrack.thumbnail = e.thumb
-
-    player.queue.add(unresolvedTrack)
-    if (!player.playing && !player.paused && !player.queue.size) await player.play()
+  const result = await client.queue.handle(guild, voiceChannelId, textChannelId, node, tracks)
+  if (result instanceof BotPlayer) {
+    result.play()
   }
+  return result
 }
 
 export async function playCommandHandler(
@@ -36,11 +61,13 @@ export async function playCommandHandler(
 ) {
   const { guild, voice, text, client, captcha, respond, send, meta } = params
 
-  if (!voice)
-    return respond({
+  if (!voice) {
+    respond({
       embeds: [Utils.generateErrorMessage('Необходимо находиться в голосовом канале.')],
       ephemeral: true
     })
+    return
+  }
 
   const permissions = voice.permissionsFor(client.user as User)
   if (
@@ -50,35 +77,27 @@ export async function playCommandHandler(
       PermissionsBitField.Flags.ViewChannel
     ])
   ) {
-    return respond({
+    respond({
       embeds: [Utils.generateErrorMessage('Мне нужны права, чтобы войти в канал.')],
       ephemeral: true
     })
+    return
   }
 
-  const player = await client.kazagumo.createPlayer<CustomPlayer>({
-    guildId: guild.id,
-    voiceId: voice.id,
-    textId: text.id,
-    deaf: true,
-    shardId: guild.shardId,
-    loadBalancer: false,
-    nodeName: 'auto'
-  })
+  const node = client.shoukaku.getNode('auto')
 
-  logger.info(
-    {
-      guild_id: player.guildId,
-      voice: player.voiceId,
-      state: player.state,
-      ...meta
-    },
-    'Player created'
-  )
-  //if (channel.id !== player.voiceChannel) return message.reply("вы находитесь не в том голосовом канале.")
-
-  // сброс таймера и снятие с паузы при добавлении в очередь
-  if (player.paused) player.pause(false)
+  if (!node) {
+    respond({
+      embeds: [
+        Utils.generateErrorMessage(
+          'Нет доступных серверов для воспроизведения. Попробуйте еще раз через несколько минут, если не сработает, обратитесь за ' +
+            'поддержкой в [группу ВК](https://vk.com/vkmusicbotds) или [сервер Discord](https://discord.com/invite/3ts2znePu7).'
+        )
+      ],
+      ephemeral: true
+    })
+    return
+  }
 
   Utils.clearExitTimeout(guild.id, client)
 
@@ -145,29 +164,21 @@ export async function playCommandHandler(
     const reqError = req as APIResponse
 
     if (reqError.type === 'captcha') {
-      client.captcha.set(guild.id, {
-        type: 'play',
-        query: queryParam,
-        count: countParam,
-        offset: offsetParam,
-        url: reqError.error.captcha_img,
-        sid: reqError.error.captcha_id,
-        index: reqError.error.captcha_index
-      })
-
-      const captcha = client.captcha.get(guild.id)
-
-      const embed = {
-        description:
-          'Ошибка! Требуется капча. Введите команду /captcha, а после код с картинки.' +
-          `Если картинки не видно, перейдите по [ссылке](${captcha?.url})`,
-        color: 0x5181b8,
-        image: {
-          url: captcha?.url + Utils.generateRandomCaptchaString()
-        }
-      }
-
-      await respond({ embeds: [embed], ephemeral: true })
+      await respond(
+        Utils.generateCaptchaMessage(
+          guild.id,
+          {
+            type: 'play',
+            query: queryParam,
+            count: countParam,
+            offset: offsetParam,
+            url: reqError.error.captcha_img,
+            sid: reqError.error.captcha_id,
+            index: reqError.error.captcha_index
+          },
+          client
+        )
+      )
     } else if (reqError.type === 'empty') {
       await respond({
         embeds: [Utils.generateErrorMessage('Не удалось ничего найти по запросу или плейлиста не существует.')],
@@ -207,6 +218,7 @@ export async function playCommandHandler(
     return
   }
 
+  let player: BotPlayer | 'Busy' | null = null
   const wrongTracks: OneTrackResponse[] = []
 
   if (arg.type === 'track') {
@@ -224,7 +236,7 @@ export async function playCommandHandler(
     }
 
     const songEmbed = new EmbedBuilder()
-      .setTitle(Utils.escapeFormat(req.title))
+      .setTitle(Utils.escapeFormat(req.title).slice(0, 256))
       .setURL(Utils.generateTrackUrl(req.id, req.access_key))
       .setColor(0x5181b8)
       .setAuthor({
@@ -240,17 +252,29 @@ export async function playCommandHandler(
 
     if (req.thumb) songEmbed.setThumbnail(req.thumb)
 
-    await fillQueue([req], player, wrongTracks)
+    player = await fillQueue([req], client, guild, voice.id, text.id, node, wrongTracks)
 
-    await respond({ embeds: [songEmbed] })
+    const components = [
+      new ActionRowBuilder<ButtonBuilder>().addComponents([
+        new ButtonBuilder()
+          .setCustomId(`playTrack,${req.id}${req.access_key ? '_' + req.access_key : ''}`)
+          .setLabel('Добавить еще раз')
+          .setStyle(ButtonStyle.Primary)
+      ])
+    ]
+
+    await respond({ embeds: [songEmbed], components })
   } else if (arg.type === 'playlist') {
     req = req as PlaylistResponse
 
     const newArray = req.newArray
 
+    let description: string | null = Utils.escapeFormat(req.info.description)
+    description = description.length === 0 ? null : description
+
     const playlistEmbed = new EmbedBuilder()
-      .setTitle(Utils.escapeFormat(req.info.title))
-      .setDescription(Utils.escapeFormat(req.info.description))
+      .setTitle(Utils.escapeFormat(req.info.title).slice(0, 100))
+      .setDescription(description)
       .setColor(0x5181b8)
       .setAuthor({ name: 'Добавлены треки из плейлиста' })
       .addFields([
@@ -270,7 +294,7 @@ export async function playCommandHandler(
       })
       .setThumbnail(req.info.imgUrl ?? null)
 
-    await fillQueue(newArray, player, wrongTracks)
+    player = await fillQueue(newArray, client, guild, voice.id, text.id, node, wrongTracks)
 
     await respond({ embeds: [playlistEmbed] })
   } else if (arg.type === 'user') {
@@ -279,7 +303,7 @@ export async function playCommandHandler(
     const newArray = req.newArray
 
     const playlistEmbed = new EmbedBuilder()
-      .setTitle(Utils.escapeFormat(req.info.name))
+      .setTitle(Utils.escapeFormat(req.info.name).slice(0, 100))
       .setColor(0x5181b8)
       .setAuthor({
         name: 'Добавлены треки пользователя'
@@ -296,16 +320,19 @@ export async function playCommandHandler(
       })
       .setThumbnail(req.info.img ?? null)
 
-    await fillQueue(newArray, player, wrongTracks)
+    player = await fillQueue(newArray, client, guild, voice.id, text.id, node, wrongTracks)
 
     await respond({ embeds: [playlistEmbed] })
   } else if (arg.type === 'group') {
     req = req as UserResponse
     const newArray = req.newArray
 
+    let description: string | null = Utils.escapeFormat((req.info as GroupInfo).description)
+    description = description.length === 0 ? null : description
+
     const playlistEmbed = new EmbedBuilder()
-      .setTitle(Utils.escapeFormat(req.info.name))
-      .setDescription(Utils.escapeFormat((req.info as GroupInfo).description))
+      .setTitle(Utils.escapeFormat(req.info.name).slice(0, 100))
+      .setDescription(description)
       .setColor(0x5181b8)
       .setAuthor({
         name: 'Добавлены треки из сообщества'
@@ -322,7 +349,7 @@ export async function playCommandHandler(
       })
       .setThumbnail(req.info.img ?? null)
 
-    await fillQueue(newArray, player, wrongTracks)
+    player = await fillQueue(newArray, client, guild, voice.id, text.id, node, wrongTracks)
 
     await respond({ embeds: [playlistEmbed] })
   }
@@ -331,7 +358,7 @@ export async function playCommandHandler(
     let desc = wrongTracks
       .slice(0, 5)
       .map((e) => {
-        return Utils.escapeFormat(`${e.author} - ${e.title}`)
+        return Utils.escapeFormat(`${e.author} – ${e.title}`)
       })
       .join('\n')
 
@@ -364,8 +391,8 @@ export async function playCommandHandler(
   const config = await getConfig(guild.id)
 
   if (!config.premium) {
-    if (player)
-      if (player.queue.totalSize > 200) {
+    if (player instanceof BotPlayer)
+      if (player.queue.length > 200) {
         player.queue.length = 200
         await send({
           embeds: [

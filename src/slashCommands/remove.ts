@@ -1,6 +1,5 @@
-import { Command } from '../slashCommandManager.js'
+import { Command } from '../modules/slashCommandManager.js'
 import Utils, { ErrorMessageType } from '../utils.js'
-import CustomPlayer from '../kazagumo/CustomPlayer.js'
 
 export default new Command({
   name: 'remove',
@@ -9,25 +8,19 @@ export default new Command({
   adminOnly: false,
   premium: false,
   execute: async function ({ guild, voice, client, interaction, respond }) {
-    const player = client.kazagumo.getPlayer<CustomPlayer>(guild.id)
+    const player = client.queue.get(guild.id)
     if (!player) {
-      await respond({
-        embeds: [Utils.generateErrorMessage('Сейчас ничего не играет.')],
-        ephemeral: true
-      })
+      await Utils.sendNoPlayerMessage(respond)
       return
     }
 
     if (!voice) {
-      await respond({
-        embeds: [Utils.generateErrorMessage('Необходимо находиться в голосовом канале.')],
-        ephemeral: true
-      })
+      await Utils.sendNoVoiceChannelMessage(respond)
       return
     }
 
     const queue = player.queue
-    const beforeRemove = player.queue.size
+    const beforeRemove = player.queue.length
 
     let removedTracks = 0
 
@@ -39,12 +32,12 @@ export default new Command({
 
       queue.splice(first - 1, last - first + 1)
 
-      const afterRemove = player.queue.size
+      const afterRemove = player.queue.length
       if (last && first && last > first) removedTracks = beforeRemove - afterRemove
     } else {
       const intArg = parseInt(arg)
-      queue.remove(intArg - 1)
-      const afterRemove = player.queue.size
+      queue.splice(intArg - 1, 1)
+      const afterRemove = player.queue.length
 
       if (intArg >= 1) removedTracks = beforeRemove - afterRemove
     }

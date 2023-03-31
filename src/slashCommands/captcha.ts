@@ -1,6 +1,6 @@
 import { playCommandHandler } from '../helpers/playCommandHelper.js'
 import { searchCommandHandler } from '../helpers/searchCommandHelper.js'
-import { Command } from '../slashCommandManager.js'
+import { Command } from '../modules/slashCommandManager.js'
 import Utils, { ErrorMessageType } from '../utils.js'
 
 export default new Command({

@@ -1,5 +1,4 @@
-import CustomPlayer from '../kazagumo/CustomPlayer.js'
-import { Command } from '../slashCommandManager.js'
+import { Command } from '../modules/slashCommandManager.js'
 import Utils, { ErrorMessageType } from '../utils.js'
 
 export default new Command({
@@ -10,32 +9,23 @@ export default new Command({
   adminOnly: false,
   cooldown: 3,
   execute: async function ({ guild, voice, client, respond }) {
-    const player = client.kazagumo.getPlayer<CustomPlayer>(guild.id)
+    const player = client.queue.get(guild.id)
     if (!player) {
-      await respond({
-        embeds: [Utils.generateErrorMessage('Сейчас ничего не играет.')],
-        ephemeral: true
-      })
+      await Utils.sendNoPlayerMessage(respond)
       return
     }
 
     if (!voice) {
-      await respond({
-        embeds: [Utils.generateErrorMessage('Необходимо находиться в голосовом канале.')],
-        ephemeral: true
-      })
+      await Utils.sendNoVoiceChannelMessage(respond)
       return
     }
 
-    if (!player.queue.current) {
-      await respond({
-        embeds: [Utils.generateErrorMessage('Очередь пуста.')],
-        ephemeral: true
-      })
+    if (player.queue.length === 0) {
+      await Utils.sendNoQueueMessage(respond)
       return
     }
 
-    player.queue.shuffle()
+    player.shuffle()
 
     await respond({
       embeds: [Utils.generateErrorMessage('🔀 Очередь перемешана.', ErrorMessageType.NoTitle)]

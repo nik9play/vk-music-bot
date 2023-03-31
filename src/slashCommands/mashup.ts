@@ -1,6 +1,6 @@
 import mashupList from '../lists/mashup.json' assert { type: 'json' }
 import { playCommandHandler } from '../helpers/playCommandHelper.js'
-import { Command } from '../slashCommandManager.js'
+import { Command } from '../modules/slashCommandManager.js'
 
 export default new Command({
   name: 'mashup',

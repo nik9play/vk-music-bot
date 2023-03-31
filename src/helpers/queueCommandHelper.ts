@@ -6,12 +6,12 @@ import {
   EmbedBuilder,
   ButtonStyle
 } from 'discord.js'
+import BotPlayer from '../modules/botPlayer.js'
 import Utils from '../utils.js'
-import CustomPlayer from '../kazagumo/CustomPlayer.js'
 
 export function generateQueueResponse(
   page: number,
-  player: CustomPlayer | undefined
+  player: BotPlayer | undefined
 ): InteractionReplyOptions | InteractionUpdateOptions {
   if (!player)
     return {
@@ -31,12 +31,12 @@ export function generateQueueResponse(
 
   const tracks = queue.slice(start, end)
 
-  if (queue.current)
+  if (player.current)
     embed.addFields({
       name: 'Сейчас играет',
-      value: `${queue.current.author} — ${queue.current.title} (${Utils.formatTime(player.position)}/${Utils.formatTime(
-        queue.current.length ?? 0
-      )})`
+      value: `${player.current?.author} — ${player.current?.title} (${Utils.formatTime(
+        player.player.position
+      )}/${Utils.formatTime(player.current?.duration ?? 0)})`
     })
   //console.log(queue.current)
 
@@ -58,12 +58,12 @@ export function generateQueueResponse(
   const components = [
     new ActionRowBuilder<ButtonBuilder>().addComponents([
       new ButtonBuilder()
-        .setCustomId(`queue_${page - 1}`)
+        .setCustomId(`queue,${page - 1}`)
         .setEmoji('<:chevron_left:1073665636741414922>')
         .setStyle(ButtonStyle.Primary)
         .setDisabled(page - 1 <= 0),
       new ButtonBuilder()
-        .setCustomId(`queue_${page + 1}`)
+        .setCustomId(`queue,${page + 1}`)
         .setEmoji('<:chevron_right:1073665639786487818>')
         .setStyle(ButtonStyle.Primary)
         .setDisabled(page + 1 > maxPages),

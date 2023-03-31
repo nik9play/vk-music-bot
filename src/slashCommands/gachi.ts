@@ -1,6 +1,6 @@
 import gachiList from '../lists/gachi.json' assert { type: 'json' }
 import { playCommandHandler } from '../helpers/playCommandHelper.js'
-import { Command } from '../slashCommandManager.js'
+import { Command } from '../modules/slashCommandManager.js'
 
 export default new Command({
   name: 'gachi',

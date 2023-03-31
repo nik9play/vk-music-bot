@@ -1,5 +1,4 @@
-import CustomPlayer from '../kazagumo/CustomPlayer.js'
-import { Command } from '../slashCommandManager.js'
+import { Command } from '../modules/slashCommandManager.js'
 import Utils, { ErrorMessageType } from '../utils.js'
 
 export default new Command({
@@ -9,20 +8,14 @@ export default new Command({
   adminOnly: false,
   premium: false,
   execute: async function ({ guild, voice, client, interaction, respond }) {
-    const player = client.kazagumo.getPlayer<CustomPlayer>(guild.id)
+    const player = client.queue.get(guild.id)
     if (!player) {
-      await respond({
-        embeds: [Utils.generateErrorMessage('Сейчас ничего не играет.')],
-        ephemeral: true
-      })
+      await Utils.sendNoPlayerMessage(respond)
       return
     }
 
     if (!voice) {
-      await respond({
-        embeds: [Utils.generateErrorMessage('Необходимо находиться в голосовом канале.')],
-        ephemeral: true
-      })
+      await Utils.sendNoVoiceChannelMessage(respond)
       return
     }
 
@@ -30,21 +23,21 @@ export default new Command({
 
     if (repeatParam) {
       if (repeatParam === 'очередь') {
-        player.setLoop('queue')
+        player.repeat = 'queue'
         await respond({
           embeds: [Utils.generateErrorMessage('🔁 Включен повтор очереди.', ErrorMessageType.NoTitle)]
         })
         return
       }
       if (repeatParam === 'трек') {
-        player.setLoop('track')
+        player.repeat = 'track'
         await respond({
           embeds: [Utils.generateErrorMessage('🔁 Включен повтор трека.', ErrorMessageType.NoTitle)]
         })
         return
       }
       if (repeatParam === 'выкл') {
-        player.setLoop('none')
+        player.repeat = 'none'
         await respond({
           embeds: [Utils.generateErrorMessage('🔁 Повтор выключен.', ErrorMessageType.NoTitle)]
         })
@@ -53,8 +46,8 @@ export default new Command({
     }
 
     let msg
-    if (player.loop === 'track') msg = 'Повтор текущего трека'
-    if (player.loop === 'queue') msg = 'Повтор очереди'
+    if (player.repeat === 'track') msg = 'Повтор текущего трека'
+    if (player.repeat === 'queue') msg = 'Повтор очереди'
 
     if (msg)
       await respond({

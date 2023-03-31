@@ -1,4 +1,4 @@
-import { ButtonCustomInteraction } from '../../slashCommandManager.js'
+import { ButtonCustomInteraction } from '../../modules/slashCommandManager.js'
 
 //todo: проверить работу с fetch
 const deleteMessage: ButtonCustomInteraction = {

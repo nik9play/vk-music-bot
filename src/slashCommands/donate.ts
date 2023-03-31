@@ -1,5 +1,5 @@
 import { getConfig } from '../db.js'
-import { Command } from '../slashCommandManager.js'
+import { Command } from '../modules/slashCommandManager.js'
 
 export default new Command({
   name: 'donate',

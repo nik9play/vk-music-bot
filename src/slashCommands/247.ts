@@ -1,6 +1,5 @@
 import { getConfig, updateConfig } from '../db.js'
-import CustomPlayer from '../kazagumo/CustomPlayer.js'
-import { Command } from '../slashCommandManager.js'
+import { Command } from '../modules/slashCommandManager.js'
 import Utils, { ErrorMessageType } from '../utils.js'
 
 export default new Command({
@@ -25,9 +24,9 @@ export default new Command({
         embeds: [Utils.generateErrorMessage('Режим 24/7 выключен.', ErrorMessageType.NoTitle)],
         ephemeral: true
       })
-      const player = client.kazagumo.getPlayer<CustomPlayer>(guild.id)
+      const player = client.queue.get(guild.id)
       if (player)
-        if (player.paused || (player.queue.length === 0 && !player.queue.current)) Utils.setExitTimeout(player, client)
+        if (player.player.paused || (player.queue.length === 0 && !player.current)) Utils.setExitTimeout(player, client)
     }
   }
 })

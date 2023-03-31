@@ -1,5 +1,4 @@
-import CustomPlayer from '../kazagumo/CustomPlayer.js'
-import { Command } from '../slashCommandManager.js'
+import { Command } from '../modules/slashCommandManager.js'
 import Utils, { ErrorMessageType } from '../utils.js'
 
 export default new Command({
@@ -9,12 +8,11 @@ export default new Command({
   adminOnly: false,
   premium: false,
   execute: async ({ client, respond, guild }) => {
-    const player = client.kazagumo.getPlayer<CustomPlayer>(guild.id)
-    if (!player) return
+    const player = client.queue.get(guild.id)
 
     Utils.clearExitTimeout(guild.id, client)
 
-    player.destroy()
+    await player?.destroy()
 
     await respond({
       embeds: [Utils.generateErrorMessage('🔧', ErrorMessageType.NoTitle)]
