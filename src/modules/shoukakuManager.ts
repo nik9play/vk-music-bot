@@ -22,7 +22,7 @@ const options: ShoukakuOptions = {
   restTimeout: 60,
   moveOnDisconnect: false,
   resume: false,
-  resumeKey: `kazagumo_cluster_asdf`,
+  resumeKey: `shoukaku_cluster_asdf`,
   resumeTimeout: 30,
   resumeByLibrary: false
 }

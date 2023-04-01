@@ -6,7 +6,6 @@ import {
   DiscordAPIError,
   EmbedBuilder
 } from 'discord.js'
-import { KazagumoPlayer, KazagumoTrack } from 'kazagumo'
 
 import Utils from '../utils.js'
 import { VkMusicBotClient } from '../client.js'
