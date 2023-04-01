@@ -5,7 +5,7 @@ import { ButtonCustomInteraction, CommandExecuteParams } from '../../modules/sla
 //todo: проверить работу с fetch
 const playTrack: ButtonCustomInteraction = {
   name: 'playTrack',
-  execute: async ({ customAction, guild, voice, text, user, respond, send, meta, client }) => {
+  execute: async ({ interaction, customAction, guild, voice, text, user, respond, send, meta, client }) => {
     const id = customAction
     if (!id) return
 
@@ -20,6 +20,7 @@ const playTrack: ButtonCustomInteraction = {
       send,
       meta
     }
+    await interaction.deferReply()
     await playCommandHandler(partialParams, id)
   }
 }
