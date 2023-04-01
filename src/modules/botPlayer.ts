@@ -75,7 +75,7 @@ export default class BotPlayer {
         }
       })
       .on('closed', (data) => this.errorHandler(data))
-      .on('update', (data) => {
+      .on('update', () => {
         if (this.current) {
           const message = this.client.latestMenus.get(this.guildId)
           if (!message) return
@@ -90,9 +90,9 @@ export default class BotPlayer {
   }
 
   async errorHandler(data: any) {
-    if (data instanceof Error || data instanceof Object) logger.error(data, 'BotPlayer error')
-    this.queue.length = 0
-    await this.destroy()
+    if (data instanceof Error || data instanceof Object) logger.debug(data, 'BotPlayer closed')
+    // this.queue.length = 0
+    // await this.destroy()
   }
 
   get exists() {

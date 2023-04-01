@@ -74,39 +74,102 @@ export class VkMusicBotClient extends Client {
 
       // TODO: fix this shit
       .on('voiceStateUpdate', async (oldState, newState) => {
-        logger.info({ newState: newState, oldState: oldState })
-        const voiceChannel = oldState.channel || newState.channel
-        if (!voiceChannel) return
+        logger.info({
+          newState: newState,
+          oldState: oldState
+        })
 
-        const config = await getConfig(voiceChannel.guildId)
+        if (oldState.id === this.user?.id) {
+          const newChannelId = newState.channelId
+          const oldChannelId = oldState.channelId
+          const guildId = newState.guild.id
 
-        if (config.enable247) return
+          const player = this.queue.get(guildId)
+          if (!player) return
 
-        const members = voiceChannel.members.filter((m) => !m.user.bot)
-        if (members.size === 0) {
+          const config = await getConfig(guildId)
+
+          let state: 'UNKNOWN' | 'LEFT' | 'JOINED' | 'MOVED' = 'UNKNOWN'
+          if (!oldChannelId && newChannelId) state = 'JOINED'
+          else if (oldChannelId && !newChannelId) state = 'LEFT'
+          else if (oldChannelId && newChannelId && oldChannelId !== newChannelId) state = 'MOVED'
+
+          if (state === 'UNKNOWN') return
+
+          if (state === 'LEFT') {
+            await player.destroy()
+            logger.debug({ guildId }, 'Player left')
+            return
+          }
+
+          if (state === 'MOVED' && !config.enable247) {
+            const members = newState.channel?.members.filter((m) => !m.user.bot)
+
+            if (members?.size === 0) {
+              const textId = player.textChannelId
+
+              await player.destroy()
+
+              await Promise.all([deletePreviousTrackStartMessage(this, guildId), player.destroy()])
+
+              const channel = this.channels.cache.get(textId)
+              if (!channel?.isTextBased()) return
+
+              await Utils.sendMessageToChannel(
+                channel,
+                {
+                  embeds: [
+                    Utils.generateErrorMessage(
+                      'Я вышел из канала, так как тут никого нет. ' +
+                        'Включите режим 24/7 (/247), если не хотите, чтобы это происходило.',
+                      ErrorMessageType.Info
+                    )
+                  ]
+                },
+                20000
+              )
+
+              logger.debug({ guildId }, 'Player moved')
+            }
+          }
+        } else {
+          const voiceChannel = oldState.channel || newState.channel
+          if (!voiceChannel) return
+
+          const config = await getConfig(voiceChannel.guildId)
+          if (config.enable247) return
+
           const player = this.queue.get(voiceChannel.guildId)
           if (!player) return
 
-          const textId = player.textChannelId
+          const members = voiceChannel.members.filter((m) => !m.user.bot)
 
-          await deletePreviousTrackStartMessage(this, player.guildId)
-          player.destroy()
+          if (members.size === 0) {
+            const textId = player.textChannelId
 
-          const channel = this.channels.cache.get(textId)
-          if (!channel?.isTextBased()) return
+            await player.destroy()
 
-          Utils.sendMessageToChannel(
-            channel,
-            {
-              embeds: [
-                Utils.generateErrorMessage(
-                  'Я вышел из канала, так как тут никого не осталось. Включите режим 24/7 (/247), если не хотите, чтобы это происходило.',
-                  ErrorMessageType.Info
-                )
-              ]
-            },
-            20000
-          )
+            await Promise.all([deletePreviousTrackStartMessage(this, voiceChannel.guildId), player.destroy()])
+
+            const channel = this.channels.cache.get(textId)
+            if (!channel?.isTextBased()) return
+
+            await Utils.sendMessageToChannel(
+              channel,
+              {
+                embeds: [
+                  Utils.generateErrorMessage(
+                    'Я вышел из канала, так как тут никого нет. ' +
+                      'Включите режим 24/7 (/247), если не хотите, чтобы это происходило.',
+                    ErrorMessageType.Info
+                  )
+                ]
+              },
+              20000
+            )
+
+            logger.debug({ guildId: voiceChannel.guildId }, 'Player leaved empty channel')
+          }
         }
       })
 
