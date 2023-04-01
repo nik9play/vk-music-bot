@@ -196,10 +196,7 @@ export default class Utils {
       message = this.escapeFormat(message)
     }
 
-    return new EmbedBuilder({
-      description: `${title}\n${message}`,
-      color
-    })
+    return new EmbedBuilder().setDescription(`${title}\n${message}`).setColor(color)
   }
 
   public static generateRandomCaptchaString(): string {
