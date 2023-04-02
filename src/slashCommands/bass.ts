@@ -20,6 +20,8 @@ export default new Command({
       await Utils.sendNoQueueMessage(respond)
       return
     }
+
+    await Utils.checkNodeState(player, respond)
     //if (channel.id !== player.voiceChannel) return message.reply("вы находитесь не в том голосовом канале.")
 
     const level = interaction.options.getString('режим') as string

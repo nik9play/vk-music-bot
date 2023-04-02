@@ -9,7 +9,7 @@ const openCaptchaModel: ButtonCustomInteraction = {
 
     const components = new ActionRowBuilder<ModalActionRowComponentBuilder>().addComponents(
       new TextInputBuilder()
-        .setCustomId('captcha_key')
+        .setCustomId('captchaKey')
         .setLabel('Введите капчу')
         .setStyle(TextInputStyle.Short)
         .setMinLength(4)

@@ -21,6 +21,8 @@ export default new Command({
     }
     //if (channel.id !== player.voiceChannel) return message.reply("вы находитесь не в том голосовом канале.")
 
+    await Utils.checkNodeState(player, respond)
+
     await player.stop()
 
     await respond(

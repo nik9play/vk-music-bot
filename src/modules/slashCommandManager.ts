@@ -19,6 +19,7 @@ import Utils from '../utils.js'
 import glob from 'glob'
 import { promisify } from 'util'
 import { getConfig } from '../db.js'
+import BotPlayer from './botPlayer.js'
 
 const globPromise = promisify(glob)
 
@@ -114,7 +115,6 @@ export default class SlashCommandManager {
         this.executeSlash(interaction).catch((err) =>
           logger.error(
             {
-              shard_id: 0,
               err
             },
             'executeSlash'

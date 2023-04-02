@@ -17,14 +17,14 @@ const nodes: NodeOption[] = LavalinkServersString.split(';').map((val): NodeOpti
 })
 
 const options: ShoukakuOptions = {
-  reconnectTries: 1,
+  reconnectTries: 5,
   reconnectInterval: 10,
   restTimeout: 60,
   moveOnDisconnect: false,
   resume: false,
   resumeKey: `shoukaku_cluster_asdf`,
   resumeTimeout: 30,
-  resumeByLibrary: false
+  resumeByLibrary: true
 }
 
 export default class ShoukakuManager extends Shoukaku {
@@ -37,7 +37,7 @@ export default class ShoukakuManager extends Shoukaku {
         }`
       )
     )
-    this.on('error', (_, error) => logger.error(error, 'Shoukaku Error'))
+    this.on('error', (_, error) => logger.error({ error }, 'Shoukaku Error'))
     this.on('close', (name, code, reason) =>
       logger.info(`Shoukaku Lavalink Node: ${name} closed with code: ${code} reason: ${reason || 'No reason'}`)
     )

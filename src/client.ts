@@ -97,7 +97,7 @@ export class VkMusicBotClient extends Client {
           if (state === 'UNKNOWN') return
 
           if (state === 'LEFT') {
-            await player.destroy()
+            await player.safeDestroy()
             logger.debug({ guildId }, 'Player left')
             return
           }
@@ -108,9 +108,7 @@ export class VkMusicBotClient extends Client {
             if (members?.size === 0) {
               const textId = player.textChannelId
 
-              await player.destroy()
-
-              await Promise.all([deletePreviousTrackStartMessage(this, guildId), player.destroy()])
+              await Promise.all([deletePreviousTrackStartMessage(this, guildId), player.safeDestroy()])
 
               const channel = this.channels.cache.get(textId)
               if (!channel?.isTextBased()) return
@@ -147,9 +145,7 @@ export class VkMusicBotClient extends Client {
           if (members.size === 0) {
             const textId = player.textChannelId
 
-            await player.destroy()
-
-            await Promise.all([deletePreviousTrackStartMessage(this, voiceChannel.guildId), player.destroy()])
+            await Promise.all([deletePreviousTrackStartMessage(this, voiceChannel.guildId), player.safeDestroy()])
 
             const channel = this.channels.cache.get(textId)
             if (!channel?.isTextBased()) return
@@ -165,7 +161,7 @@ export class VkMusicBotClient extends Client {
                   )
                 ]
               },
-              20000
+              30_000
             )
 
             logger.debug({ guildId: voiceChannel.guildId }, 'Player leaved empty channel')

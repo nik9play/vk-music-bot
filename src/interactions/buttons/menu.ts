@@ -8,6 +8,7 @@ import {
 import { generateQueueResponse } from '../../helpers/queueCommandHelper.js'
 import { ButtonCustomInteraction } from '../../modules/slashCommandManager.js'
 import Utils from '../../utils.js'
+import { Constants } from 'shoukaku'
 
 const menu: ButtonCustomInteraction = {
   name: 'menu',
@@ -18,6 +19,8 @@ const menu: ButtonCustomInteraction = {
       await deletePreviousTrackStartMessage(client, guild.id)
       return
     }
+
+    await Utils.checkNodeState(player, respond)
 
     let action: 'update' | 'delete' = 'delete'
 

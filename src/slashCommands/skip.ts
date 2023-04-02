@@ -31,6 +31,8 @@ export default new Command({
       return
     }
 
+    await Utils.checkNodeState(player, respond)
+
     const { title, author } = player.current
 
     let skipCount = interaction.options.getInteger('количество')

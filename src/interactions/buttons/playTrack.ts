@@ -1,4 +1,4 @@
-import { ChatInputCommandInteraction, CommandInteraction } from 'discord.js'
+import { ChatInputCommandInteraction } from 'discord.js'
 import { playCommandHandler } from '../../helpers/playCommandHelper.js'
 import { ButtonCustomInteraction, CommandExecuteParams } from '../../modules/slashCommandManager.js'
 

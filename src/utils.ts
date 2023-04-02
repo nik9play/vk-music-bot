@@ -15,6 +15,7 @@ import { CaptchaInfo, VkMusicBotClient } from './client.js'
 import logger from './logger.js'
 import BotPlayer from './modules/botPlayer.js'
 import { RespondFunction } from './modules/slashCommandManager.js'
+import { Constants } from 'shoukaku'
 
 export interface ArgType {
   type: 'group' | 'playlist' | 'user' | 'track' | 'unknown'
@@ -210,7 +211,7 @@ export default class Utils {
     client.timers.set(
       player.guildId,
       setTimeout(async () => {
-        player?.destroy()
+        player?.safeDestroy()
       }, 1_200_000)
     )
   }
@@ -293,6 +294,21 @@ export default class Utils {
       embeds: [Utils.generateErrorMessage('Очередь пуста.')],
       ephemeral: true
     })
+  }
+
+  public static async checkNodeState(player: BotPlayer, respond: RespondFunction) {
+    if (player.player.node.state === Constants.State.RECONNECTING) {
+      await respond({
+        embeds: [
+          Utils.generateErrorMessage(
+            'Бот в данный момент пытается переподключиться к серверу воспроизведения. ' +
+              'В случае удачи бот в течение минуты продолжит воспроизведение.'
+          )
+        ],
+        ephemeral: true
+      })
+      return
+    }
   }
 
   public static generateTrackUrl(source_id: string, access_key?: string): string {

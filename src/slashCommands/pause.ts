@@ -20,6 +20,8 @@ export default new Command({
       return
     }
 
+    await Utils.checkNodeState(player, respond)
+
     //if (channel.id !== player.voiceChannel) return message.reply("вы находитесь не в том голосовом канале.")
 
     if (player.player.paused) {

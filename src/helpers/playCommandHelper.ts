@@ -161,6 +161,8 @@ export async function playCommandHandler(
   if (req.status === 'error') {
     logger.warn({ req, ...meta }, 'VK Request error')
 
+    const errorTimeout = 30_000
+
     const reqError = req as APIResponse
 
     if (reqError.type === 'captcha') {
@@ -180,39 +182,49 @@ export async function playCommandHandler(
         )
       )
     } else if (reqError.type === 'empty') {
-      await respond({
-        embeds: [Utils.generateErrorMessage('Не удалось ничего найти по запросу или плейлиста не существует.')],
-        ephemeral: true
-      })
+      await respond(
+        {
+          embeds: [Utils.generateErrorMessage('Не удалось ничего найти по запросу или плейлиста не существует.')]
+        },
+        errorTimeout
+      )
     } else if (reqError.type === 'api') {
-      await respond({
-        embeds: [Utils.generateErrorMessage('Неверный формат ссылки или запроса.')],
-        ephemeral: true
-      })
+      await respond(
+        {
+          embeds: [Utils.generateErrorMessage('Неверный формат ссылки или запроса.')]
+        },
+        errorTimeout
+      )
     } else if (reqError.type === 'request') {
-      await respond({
-        embeds: [
-          Utils.generateErrorMessage(
-            'Ошибка запроса к серверам бота. Обратитесь за поддержкой в [группу ВК](https://vk.com/vkmusicbotds) или [сервер Discord](https://discord.com/invite/3ts2znePu7).'
-          )
-        ],
-        ephemeral: true
-      })
-    } else if (reqError.type === 'access_denied') {
-      if (arg.type === 'playlist') {
-        await respond({
+      await respond(
+        {
           embeds: [
             Utils.generateErrorMessage(
-              'Нет доступа к плейлисту. Попробуйте получить ссылку по [гайду](https://vk.com/@vkmusicbotds-kak-poluchit-rabochuu-ssylku-na-pleilist).'
+              'Ошибка запроса к серверам бота. Обратитесь за поддержкой в [группу ВК](https://vk.com/vkmusicbotds) или [сервер Discord](https://discord.com/invite/3ts2znePu7).'
             )
-          ],
-          ephemeral: true
-        })
+          ]
+        },
+        errorTimeout
+      )
+    } else if (reqError.type === 'access_denied') {
+      if (arg.type === 'playlist') {
+        await respond(
+          {
+            embeds: [
+              Utils.generateErrorMessage(
+                'Нет доступа к плейлисту. Попробуйте получить ссылку по [гайду](https://vk.com/@vkmusicbotds-kak-poluchit-rabochuu-ssylku-na-pleilist).'
+              )
+            ]
+          },
+          errorTimeout
+        )
       } else if (arg.type === 'user') {
-        await respond({
-          embeds: [Utils.generateErrorMessage('Нет доступа к аудио пользователя. Аудио должны быть открыты.')],
-          ephemeral: true
-        })
+        await respond(
+          {
+            embeds: [Utils.generateErrorMessage('Нет доступа к аудио пользователя. Аудио должны быть открыты.')]
+          },
+          errorTimeout
+        )
       }
     }
     return
@@ -227,8 +239,7 @@ export async function playCommandHandler(
     if (req.duration > 1800) {
       await respond(
         {
-          embeds: [Utils.generateErrorMessage('Нельзя добавлять треки длиннее 30 минут.')],
-          ephemeral: true
+          embeds: [Utils.generateErrorMessage('Нельзя добавлять треки длиннее 30 минут.')]
         },
         15_000
       )
@@ -345,7 +356,7 @@ export async function playCommandHandler(
         }
       ])
       .setFooter({
-        text: 'Чтобы добавить больше 10 треков, введите количество треков в аргумент `количество`.'
+        text: 'Чтобы добавить больше 10 треков, введите количество треков в аргумент "количество".'
       })
       .setThumbnail(req.info.img ?? null)
 
@@ -378,7 +389,7 @@ export async function playCommandHandler(
           {
             color: 0x5181b8,
             author: {
-              name: 'Следующие треки не могут быть добавлены из-за решения автора или представителя'
+              name: 'Следующие треки не могут быть добавлены из-за решения автора или представителя, либо они длиннее 30 минут.'
             },
             description: desc
           }

@@ -1,10 +1,10 @@
-import { Player, UpdatePlayerOptions } from 'shoukaku'
+import { Constants, Player, UpdatePlayerOptions } from 'shoukaku'
 import { VkMusicBotClient } from '../client.js'
 import { getConfig } from '../db.js'
 import { deletePreviousTrackStartMessage, generatePlayerStartMessage } from '../helpers/playerStartHelper.js'
 import logger from '../logger.js'
 import BotTrack from '../structures/botTrack.js'
-import Utils from '../utils.js'
+import Utils, { ErrorMessageType } from '../utils.js'
 
 export default class BotPlayer {
   public client: VkMusicBotClient
@@ -57,7 +57,8 @@ export default class BotPlayer {
           }
         }
       })
-      .on('end', async () => {
+      .on('end', async (data) => {
+        logger.debug({ guildId: data.guildId }, 'End event')
         if (this.repeat === 'track' && this.current) this.queue.unshift(this.current)
         if (this.repeat === 'queue' && this.current) this.queue.push(this.current)
         await deletePreviousTrackStartMessage(client, this.guildId)
@@ -66,7 +67,8 @@ export default class BotPlayer {
           Utils.setExitTimeout(this, this.client)
         }
       })
-      .on('stuck', async () => {
+      .on('stuck', async (data) => {
+        logger.debug({ guildId: data.guildId }, 'Stuck event')
         if (this.repeat === 'track' && this.current) this.queue.unshift(this.current)
         if (this.repeat === 'queue' && this.current) this.queue.push(this.current)
         await this.play()
@@ -74,6 +76,7 @@ export default class BotPlayer {
           Utils.setExitTimeout(this, this.client)
         }
       })
+      .on('exception', (data) => this.errorHandler(data))
       .on('closed', (data) => this.errorHandler(data))
       .on('update', () => {
         if (this.current) {
@@ -86,10 +89,54 @@ export default class BotPlayer {
               .catch((err) => logger.error({ err }, "Can't edit player start message"))
         }
       })
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      //@ts-ignore
+      .on('resume', async () => {
+        const channel = this.client.channels.cache.get(this.textChannelId)
+        if (!channel?.isTextBased()) return
+
+        await Utils.sendMessageToChannel(
+          channel,
+          {
+            embeds: [Utils.generateErrorMessage('Бот успешно переподключился к серверу.', ErrorMessageType.Info)]
+          },
+          20_000
+        )
+      })
     //.on('error', this.errorHandler)
+    //this.closeHandlerEvent = this.closeHandler.bind(this)
+    this.client.shoukaku.on('close', this.closeHandlerEvent)
+    this.client.shoukaku.on('disconnect', this.disconnectHandlerEvent)
+  }
+
+  private closeHandlerEvent = async () => {
+    await deletePreviousTrackStartMessage(this.client, this.guildId)
+    const channel = this.client.channels.cache.get(this.textChannelId)
+    if (!channel?.isTextBased()) return
+
+    await Utils.sendMessageToChannel(
+      channel,
+      {
+        embeds: [
+          Utils.generateErrorMessage(
+            'Бот пытается переподключиться к серверу воспроизведения, подождите 1-2 минуты...',
+            ErrorMessageType.Warning
+          )
+        ]
+      },
+      40_000
+    )
+  }
+
+  private disconnectHandlerEvent = async (name: string) => {
+    if (this.player.node.name === name) {
+      deletePreviousTrackStartMessage(this.client, this.guildId)
+      await this.destroy(false)
+    }
   }
 
   async errorHandler(data: any) {
+    logger.debug(data, 'BotPlayer closed')
     if (data instanceof Error || data instanceof Object) logger.debug(data, 'BotPlayer closed')
     // this.queue.length = 0
     // await this.destroy()
@@ -104,24 +151,33 @@ export default class BotPlayer {
       identifier: identifier
     }
 
-    await this.player.node.rest.updatePlayer({
+    const playerData = await this.player.node.rest.updatePlayer({
       guildId: this.guildId,
       noReplace: false,
       playerOptions
     })
+    this.player.track = playerData?.track?.encoded ?? null
   }
 
   async play() {
     if (!this.exists) return await this.destroy()
     Utils.clearExitTimeout(this.guildId, this.client)
     this.current = this.queue.shift()
-    if (this.current?.loadedTrack) await this.player.playTrack({ track: this.current.loadedTrack.encoded })
-    if (this.current?.identifier) await this.playTrackFromIdentifier(this.current?.identifier)
+    try {
+      if (this.current?.loadedTrack) await this.player.playTrack({ track: this.current.loadedTrack.encoded })
+      if (this.current?.identifier) await this.playTrackFromIdentifier(this.current?.identifier)
+      logger.debug({ track: this.player.track })
+    } catch {
+      await this.play()
+    }
   }
 
-  async destroy(reason?: string) {
+  async destroy(destroyRemoteServer = true, reason?: string) {
+    this.client.shoukaku.off('close', this.closeHandlerEvent)
+    this.client.shoukaku.off('disconnect', this.disconnectHandlerEvent)
+
     this.queue.length = 0
-    await this.player.connection.disconnect()
+    await this.player.connection.disconnect(destroyRemoteServer)
     this.client.queue.delete(this.guildId)
 
     Utils.clearExitTimeout(this.guildId, this.client)
@@ -130,6 +186,10 @@ export default class BotPlayer {
       `Destroyed the player & connection @ guild "${this.guildId}"\nReason: ${reason || 'No Reason Provided'}`
     )
     if (this.stopped) return
+  }
+
+  async safeDestroy() {
+    await this.destroy(this.player.node.state === Constants.State.CONNECTED)
   }
 
   async stop() {

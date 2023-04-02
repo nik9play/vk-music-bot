@@ -12,7 +12,7 @@ export default new Command({
 
     Utils.clearExitTimeout(guild.id, client)
 
-    await player?.destroy()
+    await player?.safeDestroy()
 
     await respond({
       embeds: [Utils.generateErrorMessage('🔧', ErrorMessageType.NoTitle)]
