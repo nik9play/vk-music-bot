@@ -107,6 +107,9 @@ export default class BotPlayer {
     //this.closeHandlerEvent = this.closeHandler.bind(this)
     this.client.shoukaku.on('close', this.closeHandlerEvent)
     this.client.shoukaku.on('disconnect', this.disconnectHandlerEvent)
+    this.player.node.on('debug', (data) => {
+      logger.debug({ data }, 'debugf')
+    })
   }
 
   private closeHandlerEvent = async () => {
@@ -166,7 +169,6 @@ export default class BotPlayer {
     try {
       if (this.current?.loadedTrack) await this.player.playTrack({ track: this.current.loadedTrack.encoded })
       if (this.current?.identifier) await this.playTrackFromIdentifier(this.current?.identifier)
-      logger.debug({ track: this.player.track })
     } catch {
       await this.play()
     }

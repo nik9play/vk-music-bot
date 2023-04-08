@@ -1,7 +1,7 @@
-import { Command } from '../modules/slashCommandManager.js'
-import Utils, { ErrorMessageType } from '../utils.js'
+import Utils, { ErrorMessageType } from '../../utils.js'
+import { CommandCustomInteraction } from '../commandInteractions.js'
 
-export default new Command({
+export const interaction: CommandCustomInteraction = {
   name: 'shuffle',
   aliases: ['sh'],
   djOnly: true,
@@ -31,4 +31,4 @@ export default new Command({
       embeds: [Utils.generateErrorMessage('🔀 Очередь перемешана.', ErrorMessageType.NoTitle)]
     })
   }
-})
+}

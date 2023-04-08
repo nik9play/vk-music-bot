@@ -1,8 +1,8 @@
-import { Command } from '../modules/slashCommandManager.js'
-import { generateQueueResponse } from '../helpers/queueCommandHelper.js'
+import { generateQueueResponse } from '../../helpers/queueCommandHelper.js'
 import { InteractionReplyOptions } from 'discord.js'
+import { CommandCustomInteraction } from '../commandInteractions.js'
 
-export default new Command({
+export const interaction: CommandCustomInteraction = {
   name: 'queue',
   aliases: ['q'],
   djOnly: true,
@@ -15,4 +15,4 @@ export default new Command({
 
     await respond(generateQueueResponse(page, player) as InteractionReplyOptions)
   }
-})
+}

@@ -1,9 +1,9 @@
 import { InteractionUpdateOptions } from 'discord.js'
 import { generateQueueResponse } from '../../helpers/queueCommandHelper.js'
 import logger from '../../logger.js'
-import { ButtonCustomInteraction } from '../../modules/slashCommandManager.js'
+import { ButtonCustomInteraction } from '../buttonInteractions.js'
 
-const queue: ButtonCustomInteraction = {
+export const interaction: ButtonCustomInteraction = {
   name: 'queue',
   execute: async ({ interaction, client, guild, customAction, meta }) => {
     logger.info({ ...meta }, 'Queue button pressed')
@@ -16,5 +16,3 @@ const queue: ButtonCustomInteraction = {
     }
   }
 }
-
-export default queue

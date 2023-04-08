@@ -1,7 +1,7 @@
-import { Command } from '../modules/slashCommandManager.js'
-import { searchCommandHandler } from '../helpers/searchCommandHelper.js'
+import { searchCommandHandler } from '../../helpers/searchCommandHelper.js'
+import { CommandCustomInteraction } from '../commandInteractions.js'
 
-export default new Command({
+export const interaction: CommandCustomInteraction = {
   name: 'search',
   djOnly: true,
   cooldown: 5,
@@ -13,4 +13,4 @@ export default new Command({
 
     await searchCommandHandler(params, search)
   }
-})
+}

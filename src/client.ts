@@ -2,11 +2,12 @@
 import { Client, ClientOptions, Collection, Message } from 'discord.js'
 import Utils, { ErrorMessageType } from './utils.js'
 import logger from './logger.js'
-import SlashCommandManager, { ButtonCustomInteraction, CommandType } from './modules/slashCommandManager.js'
 import { connectDb, getConfig } from './db.js'
 import Queue from './modules/queue.js'
 import ShoukakuManager from './modules/shoukakuManager.js'
 import { deletePreviousTrackStartMessage } from './helpers/playerStartHelper.js'
+import { CommandInteractionManager } from './interactions/commandInteractions.js'
+import { ButtonInteractionManager } from './interactions/buttonInteractions.js'
 
 export interface CaptchaInfo {
   type: 'play' | 'search'
@@ -27,8 +28,6 @@ export interface PlayerTrackErrorTracker {
 export class VkMusicBotClient extends Client {
   private exiting = false
 
-  public commands = new Collection<string, CommandType>()
-  public buttonInteractions = new Collection<string, ButtonCustomInteraction>()
   public captcha = new Collection<string, CaptchaInfo>()
   public timers = new Collection<string, NodeJS.Timeout>()
   public latestMenus = new Collection<string, Message>()
@@ -37,22 +36,31 @@ export class VkMusicBotClient extends Client {
   public queue: Queue
   public shoukaku: ShoukakuManager
 
+  public commandInteractionManager: CommandInteractionManager
+  public buttonInteractionManager: ButtonInteractionManager
+  // public selectMenuInteractionManager: SelectMenuInter
+
   constructor(options: ClientOptions) {
     if (!process.env.MONGO_URL || !process.env.REDIS_URL) throw new Error('Env not set')
     super(options)
 
     this.queue = new Queue(this)
     this.shoukaku = new ShoukakuManager(this)
+    this.commandInteractionManager = new CommandInteractionManager(this)
+    this.buttonInteractionManager = new ButtonInteractionManager(this)
 
     this.once('ready', async () => {
       //this.manager.init(this.user?.id)
       //await this.initDb()
-      const slashCommandManager = new SlashCommandManager(this)
-      await slashCommandManager.init()
-      logger.info(`Loaded ${this.commands.size} commands.`)
-      logger.info(`Loaded ${this.buttonInteractions.size} button interactions.`)
-
+      // const slashCommandManager = new SlashCommandManager(this)
+      // await slashCommandManager.init()
       logger.info(`Logged in as ${this.user?.tag} successfully`)
+
+      await this.commandInteractionManager.load()
+      await this.buttonInteractionManager.load()
+
+      logger.info(`Loaded ${this.commandInteractionManager.interactions.size} commands.`)
+      logger.info(`Loaded ${this.buttonInteractionManager.interactions.size} button interactions.`)
     })
       // .on('guildDelete', (guild) => {
       //   logger.info({ guild_id: guild.id }, 'Bot leaves')
@@ -168,157 +176,7 @@ export class VkMusicBotClient extends Client {
           }
         }
       })
-
-    //   this.kazagumo
-    //     .on('playerClosed', (player) => {
-    //       console.log('kal1 ', player)
-    //     })
-    //     .on('playerException', (player, data) => {
-    //       console.log('kal2 ', player, data)
-    //     })
-    //     // .on('playerEnd', async (player, track) => {
-    //     //   if (await this.db.get247(player.guild)) return
-    //     //   if (!player?.voiceChannel) return
-    //     //   const voiceChannel = this.channels.cache.get(player.voiceChannel)
-    //     //   if (!voiceChannel?.isVoice()) return
-
-    //     //   const memberCount = voiceChannel.members.filter((member) => !member.user.bot).size
-
-    //     //   logger.info({ memberCount })
-
-    //     //   if (memberCount === 0) {
-    //     //     player.queue.clear()
-    //     //     player.stop()
-
-    //     //     if (!player.textChannel) return
-
-    //     //     const textChannel = this.channels.cache.get(player.textChannel)
-    //     //     if (!textChannel?.isText()) return
-
-    //     //     try {
-    //     //       const message = await textChannel.send({
-    //     //         embeds: [
-    //     //           Utils.generateErrorMessage(
-    //     //             'Бот скоро выйдет из канала, так как в нём никого нет. Если хотите, чтобы бот оставался, приобретите **Премиум** и включите режим 24/7. Подробности: `/donate`.',
-    //     //             ErrorMessageType.Info
-    //     //           )
-    //     //         ]
-    //     //       })
-
-    //     //       setTimeout(async () => {
-    //     //         try {
-    //     //           if (message.deletable) await message.delete()
-    //     //         } catch (err) {
-    //     //           logger.error({ err }, "Can't delete message")
-    //     //         }
-    //     //       }, 30000)
-    //     //     } catch {
-    //     //       logger.error("Can't send message")
-    //     //     }
-    //     //   }
-    //     // })
-
-    //     .on('playerUpdate', async (player, track) => {
-    //       logger.info({ track: track.state.position, player: player.position })
-    //       if (player.position >= 7_000 && player?.queue.current && !player.paused) {
-    //         const message = this.latestMenus.get(player.guildId)
-    //         if (!message) return
-
-    //         if (message.editable)
-    //           message
-    //             .edit(generatePlayerStartMessage(player, player.queue.current))
-    //             .catch((err) => logger.error({ err }, "Can't edit player start message"))
-    //       }
-    //     })
-    //     .on('playerStart', playerStart.bind(null, this))
-    //     .on('playerEmpty', async (player) => {
-    //       logger.info({ guild_id: player.guildId }, 'End of queue')
-    //       const config = await getConfig(player.guildId)
-
-    //       if (!config.enable247)
-    //         if (player) {
-    //           Utils.setExitTimeout(player, this)
-    //         }
-
-    //       deletePreviousTrackStartMessage(this, player)
-    //     })
-    //     .on('playerMoved', (player, state, channels) => {
-    //       if (state === 'LEFT') {
-    //         logger.info({ guild_id: player.guildId }, 'player disconnected')
-
-    //         Utils.clearExitTimeout(player.guildId, this)
-
-    //         deletePreviousTrackStartMessage(this, player)
-
-    //         // if (player.shoukaku.connection.state !== )
-    //         // player.destroy()
-    //       }
-
-    //       if (state === 'MOVED') {
-    //         logger.info(
-    //           { guild_id: player.guildId },
-    //           `player moved new: ${channels.newChannelId}, old: ${channels.oldChannelId}`
-    //         )
-    //       }
-    //     })
-    //     .on('playerDestroy', (player) => {
-    //       logger.info({ guild_id: player.guildId }, 'player destroyed')
-    //       Utils.clearExitTimeout(player.guildId, this)
-    //       deletePreviousTrackStartMessage(this, player)
-    //     })
-    //     .on('playerStuck', (player, state) => {
-    //       logger.warn({ guild_id: state.guildId }, `Track stuck ${state.type}`)
-    //     })
-    //     .on('playerResolveError', (player, track, message) => {
-    //       logger.error(
-    //         {
-    //           error: message,
-    //           guild_id: player.guildId,
-    //           name: track.title,
-    //           author: track.author,
-    //           url: track.uri
-    //         },
-    //         'Track resolve error'
-    //       )
-    //       // const channel = client.channels.cache.get(player.textChannel)
-    //       // channel.send({embed: {
-    //       //   description: `С треком **${track.author} — ${track.title}** произошла проблема, поэтому он был пропущен.`,
-    //       //   color: 0x5181b8
-    //       // }}).then(msg => msg.delete({timeout: 30000}).catch(console.error)).catch(console.error)
-
-    //       const tracker = this.playerTrackErrorTrackers.get(player.guildId)
-    //       if (tracker) {
-    //         tracker.count += 1
-    //         clearTimeout(tracker.timer)
-    //         tracker.timer = setTimeout(() => {
-    //           this.playerTrackErrorTrackers.delete(player.guildId)
-    //         }, 30 * 1000)
-
-    //         if (tracker.count >= 5) {
-    //           player?.queue.clear()
-    //           clearTimeout(tracker.timer)
-    //           this.playerTrackErrorTrackers.delete(player.guildId)
-    //         }
-    //       } else {
-    //         this.playerTrackErrorTrackers.set(player.guildId, {
-    //           count: 1,
-    //           timer: setTimeout(() => {
-    //             this.playerTrackErrorTrackers.delete(player.guildId)
-    //           }, 30000)
-    //         })
-    //       }
-    //     })
-    //     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    //     //@ts-ignore
-    //     .on('debug', (obj) => {
-    //       logger.debug({ obj }, 'Kazagumo debug.')
-    //     })
-    //   //;['beforeExit', 'SIGUSR1', 'SIGUSR2', 'SIGINT', 'SIGTERM'].map((event) => process.once(event, this.exit.bind(this)))
   }
-
-  // async initDb() {
-  //   await this.db.init()
-  // }
 
   async login(token?: string | undefined) {
     await super.login(token)
@@ -362,13 +220,6 @@ export class VkMusicBotClient extends Client {
   }
 
   async exit() {
-    // this.exiting = true
-    // if (this.exiting) return
-    // logger.info('Cluster shutting down...')
-    // for (const player of this.kazagumo.players.values()) {
-    //   player.destroy()
-    // }
-    // //await this.db.close()
-    // this.destroy()
+    //
   }
 }

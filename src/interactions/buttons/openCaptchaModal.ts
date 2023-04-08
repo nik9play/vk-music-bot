@@ -1,27 +1,23 @@
 import { ActionRowBuilder, ModalActionRowComponentBuilder, TextInputBuilder } from '@discordjs/builders'
 import { ModalBuilder, TextInputStyle } from 'discord.js'
-import { ButtonCustomInteraction } from '../../modules/slashCommandManager.js'
+import { ButtonCustomInteraction } from '../buttonInteractions.js'
 
-const openCaptchaModel: ButtonCustomInteraction = {
+export const interaction: ButtonCustomInteraction = {
   name: 'openCaptchaModel',
   execute: async ({ interaction }) => {
-    const modal = new ModalBuilder().setCustomId('captchaModal').setTitle('Капча')
-
     const components = new ActionRowBuilder<ModalActionRowComponentBuilder>().addComponents(
       new TextInputBuilder()
         .setCustomId('captchaKey')
-        .setLabel('Введите капчу')
+        .setLabel('dsfgsdfg')
         .setStyle(TextInputStyle.Short)
         .setMinLength(4)
         .setMaxLength(7)
         .setRequired(true)
-        .setPlaceholder('xxxxx')
+        .setPlaceholder('fgd')
     )
+    console.log(components.toJSON())
+    const modal = new ModalBuilder().setCustomId('captchaModal').setTitle('sdf').addComponents([components])
 
-    modal.addComponents(components)
-
-    interaction.showModal(modal)
+    await interaction.showModal(modal)
   }
 }
-
-export default openCaptchaModel

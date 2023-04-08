@@ -1,7 +1,7 @@
-import { Command } from '../modules/slashCommandManager.js'
-import { playCommandHandler } from '../helpers/playCommandHelper.js'
+import { playCommandHandler } from '../../helpers/playCommandHelper.js'
+import { CommandCustomInteraction } from '../commandInteractions.js'
 
-export default new Command({
+export const interaction: CommandCustomInteraction = {
   name: 'play',
   aliases: ['p', 'pl'],
   djOnly: true,
@@ -16,4 +16,4 @@ export default new Command({
 
     await playCommandHandler(params, query, count, offset)
   }
-})
+}

@@ -1,15 +1,14 @@
-import e from 'express'
-import { getConfig, updateConfig } from '../db.js'
-import { Command } from '../modules/slashCommandManager.js'
-import Utils, { ErrorMessageType } from '../utils.js'
+import { getConfig, updateConfig } from '../../db.js'
+import Utils, { ErrorMessageType } from '../../utils.js'
+import { CommandCustomInteraction } from '../commandInteractions.js'
 
-export default new Command({
+export const interaction: CommandCustomInteraction = {
   name: 'settings',
   cooldown: 5,
   adminOnly: true,
   premium: false,
   djOnly: false,
-  execute: async ({ guild, client, respond, interaction }) => {
+  execute: async ({ guild, respond, interaction }) => {
     const type = interaction.options.getSubcommand()
     const config = await getConfig(guild.id)
 
@@ -121,4 +120,4 @@ export default new Command({
       await respond({ embeds: [embed] }, 30_000)
     }
   }
-})
+}

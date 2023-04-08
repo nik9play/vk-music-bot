@@ -1,7 +1,7 @@
-import { getConfig } from '../db.js'
-import { Command } from '../modules/slashCommandManager.js'
+import { getConfig } from '../../db.js'
+import { CommandCustomInteraction } from '../commandInteractions.js'
 
-export default new Command({
+export const interaction: CommandCustomInteraction = {
   name: 'donate',
   aliases: ['premium', 'd'],
   adminOnly: true,
@@ -33,4 +33,4 @@ export default new Command({
 
     await respond({ embeds: [embed] })
   }
-})
+}

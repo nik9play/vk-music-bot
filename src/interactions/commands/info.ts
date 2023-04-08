@@ -1,6 +1,6 @@
-import { Command } from '../modules/slashCommandManager.js'
+import { CommandCustomInteraction } from '../commandInteractions.js'
 
-export default new Command({
+export const interaction: CommandCustomInteraction = {
   name: 'info',
   adminOnly: true,
   premium: false,
@@ -85,4 +85,4 @@ export default new Command({
 
     await respond({ embeds: [embed], ephemeral: true })
   }
-})
+}

@@ -1,21 +1,9 @@
-import {
-  ActionRowBuilder,
-  ButtonBuilder,
-  ButtonStyle,
-  EmbedBuilder,
-  InteractionReplyOptions,
-  MessageCreateOptions,
-  ModalActionRowComponent,
-  ModalActionRowComponentBuilder,
-  TextBasedChannel,
-  TextInputBuilder,
-  TextInputComponent
-} from 'discord.js'
+import { EmbedBuilder, InteractionReplyOptions, MessageCreateOptions, TextBasedChannel } from 'discord.js'
 import { CaptchaInfo, VkMusicBotClient } from './client.js'
 import logger from './logger.js'
 import BotPlayer from './modules/botPlayer.js'
-import { RespondFunction } from './modules/slashCommandManager.js'
 import { Constants } from 'shoukaku'
+import { RespondFunction } from './interactions/baseInteractionManager.js'
 
 export interface ArgType {
   type: 'group' | 'playlist' | 'user' | 'track' | 'unknown'
@@ -23,6 +11,11 @@ export interface ArgType {
   id?: string
   owner_id?: string
   access_key?: string
+}
+
+export interface Meta {
+  guild_id?: string
+  shard_id?: number
 }
 
 export interface PlaylistURL {
@@ -137,6 +130,13 @@ export default class Utils {
     return text.replace(/([_*~`|\\<>:!])/g, '\\$1').replace(/@(everyone|here|[!&]?[0-9]{17,21})/g, '@\u200b$1')
   }
 
+  public static escapeQuery(text: string) {
+    return text
+      .replace(/[-\\/.,;:'"#@!#$%^&*()_=+<>~`|]+/g, '')
+      .replace(/\s+/g, ' ')
+      .trim()
+  }
+
   public static generateCaptchaMessage(
     guildId: string,
     captchaInfo: CaptchaInfo,
@@ -147,7 +147,7 @@ export default class Utils {
 
     const embed = {
       description:
-        'Ошибка! Требуется капча. Нажмите на кнопку или введите команду /captcha, а после введите код с картинки. ' +
+        'Ошибка! Требуется капча. Введите команду </captcha:906533763033464832>, а после введите код с картинки. ' +
         `Если картинки не видно, перейдите по [ссылке](${captcha?.url})`,
       color: 0x5181b8,
       image: {
@@ -155,15 +155,8 @@ export default class Utils {
       }
     }
 
-    const components = [
-      new ActionRowBuilder<ButtonBuilder>().addComponents(
-        new ButtonBuilder().setCustomId(`open_captcha_model`).setLabel('Ввести капчу').setStyle(ButtonStyle.Primary)
-      )
-    ]
-
     return {
-      embeds: [embed],
-      components
+      embeds: [embed]
     }
   }
 

@@ -1,14 +1,14 @@
-import { Command } from '../modules/slashCommandManager.js'
-import Utils, { ErrorMessageType } from '../utils.js'
+import Utils, { ErrorMessageType } from '../../utils.js'
+import { CommandCustomInteraction } from '../commandInteractions.js'
 
 const levelTypes = ['выкл', 'слабый', 'средний', 'мощный']
 
-export default new Command({
+export const interaction: CommandCustomInteraction = {
   name: 'bass',
   premium: true,
   adminOnly: false,
   djOnly: true,
-  execute: async function ({ respond, client, guild, voice, interaction }) {
+  execute: async function ({ respond, client, guild, interaction }) {
     const player = client.queue.get(guild.id)
 
     if (!player) {
@@ -62,4 +62,4 @@ export default new Command({
       })
     }
   }
-})
+}

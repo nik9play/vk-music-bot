@@ -1,9 +1,9 @@
-import { playCommandHandler } from '../helpers/playCommandHelper.js'
-import { searchCommandHandler } from '../helpers/searchCommandHelper.js'
-import { Command } from '../modules/slashCommandManager.js'
-import Utils, { ErrorMessageType } from '../utils.js'
+import { playCommandHandler } from '../../helpers/playCommandHelper.js'
+import { searchCommandHandler } from '../../helpers/searchCommandHelper.js'
+import Utils, { ErrorMessageType } from '../../utils.js'
+import { CommandCustomInteraction } from '../commandInteractions.js'
 
-export default new Command({
+export const interaction: CommandCustomInteraction = {
   name: 'captcha',
   djOnly: true,
   adminOnly: false,
@@ -34,4 +34,4 @@ export default new Command({
       })
     }
   }
-})
+}

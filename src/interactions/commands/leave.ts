@@ -1,13 +1,13 @@
-import { Command } from '../modules/slashCommandManager.js'
-import Utils, { ErrorMessageType } from '../utils.js'
+import Utils, { ErrorMessageType } from '../../utils.js'
+import { CommandCustomInteraction } from '../commandInteractions.js'
 
-export default new Command({
+export const interaction: CommandCustomInteraction = {
   name: 'leave',
   djOnly: true,
   cooldown: 1,
   adminOnly: false,
   premium: false,
-  execute: async ({ client, respond, guild, voice }) => {
+  execute: async ({ client, respond, guild }) => {
     const player = client.queue.get(guild.id)
 
     if (!player) {
@@ -23,4 +23,4 @@ export default new Command({
       embeds: [Utils.generateErrorMessage('👋', ErrorMessageType.NoTitle)]
     })
   }
-})
+}

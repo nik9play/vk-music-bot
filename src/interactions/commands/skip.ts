@@ -1,7 +1,7 @@
-import Utils from '../utils.js'
-import { Command } from '../modules/slashCommandManager.js'
+import Utils from '../../utils.js'
+import { CommandCustomInteraction } from '../commandInteractions.js'
 
-export default new Command({
+export const interaction: CommandCustomInteraction = {
   name: 'skip',
   aliases: ['n'],
   djOnly: true,
@@ -71,4 +71,4 @@ export default new Command({
     )
     return
   }
-})
+}

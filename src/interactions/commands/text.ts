@@ -1,8 +1,8 @@
 import { ChannelType } from 'discord.js'
-import { Command } from '../modules/slashCommandManager.js'
-import Utils, { ErrorMessageType } from '../utils.js'
+import Utils, { ErrorMessageType } from '../../utils.js'
+import { CommandCustomInteraction } from '../commandInteractions.js'
 
-export default new Command({
+export const interaction: CommandCustomInteraction = {
   name: 'text',
   djOnly: true,
   adminOnly: false,
@@ -63,4 +63,4 @@ export default new Command({
       ]
     })
   }
-})
+}

@@ -1,8 +1,8 @@
-import { getConfig, updateConfig } from '../db.js'
-import { Command } from '../modules/slashCommandManager.js'
-import Utils, { ErrorMessageType } from '../utils.js'
+import { getConfig, updateConfig } from '../../db.js'
+import Utils, { ErrorMessageType } from '../../utils.js'
+import { CommandCustomInteraction } from '../commandInteractions.js'
 
-export default new Command({
+export const interaction: CommandCustomInteraction = {
   name: '247',
   adminOnly: true,
   premium: true,
@@ -29,4 +29,4 @@ export default new Command({
         if (player.player.paused || (player.queue.length === 0 && !player.current)) Utils.setExitTimeout(player, client)
     }
   }
-})
+}

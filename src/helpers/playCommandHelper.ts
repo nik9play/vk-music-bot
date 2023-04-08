@@ -1,4 +1,3 @@
-import { CommandExecuteParams } from '../modules/slashCommandManager.js'
 import Utils, { ErrorMessageType } from '../utils.js'
 import {
   ActionRowBuilder,
@@ -16,6 +15,7 @@ import BotTrack from '../structures/botTrack.js'
 import { VkMusicBotClient } from '../client.js'
 import { Node } from 'shoukaku'
 import BotPlayer from '../modules/botPlayer.js'
+import { CommandExecuteParams } from '../interactions/commandInteractions.js'
 
 async function fillQueue(
   trackResponses: OneTrackResponse[],
@@ -103,9 +103,11 @@ export async function playCommandHandler(
 
   const search = queryParam.trim()
 
-  const count = countParam ?? 10
-  const offset = offsetParam ?? 1
-  //offset--
+  const count = countParam ?? 50
+  let offset = offsetParam ?? 1
+  offset--
+
+  const countQuery = Math.ceil(count / 50) * 50
 
   const arg = Utils.detectArgType(search)
   let req
@@ -130,7 +132,7 @@ export async function playCommandHandler(
       req = await VK.getPlaylist({
         owner_id: arg.owner_id,
         album_id: arg.id,
-        count,
+        count: countQuery,
         offset,
         access_key: arg.access_key,
 
@@ -141,7 +143,7 @@ export async function playCommandHandler(
     case 'user':
       req = await VK.getUser({
         owner_id: arg.owner_id,
-        count,
+        count: countQuery,
         offset,
 
         ...query
@@ -278,7 +280,7 @@ export async function playCommandHandler(
   } else if (arg.type === 'playlist') {
     req = req as PlaylistResponse
 
-    const newArray = req.newArray
+    const newArray = req.newArray.slice(0, count)
 
     let description: string | null = Utils.escapeFormat(req.info.description)
     description = description.length === 0 ? null : description
@@ -311,7 +313,7 @@ export async function playCommandHandler(
   } else if (arg.type === 'user') {
     req = req as UserResponse
 
-    const newArray = req.newArray
+    const newArray = req.newArray.slice(0, count)
 
     const playlistEmbed = new EmbedBuilder()
       .setTitle(Utils.escapeFormat(req.info.name).slice(0, 100))
@@ -336,7 +338,7 @@ export async function playCommandHandler(
     await respond({ embeds: [playlistEmbed] })
   } else if (arg.type === 'group') {
     req = req as UserResponse
-    const newArray = req.newArray
+    const newArray = req.newArray.slice(0, count)
 
     let description: string | null = Utils.escapeFormat((req.info as GroupInfo).description)
     description = description.length === 0 ? null : description
@@ -409,7 +411,7 @@ export async function playCommandHandler(
           embeds: [
             Utils.generateErrorMessage(
               'В очереди было больше 200 треков, поэтому лишние треки были удалены. ' +
-                'Хотите больше треков? Приобретите Премиум, подробности: `/donate`.',
+                'Хотите больше треков? Приобретите Премиум, подробности: </donate:906533685979918396>.',
               ErrorMessageType.Warning
             )
           ]

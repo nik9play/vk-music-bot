@@ -1,6 +1,6 @@
-import { Command } from '../modules/slashCommandManager.js'
+import { CommandCustomInteraction } from '../commandInteractions.js'
 
-export default new Command({
+export const interaction: CommandCustomInteraction = {
   name: 'help',
   cooldown: 1,
   aliases: ['h'],
@@ -17,38 +17,38 @@ export default new Command({
           value: '**Музыка**'
         },
         {
-          name: '`/play`',
+          name: '</play:906533111796469801>',
           value:
-            'Добавить в очереди трек/треки. Принимает название трека, ID трека, ссылку на плейлист или на пользователя. Также добавляет по ID пользователя при помощи префикса `>` (например: `/p >nikitabogun`)',
+            'Добавить в очереди трек/треки. Принимает название трека, ID трека, ссылку на плейлист или на пользователя. Также добавляет по ID пользователя при помощи префикса `>` (например: `/play запрос:>nikitabogun`)',
           inline: false
         },
         {
-          name: '`/stop`',
+          name: '</stop:906533541230297128>',
           value: 'Остановить воспроизведение и очистить очередь',
           inline: true
         },
         {
-          name: '`/skip`',
+          name: '</skip:906533293812482118>',
           value: 'Пропуск текущего трека',
           inline: true
         },
         {
-          name: '`/pause`',
+          name: '</pause:906533312628142191>',
           value: 'Поставить текущий трек на паузу. Бот выйдет из канала через 20 минут, если не включен режим 24/7',
           inline: true
         },
         {
-          name: '`/search`',
+          name: '</search:906533274355130438>',
           value: 'Поиск по базе ВК. Выводит 5 результатов с выбором',
           inline: true
         },
         {
-          name: '`/leave`',
+          name: '</leave:906533561664946196>',
           value: 'Выход из канала',
           inline: true
         },
         {
-          name: ':star: `/bass`',
+          name: ':star: </bass:906533740950478908>',
           value: 'Включить бас буст. Доступные уровни: `выкл`, `слабый`, `средний`, `мощный`',
           inline: true
         },
@@ -58,32 +58,32 @@ export default new Command({
           value: '**Очередь**'
         },
         {
-          name: '`/queue`',
+          name: '</queue:906533211868393482>',
           value: 'Просмотр очереди',
           inline: true
         },
         {
-          name: ':star: `/shuffle`',
+          name: ':star: </shuffle:906533332551082015>',
           value: 'Перемешать очередь',
           inline: true
         },
         {
-          name: ':star: `/247`',
+          name: ':star: </247:906533610918666250>',
           value: 'Режим 24/7. Бот не выйдет из канала после окончания очереди, паузы и выхода всех людей из канала',
           inline: true
         },
         {
-          name: '`/repeat`',
+          name: '</repeat:906533517595389962>',
           value: 'Зацикливание',
           inline: true
         },
         {
-          name: '`/gachi`',
+          name: '</gachi:906533707651895306>',
           value: 'Случайный гачи-ремикс',
           inline: true
         },
         {
-          name: '`/mashup`',
+          name: '/mashup', // TODO
           value: 'Случайный мэшап',
           inline: true
         },
@@ -93,22 +93,22 @@ export default new Command({
           value: '**Служебные**'
         },
         {
-          name: '`/settings`',
+          name: '</settings show:906547829756002327>',
           value: 'Настройки',
           inline: true
         },
         {
-          name: '`/donate`',
+          name: '</donate:906533685979918396>',
           value: 'Информация о Премиуме',
           inline: true
         },
         {
-          name: '`/info`',
+          name: '</info:906533646771564564>',
           value: 'Техническая информация о боте',
           inline: true
         },
         {
-          name: '`/captcha`',
+          name: '</captcha:906533763033464832>',
           value: 'Ввод капчи',
           inline: true
         },
@@ -123,4 +123,4 @@ export default new Command({
 
     await respond({ embeds: [embed], ephemeral: true })
   }
-})
+}

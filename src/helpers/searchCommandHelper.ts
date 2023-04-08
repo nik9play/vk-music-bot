@@ -1,5 +1,5 @@
-import { CommandExecuteParams } from '../modules/slashCommandManager.js'
 import VK, { APIResponse, ManyTracksResponse } from '../apis/VK.js'
+import { CommandExecuteParams } from '../interactions/commandInteractions.js'
 import logger from '../logger.js'
 import Utils from '../utils.js'
 import { ActionRowBuilder, StringSelectMenuBuilder } from 'discord.js'

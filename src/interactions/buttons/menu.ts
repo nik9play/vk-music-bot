@@ -6,11 +6,10 @@ import {
   MenuButtonType
 } from '../../helpers/playerStartHelper.js'
 import { generateQueueResponse } from '../../helpers/queueCommandHelper.js'
-import { ButtonCustomInteraction } from '../../modules/slashCommandManager.js'
 import Utils from '../../utils.js'
-import { Constants } from 'shoukaku'
+import { ButtonCustomInteraction } from '../buttonInteractions.js'
 
-const menu: ButtonCustomInteraction = {
+export const interaction: ButtonCustomInteraction = {
   name: 'menu',
   execute: async ({ interaction, respond, client, guild, customAction }) => {
     const player = client.queue.get(guild.id)
@@ -78,5 +77,3 @@ const menu: ButtonCustomInteraction = {
     }
   }
 }
-
-export default menu

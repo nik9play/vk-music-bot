@@ -1,4 +1,6 @@
 import { fetch } from 'undici'
+import Utils from '../utils.js'
+import logger from '../logger.js'
 
 export interface APIResponse {
   status: 'success' | 'error'
@@ -166,6 +168,8 @@ export default class VK {
     }
 
     opts.count = 1
+    opts.q = Utils.escapeQuery(opts.q)
+    logger.debug({ opts })
 
     const res = await this.sendRequest('search', opts)
 
@@ -308,6 +312,7 @@ export default class VK {
    */
   static async getMany(opts: any): Promise<APIResponse | ManyTracksResponse> {
     opts.count ?? (opts.count = 5)
+    opts.q = Utils.escapeQuery(opts.q)
 
     const res = await this.sendRequest('search', opts)
 

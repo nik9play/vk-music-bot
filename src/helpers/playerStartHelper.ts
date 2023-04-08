@@ -66,7 +66,9 @@ export function generatePlayerStartMessage(player: BotPlayer, track: BotTrack): 
       .setStyle(player.repeat === 'none' ? ButtonStyle.Secondary : ButtonStyle.Primary)
   ])
 
-  const progress = player.player.position / (track.duration ?? player.player.position)
+  const duration = track.duration ?? player.player.position
+  const fixedDuration = duration < player.player.position ? player.player.position : duration
+  const progress = player.player.position / fixedDuration
   const filledCount = Math.floor(progress * 10)
   const halfCount = Math.round((0.4 % 0.1) * 10)
   const emptyCount = 10 - filledCount - halfCount
@@ -86,7 +88,7 @@ export function generatePlayerStartMessage(player: BotPlayer, track: BotTrack): 
           iconURL: track.thumb
         })
         .setDescription(
-          `${Utils.formatTime(player.player.position)}/${Utils.formatTime(track.duration ?? 0)}${progressBarText}`
+          `${Utils.formatTime(player.player.position)}/${Utils.formatTime(fixedDuration)}${progressBarText}`
         )
     ],
     components: [row]

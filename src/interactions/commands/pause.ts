@@ -1,8 +1,8 @@
-import { getConfig } from '../db.js'
-import { Command } from '../modules/slashCommandManager.js'
-import Utils, { ErrorMessageType } from '../utils.js'
+import { getConfig } from '../../db.js'
+import Utils, { ErrorMessageType } from '../../utils.js'
+import { CommandCustomInteraction } from '../commandInteractions.js'
 
-export default new Command({
+export const interaction: CommandCustomInteraction = {
   name: 'pause',
   aliases: ['ps', 'resume'],
   djOnly: true,
@@ -46,4 +46,4 @@ export default new Command({
     player.player.setPaused(true)
     return
   }
-})
+}
