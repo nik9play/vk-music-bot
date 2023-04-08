@@ -1,17 +1,12 @@
-import {
-  BaseMessageOptions,
-  ButtonInteraction,
-  Collection,
-  Events,
-  Interaction,
-  InteractionReplyOptions,
-  PermissionsBitField,
-  User
-} from 'discord.js'
-import BaseInteractionManager, { BaseCustomInteraction, BaseExecuteParams } from './baseInteractionManager.js'
+import { ButtonInteraction, Collection, Events, Interaction } from 'discord.js'
+import BaseInteractionManager, {
+  BaseCustomInteraction,
+  BaseExecuteParams,
+  getRespondFunction,
+  getSendFunction
+} from './baseInteractionManager.js'
 import { VkMusicBotClient } from '../client.js'
 import { Meta } from '../utils.js'
-import logger from '../logger.js'
 import glob from 'glob'
 import { promisify } from 'util'
 
@@ -70,49 +65,9 @@ export class ButtonInteractionManager implements BaseInteractionManager {
     const customAction = customId[1]
     console.log(interaction.customId)
 
-    const respond = async (data: InteractionReplyOptions, timeout?: number): Promise<void> => {
-      if (interaction.deferred) {
-        await interaction.editReply(data).catch((err) => logger.error({ err, ...meta }, "Can't edit reply"))
-        return
-      }
+    const respond = getRespondFunction(interaction, meta)
 
-      if (interaction.isRepliable()) {
-        await interaction.reply(data).catch((err) => {
-          logger.error({ err, ...meta }, "Can't send reply")
-          return
-        })
-
-        if (timeout)
-          setTimeout(async () => {
-            await interaction.deleteReply().catch((err) => {
-              logger.error({ err, ...meta }, 'Error deleting reply')
-            })
-          }, timeout)
-      }
-    }
-
-    const send = async (data: BaseMessageOptions, timeout?: number): Promise<void> => {
-      if (!text?.permissionsFor(this.client.user as User)?.has(PermissionsBitField.Flags.SendMessages)) return
-
-      await text
-        .send(data)
-        .catch((err) => {
-          logger.error({ err, ...meta }, "Can't send message")
-          return
-        })
-        .then((message) => {
-          if (timeout && message) {
-            setTimeout(async () => {
-              if (!message.channel.isTextBased()) return
-
-              if (message.deletable)
-                await message.delete().catch((err) => {
-                  logger.error({ err, ...meta }, "Can't delete message")
-                })
-            }, timeout)
-          }
-        })
-    }
+    const send = getSendFunction(text, this.client, meta)
 
     const buttonInteraction = this.interactions.get(name)
     await buttonInteraction?.execute({

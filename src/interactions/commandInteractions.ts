@@ -1,14 +1,10 @@
-import {
-  BaseMessageOptions,
-  ChatInputCommandInteraction,
-  Collection,
-  Events,
-  Interaction,
-  InteractionReplyOptions,
-  PermissionsBitField,
-  User
-} from 'discord.js'
-import BaseInteractionManager, { BaseCustomInteraction, BaseExecuteParams } from './baseInteractionManager.js'
+import { ChatInputCommandInteraction, Collection, Events, Interaction, PermissionsBitField } from 'discord.js'
+import BaseInteractionManager, {
+  BaseCustomInteraction,
+  BaseExecuteParams,
+  getRespondFunction,
+  getSendFunction
+} from './baseInteractionManager.js'
 import logger from '../logger.js'
 import Utils, { Meta } from '../utils.js'
 import { VkMusicBotClient } from '../client.js'
@@ -71,48 +67,9 @@ export class CommandInteractionManager implements BaseInteractionManager {
       shard_id: guild?.shardId
     }
 
-    const respond = async (data: InteractionReplyOptions, timeout?: number): Promise<void> => {
-      if (interaction.deferred) {
-        await interaction.editReply(data).catch((err) => logger.error({ err, ...meta }, "Can't edit reply"))
-        return
-      }
+    const respond = getRespondFunction(interaction, meta)
 
-      if (interaction.isRepliable()) {
-        try {
-          await interaction.reply(data)
-        } catch (err) {
-          logger.error({ err, ...meta }, "Can't send reply")
-        }
-
-        if (timeout)
-          setTimeout(async () => {
-            await interaction.deleteReply().catch((err) => {
-              logger.error({ err, ...meta }, 'Error deleting reply')
-            })
-          }, timeout)
-      }
-    }
-
-    const send = async (data: BaseMessageOptions, timeout?: number): Promise<void> => {
-      if (!text?.permissionsFor(this.client.user as User)?.has(PermissionsBitField.Flags.SendMessages)) return
-
-      try {
-        const message = await text.send(data)
-
-        if (timeout) {
-          setTimeout(async () => {
-            if (!message.channel.isTextBased()) return
-
-            if (message.deletable)
-              await message.delete().catch((err) => {
-                logger.error({ err, ...meta }, "Can't delete message")
-              })
-          }, timeout)
-        }
-      } catch (err) {
-        logger.error({ err, ...meta }, "Can't send message")
-      }
-    }
+    const send = getSendFunction(text, this.client, meta)
 
     const command = this.interactions.get(interaction.commandName)
 
