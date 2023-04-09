@@ -15,6 +15,7 @@ export default class BotPlayer {
   public current?: BotTrack | null
   public repeat: 'none' | 'track' | 'queue'
   public stopped: boolean
+  public reconnecting: boolean
 
   constructor(client: VkMusicBotClient, guildId: string, textChannelId: string, player: Player) {
     this.client = client
@@ -25,23 +26,29 @@ export default class BotPlayer {
     this.current = null
     this.queue = []
     this.stopped = false
+    this.reconnecting = false
 
     let notifiedOnce = false
 
-    this.player
-      .on('start', async () => {
-        if (this.repeat === 'track') {
-          if (notifiedOnce) return
-          else notifiedOnce = true
-        } else if (this.repeat === 'queue' || this.repeat === 'none') {
-          notifiedOnce = false
-        }
+    this.player.on('start', (data) => {
+      logger.debug({ guildId: data.guildId }, 'Start repeat event')
 
-        // TODO: playerStart message handling
+      if (this.repeat === 'track') {
+        if (notifiedOnce) return
+        else notifiedOnce = true
+      } else if (this.repeat === 'queue' || this.repeat === 'none') {
+        notifiedOnce = false
+      }
+    })
+    this.player
+      .on('start', async (data) => {
+        logger.debug({ guildId: data.guildId }, 'Start event')
+
         const config = await getConfig(this.guildId)
 
         if (config.announcements) {
           const channel = client.channels.cache.get(this.textChannelId)
+          logger.debug({ channel: channel?.id, current: this.current })
 
           if (!channel?.isTextBased()) return
 
@@ -78,7 +85,9 @@ export default class BotPlayer {
       })
       .on('exception', (data) => this.errorHandler(data))
       .on('closed', (data) => this.errorHandler(data))
-      .on('update', () => {
+      .on('update', (data) => {
+        if (data.state.position && data.state.position < 10_000) return
+
         if (this.current) {
           const message = this.client.latestMenus.get(this.guildId)
           if (!message) return
@@ -86,7 +95,7 @@ export default class BotPlayer {
           if (message.editable)
             message
               .edit(generatePlayerStartMessage(this, this.current))
-              .catch((err) => logger.error({ err }, "Can't edit player start message"))
+              .catch((err) => logger.error({ err: err.message }, "Can't edit player start message"))
         }
       })
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -102,17 +111,20 @@ export default class BotPlayer {
           },
           20_000
         )
+        this.reconnecting = false
       })
     //.on('error', this.errorHandler)
     //this.closeHandlerEvent = this.closeHandler.bind(this)
     this.client.shoukaku.on('close', this.closeHandlerEvent)
     this.client.shoukaku.on('disconnect', this.disconnectHandlerEvent)
-    this.player.node.on('debug', (data) => {
-      logger.debug({ data }, 'debugf')
-    })
+    // this.player.node.on('debug', (data) => {
+    //   logger.debug({ data }, 'debugf')
+    // })
   }
 
   private closeHandlerEvent = async () => {
+    if (this.reconnecting) return
+
     await deletePreviousTrackStartMessage(this.client, this.guildId)
     const channel = this.client.channels.cache.get(this.textChannelId)
     if (!channel?.isTextBased()) return
@@ -129,6 +141,7 @@ export default class BotPlayer {
       },
       40_000
     )
+    this.reconnecting = true
   }
 
   private disconnectHandlerEvent = async (name: string) => {
