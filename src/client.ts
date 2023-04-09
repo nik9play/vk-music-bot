@@ -8,6 +8,8 @@ import ShoukakuManager from './modules/shoukakuManager.js'
 import { deletePreviousTrackStartMessage } from './helpers/playerStartHelper.js'
 import { CommandInteractionManager } from './interactions/commandInteractions.js'
 import { ButtonInteractionManager } from './interactions/buttonInteractions.js'
+import { SelectMenuInteractionManager } from './interactions/selectMenuInteractions.js'
+import { ShardClientUtil } from 'indomitable'
 
 export interface CaptchaInfo {
   type: 'play' | 'search'
@@ -38,7 +40,7 @@ export class VkMusicBotClient extends Client {
 
   public commandInteractionManager: CommandInteractionManager
   public buttonInteractionManager: ButtonInteractionManager
-  // public selectMenuInteractionManager: SelectMenuInter
+  public selectMenuInteractionManager: SelectMenuInteractionManager
 
   constructor(options: ClientOptions) {
     if (!process.env.MONGO_URL || !process.env.REDIS_URL) throw new Error('Env not set')
@@ -48,6 +50,7 @@ export class VkMusicBotClient extends Client {
     this.shoukaku = new ShoukakuManager(this)
     this.commandInteractionManager = new CommandInteractionManager(this)
     this.buttonInteractionManager = new ButtonInteractionManager(this)
+    this.selectMenuInteractionManager = new SelectMenuInteractionManager(this)
 
     this.once('ready', async () => {
       //this.manager.init(this.user?.id)
@@ -56,8 +59,11 @@ export class VkMusicBotClient extends Client {
       // await slashCommandManager.init()
       logger.info(`Logged in as ${this.user?.tag} successfully`)
 
-      await this.commandInteractionManager.load()
-      await this.buttonInteractionManager.load()
+      await Promise.all([
+        this.commandInteractionManager.load(),
+        this.buttonInteractionManager.load(),
+        this.selectMenuInteractionManager.load()
+      ])
 
       logger.info(`Loaded ${this.commandInteractionManager.interactions.size} commands.`)
       logger.info(`Loaded ${this.buttonInteractionManager.interactions.size} button interactions.`)
@@ -181,40 +187,33 @@ export class VkMusicBotClient extends Client {
   async login(token?: string | undefined) {
     await super.login(token)
 
-    // setTimeout(() => {
-    //   new Promise((resolve, reject) => {
-    //     reject()
-    //   })
-    // }, 5000)
-
     await connectDb()
     logger.info('DB connected.')
 
-    // @ts-ignore
-    // const shardClientUtil = this.shard as ShardClientUtil
-    // shardClientUtil.on('message', (msg: any) => {
-    //   if (msg?.content?.op === 'serverCount' && msg?.repliable) msg.reply(this.guilds.cache.size)
-    //   else if (msg?.content?.op === 'clientId' && msg?.repliable) msg.reply(this.user?.id)
-    //   else if (msg?.content?.op === 'setPresence') {
-    //     this.user?.setPresence({
-    //       activities: [
-    //         {
-    //           name: msg?.content?.data,
-    //           type: 2
-    //         }
-    //       ]
-    //     })
-    //   } else if (msg?.content?.op === 'clearQueues') {
-    //     for (const player of this.kazagumo.players.values()) {
-    //       player.setLoop('none')
-    //       player.queue.clear()
-    //     }
-    //   } else if (msg?.content?.op === 'destroyAll') {
-    //     for (const player of this.kazagumo.players.values()) {
-    //       player.destroy()
-    //     }
-    //   }
-    // })
+    //@ts-ignore
+    const shardClientUtil = this.shard as ShardClientUtil
+    shardClientUtil.on('message', (msg: any) => {
+      if (msg?.content?.op === 'serverCount' && msg?.repliable) msg.reply(this.guilds.cache.size)
+      else if (msg?.content?.op === 'clientId' && msg?.repliable) msg.reply(this.user?.id)
+      else if (msg?.content?.op === 'setPresence') {
+        this.user?.setPresence({
+          activities: [
+            {
+              name: msg?.content?.data,
+              type: 2
+            }
+          ]
+        })
+      } else if (msg?.content?.op === 'clearQueues') {
+        for (const player of this.queue.values()) {
+          player.stop()
+        }
+      } else if (msg?.content?.op === 'destroyAll') {
+        for (const player of this.queue.values()) {
+          player.safeDestroy()
+        }
+      }
+    })
 
     return this.constructor.name
   }
