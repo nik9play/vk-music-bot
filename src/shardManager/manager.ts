@@ -22,7 +22,10 @@ const options: IndomitableOptions = {
       GuildEmojiManager: 0,
       ReactionManager: 0
     }),
-    intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildVoiceStates, GatewayIntentBits.GuildMessages]
+    intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildVoiceStates, GatewayIntentBits.GuildMessages],
+    rest: {
+      api: process.env.DISCORD_PROXY_URL
+    }
   },
   autoRestart: true,
   spawnTimeout: 120_000,

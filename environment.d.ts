@@ -6,6 +6,7 @@ declare global {
       MONGO_URL: string
       REDIS_URL: string
       CAPTCHA_SOLVER_URL: string
+      DISCORD_PROXY_URL: string
       API_TOKEN: string
       DATMUSIC_URL: string
       STATS_KEY: string
