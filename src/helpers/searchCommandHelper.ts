@@ -37,7 +37,8 @@ export async function searchCommandHandler(params: CommandExecuteParams, queryPa
           sid: reqError.error.captcha_id,
           index: reqError.error.captcha_index
         },
-        params
+        params,
+        !captcha
       )
       if (captchaError) {
         await respond(captchaError)

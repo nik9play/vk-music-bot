@@ -178,7 +178,8 @@ export async function playCommandHandler(
           sid: reqError.error.captcha_id,
           index: reqError.error.captcha_index
         },
-        params
+        params,
+        !captcha
       )
       if (captchaError) {
         await respond(captchaError)
@@ -288,6 +289,7 @@ export async function playCommandHandler(
 
     const playlistEmbed = new EmbedBuilder()
       .setTitle(Utils.escapeFormat(req.info.title).slice(0, 100))
+      .setURL(`https://vk.com/music/playlist/${arg.owner_id}_${arg.id}${arg.access_key ? '_' + arg.access_key : ''}`)
       .setDescription(description)
       .setColor(0x5181b8)
       .setAuthor({ name: 'Добавлены треки из плейлиста' })
@@ -318,6 +320,7 @@ export async function playCommandHandler(
 
     const playlistEmbed = new EmbedBuilder()
       .setTitle(Utils.escapeFormat(req.info.name).slice(0, 100))
+      .setURL(`https://vk.com/id${arg.owner_id}`)
       .setColor(0x5181b8)
       .setAuthor({
         name: 'Добавлены треки пользователя'
@@ -346,6 +349,7 @@ export async function playCommandHandler(
 
     const playlistEmbed = new EmbedBuilder()
       .setTitle(Utils.escapeFormat(req.info.name).slice(0, 100))
+      .setURL(`https://vk.com/club${arg.owner_id?.slice(1)}`)
       .setDescription(description)
       .setColor(0x5181b8)
       .setAuthor({

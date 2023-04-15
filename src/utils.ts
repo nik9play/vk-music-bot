@@ -144,13 +144,13 @@ export default class Utils {
 
   public static async handleCaptchaError(
     captchaInfo: CaptchaInfo,
-    params: CommandExecuteParams
+    params: CommandExecuteParams,
+    autoSolve = true
   ): Promise<InteractionReplyOptions | null> {
     params.client.captcha.set(params.guild.id, captchaInfo)
     const captcha = captchaInfo
 
-    const config = await getConfig(params.guild.id)
-    if (config.premium) {
+    if (autoSolve && (await getConfig(params.guild.id)).premium) {
       const captchaSolveResponse = await VK.solveCaptcha(captcha.sid)
 
       if (captchaSolveResponse) {
