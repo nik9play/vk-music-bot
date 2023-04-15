@@ -204,7 +204,10 @@ export default class BotPlayer {
   }
 
   async safeDestroy() {
-    await this.destroy(this.player.node.state === Constants.State.CONNECTED)
+    await Promise.all([
+      deletePreviousTrackStartMessage(this.client, this.guildId),
+      this.destroy(this.player.node.state === Constants.State.CONNECTED)
+    ])
   }
 
   async stop() {
@@ -213,7 +216,7 @@ export default class BotPlayer {
     this.queue.length = 0
     this.stopped = true
     await this.player.stopTrack()
-    if (!(await getConfig(this.guildId))) Utils.setExitTimeout(this, this.client)
+    if (!(await getConfig(this.guildId)).enable247) Utils.setExitTimeout(this, this.client)
   }
 
   async skip(count?: number) {
@@ -223,7 +226,7 @@ export default class BotPlayer {
 
     await this.player.setPaused(false)
     await this.player.stopTrack()
-    if (this.queue.length === 0 && !this.current && !(await getConfig(this.guildId))) {
+    if (this.queue.length === 0 && !this.current && !(await getConfig(this.guildId)).enable247) {
       Utils.setExitTimeout(this, this.client)
     }
   }
