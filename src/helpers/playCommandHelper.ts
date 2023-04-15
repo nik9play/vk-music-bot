@@ -168,21 +168,22 @@ export async function playCommandHandler(
     const reqError = req as APIResponse
 
     if (reqError.type === 'captcha') {
-      await respond(
-        Utils.generateCaptchaMessage(
-          guild.id,
-          {
-            type: 'play',
-            query: queryParam,
-            count: countParam,
-            offset: offsetParam,
-            url: reqError.error.captcha_img,
-            sid: reqError.error.captcha_id,
-            index: reqError.error.captcha_index
-          },
-          client
-        )
+      const captchaError = await Utils.handleCaptchaError(
+        {
+          type: 'play',
+          query: queryParam,
+          count: countParam,
+          offset: offsetParam,
+          url: reqError.error.captcha_img,
+          sid: reqError.error.captcha_id,
+          index: reqError.error.captcha_index
+        },
+        params
       )
+      if (captchaError) {
+        await respond(captchaError)
+      }
+      return
     } else if (reqError.type === 'empty') {
       await respond(
         {

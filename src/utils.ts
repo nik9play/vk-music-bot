@@ -4,6 +4,11 @@ import logger from './logger.js'
 import BotPlayer from './modules/botPlayer.js'
 import { Constants } from 'shoukaku'
 import { RespondFunction } from './interactions/baseInteractionManager.js'
+import { getConfig } from './db.js'
+import VK from './apis/VK.js'
+import { playCommandHandler } from './helpers/playCommandHelper.js'
+import { CommandExecuteParams } from './interactions/commandInteractions.js'
+import { searchCommandHandler } from './helpers/searchCommandHelper.js'
 
 export interface ArgType {
   type: 'group' | 'playlist' | 'user' | 'track' | 'unknown'
@@ -137,26 +142,47 @@ export default class Utils {
       .trim()
   }
 
-  public static generateCaptchaMessage(
-    guildId: string,
+  public static async handleCaptchaError(
     captchaInfo: CaptchaInfo,
-    client: VkMusicBotClient
-  ): InteractionReplyOptions {
-    client.captcha.set(guildId, captchaInfo)
-    const captcha = client.captcha.get(guildId)
+    params: CommandExecuteParams
+  ): Promise<InteractionReplyOptions | null> {
+    params.client.captcha.set(params.guild.id, captchaInfo)
+    const captcha = captchaInfo
 
-    const embed = {
-      description:
-        'Ошибка! Требуется капча. Введите команду </captcha:906533763033464832>, а после введите код с картинки. ' +
-        `Если картинки не видно, перейдите по [ссылке](${captcha?.url})`,
-      color: 0x5181b8,
-      image: {
-        url: captcha?.url + this.generateRandomCaptchaString()
+    const config = await getConfig(params.guild.id)
+    if (config.premium) {
+      const captchaSolveResponse = await VK.solveCaptcha(captcha.sid)
+
+      if (captchaSolveResponse) {
+        logger.info('Captcha solved')
+        params.client.captcha.delete(params.guild.id)
+
+        captcha.captcha_key = captchaSolveResponse
+
+        params.captcha = captcha
+
+        if (captcha.type === 'play') {
+          await playCommandHandler(params, captcha.query, captcha.count, captcha.offset)
+          return null
+        }
+
+        if (captcha.type === 'search') {
+          await searchCommandHandler(params, captcha.query)
+          return null
+        }
       }
     }
 
     return {
-      embeds: [embed]
+      embeds: [
+        new EmbedBuilder()
+          .setDescription(
+            'Ошибка! Требуется капча. Введите команду </captcha:906533763033464832>, а после введите код с картинки. ' +
+              `Если картинки не видно, перейдите по [ссылке](${captcha?.url})`
+          )
+          .setColor(0x5181b8)
+          .setImage(captcha.url + this.generateRandomCaptchaString())
+      ]
     }
   }
 

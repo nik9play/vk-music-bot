@@ -29,19 +29,20 @@ export async function searchCommandHandler(params: CommandExecuteParams, queryPa
 
     // todo: переделать работу с капчей
     if (reqError.type === 'captcha') {
-      return respond(
-        Utils.generateCaptchaMessage(
-          guild.id,
-          {
-            type: 'search',
-            query: queryParam,
-            url: reqError.error.captcha_img,
-            sid: reqError.error.captcha_id,
-            index: reqError.error.captcha_index
-          },
-          client
-        )
+      const captchaError = await Utils.handleCaptchaError(
+        {
+          type: 'search',
+          query: queryParam,
+          url: reqError.error.captcha_img,
+          sid: reqError.error.captcha_id,
+          index: reqError.error.captcha_index
+        },
+        params
       )
+      if (captchaError) {
+        await respond(captchaError)
+      }
+      return
     } else if (reqError.type === 'empty') {
       return respond({
         embeds: [Utils.generateErrorMessage('Не удалось ничего найти по запросу.')],
