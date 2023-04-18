@@ -86,7 +86,7 @@ export default class BotPlayer {
       .on('exception', (data) => this.errorHandler(data))
       .on('closed', (data) => this.errorHandler(data))
       .on('update', (data) => {
-        if (data.state.position && data.state.position < 10_000) return
+        if (data.state.position !== undefined && data.state.position < 10_000) return
 
         if (this.current) {
           const message = this.client.latestMenus.get(this.guildId)
