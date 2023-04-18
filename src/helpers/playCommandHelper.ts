@@ -110,6 +110,7 @@ export async function playCommandHandler(
   const countQuery = Math.ceil(count / 50) * 50
 
   const arg = Utils.detectArgType(search)
+  logger.debug({ arg })
   let req
 
   const query: any = {}
@@ -159,6 +160,8 @@ export async function playCommandHandler(
   }
 
   if (!req) return
+
+  logger.debug({ req })
 
   if (req.status === 'error') {
     logger.warn({ req, ...meta }, 'VK Request error')
@@ -320,7 +323,7 @@ export async function playCommandHandler(
 
     const playlistEmbed = new EmbedBuilder()
       .setTitle(Utils.escapeFormat(req.info.name).slice(0, 100))
-      .setURL(`https://vk.com/id${arg.owner_id}`)
+      .setURL(`https://vk.com/${arg.owner_id}`)
       .setColor(0x5181b8)
       .setAuthor({
         name: 'Добавлены треки пользователя'
