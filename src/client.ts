@@ -5,7 +5,6 @@ import logger from './logger.js'
 import { connectDb, getConfig } from './db.js'
 import Queue from './modules/queue.js'
 import ShoukakuManager from './modules/shoukakuManager.js'
-import { deletePreviousTrackStartMessage } from './helpers/playerStartHelper.js'
 import { CommandInteractionManager } from './interactions/commandInteractions.js'
 import { ButtonInteractionManager } from './interactions/buttonInteractions.js'
 import { SelectMenuInteractionManager } from './interactions/selectMenuInteractions.js'
@@ -93,6 +92,9 @@ export class VkMusicBotClient extends Client {
           oldState: oldState
         })
 
+        let channelIsEmpty = false
+        let voiceChannel = null
+
         if (oldState.id === this.user?.id) {
           const newChannelId = newState.channelId
           const oldChannelId = oldState.channelId
@@ -117,69 +119,51 @@ export class VkMusicBotClient extends Client {
           }
 
           if (state === 'MOVED' && !config.enable247) {
-            const members = newState.channel?.members.filter((m) => !m.user.bot)
+            logger.debug({ guildId }, 'Player moved')
+            voiceChannel = newState.channel
+            const members = voiceChannel?.members.filter((m) => !m.user.bot)
 
             if (members?.size === 0) {
-              const textId = player.textChannelId
-
-              await player.safeDestroy()
-
-              const channel = this.channels.cache.get(textId)
-              if (!channel?.isTextBased()) return
-
-              await Utils.sendMessageToChannel(
-                channel,
-                {
-                  embeds: [
-                    Utils.generateErrorMessage(
-                      'Я вышел из канала, так как тут никого нет. ' +
-                        'Включите режим 24/7 (/247), если не хотите, чтобы это происходило.',
-                      ErrorMessageType.Info
-                    )
-                  ]
-                },
-                20000
-              )
-
-              logger.debug({ guildId }, 'Player moved')
+              channelIsEmpty = true
             }
           }
         } else {
-          const voiceChannel = oldState.channel || newState.channel
+          voiceChannel = oldState.channel || newState.channel
           if (!voiceChannel) return
-
-          const config = await getConfig(voiceChannel.guildId)
-          if (config.enable247) return
-
-          const player = this.queue.get(voiceChannel.guildId)
-          if (!player) return
 
           const members = voiceChannel.members.filter((m) => !m.user.bot)
 
           if (members.size === 0) {
-            const textId = player.textChannelId
-
-            await player.safeDestroy()
-
-            const channel = this.channels.cache.get(textId)
-            if (!channel?.isTextBased()) return
-
-            await Utils.sendMessageToChannel(
-              channel,
-              {
-                embeds: [
-                  Utils.generateErrorMessage(
-                    'Я вышел из канала, так как тут никого нет. ' +
-                      'Включите режим 24/7 (/247), если не хотите, чтобы это происходило.',
-                    ErrorMessageType.Info
-                  )
-                ]
-              },
-              30_000
-            )
-
-            logger.debug({ guildId: voiceChannel.guildId }, 'Player leaved empty channel')
+            channelIsEmpty = true
           }
+        }
+
+        if (channelIsEmpty && voiceChannel && !(await getConfig(voiceChannel.guildId)).enable247) {
+          const player = this.queue.get(voiceChannel.guildId)
+          if (!player) return
+
+          const textId = player.textChannelId
+
+          await player.safeDestroy()
+
+          const channel = this.channels.cache.get(textId)
+          if (!channel?.isTextBased()) return
+
+          await Utils.sendMessageToChannel(
+            channel,
+            {
+              embeds: [
+                Utils.generateErrorMessage(
+                  'Я вышел из канала, так как тут никого нет. ' +
+                    'Включите режим 24/7 (/247), если не хотите, чтобы это происходило.',
+                  ErrorMessageType.Info
+                )
+              ]
+            },
+            30_000
+          )
+
+          logger.debug({ guildId: voiceChannel.guildId }, 'Player leaved empty channel')
         }
       })
   }
