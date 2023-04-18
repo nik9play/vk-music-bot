@@ -3,7 +3,6 @@ import { playCommandHandler } from '../../helpers/playCommandHelper.js'
 import { ButtonCustomInteraction } from '../buttonInteractions.js'
 import { CommandExecuteParams } from '../commandInteractions.js'
 
-//todo: проверить работу с fetch
 export const interaction: ButtonCustomInteraction = {
   name: 'playTrack',
   execute: async ({ interaction, customAction, guild, voice, text, user, respond, send, meta, client }) => {
