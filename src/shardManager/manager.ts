@@ -14,13 +14,16 @@ const options: IndomitableOptions = {
   clientOptions: {
     makeCache: Options.cacheWithLimits({
       ...Options.DefaultMakeCacheSettings,
-      //MessageManager: 50,
+      MessageManager: 0,
       //ThreadManager: 20,
       PresenceManager: 0,
+      GuildStickerManager: 0,
       GuildBanManager: 0,
       GuildInviteManager: 0,
       GuildEmojiManager: 0,
-      ReactionManager: 0
+      ReactionManager: 0,
+      GuildScheduledEventManager: 0,
+      AutoModerationRuleManager: 0
     }),
     intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildVoiceStates, GatewayIntentBits.GuildMessages],
     rest: {
