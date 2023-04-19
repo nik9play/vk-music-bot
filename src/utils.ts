@@ -42,90 +42,53 @@ export default class Utils {
     return titles[number % 100 > 4 && number % 100 < 20 ? 2 : cases[number % 10 < 5 ? number % 10 : 5]]
   }
 
-  private static urlRegex1 = /\/music\/(playlist|album)\/([0-9]+)_([0-9]+)(_([A-Za-z0-9]*))?/
-  private static urlRegex2 = /audio_playlist([0-9]+)(_|\/)([0-9]+)((_|\/)([A-Za-z0-9]*))?/
+  public static playlistRegex =
+    /https?:\/\/.*(z=audio_playlist|\/music\/(playlist|album)\/)(-?\d+)[_|/](\d+)([_|/]([a-zA-Z0-9]+))?/
 
-  public static parsePlaylistURL(url: URL): PlaylistURL | null {
-    const match1 = url.toString().match(this.urlRegex1)
+  public static trackRegex = /(^|^https?:\/\/.*\/audio)(-?\d+)_(\d+)(_([a-zA-Z0-9]+))?$/
+  public static userGroupRegex = /(>(-\d+))|(>([a-zA-Z0-9]+))/
 
-    if (match1)
+  public static detectQueryType(query: string): ArgType {
+    const playlistMatch = query.match(this.playlistRegex)
+
+    if (playlistMatch) {
       return {
-        id: match1[3],
-        owner_id: match1[2],
-        access_key: match1[5]
+        type: 'playlist',
+        owner_id: playlistMatch[3],
+        id: playlistMatch[4],
+        access_key: playlistMatch[6]
       }
+    }
 
-    const match2 = url.toString().match(this.urlRegex2)
+    const trackMatch = query.match(this.trackRegex)
 
-    if (match2)
+    if (trackMatch) {
       return {
-        id: match2[3],
-        owner_id: match2[1],
-        access_key: url.searchParams.get('access_key') ?? match2[6]
+        type: 'track',
+        owner_id: trackMatch[2],
+        id: trackMatch[3],
+        access_key: trackMatch[5]
       }
+    }
 
-    return null
-  }
+    const userOrGroupMatch = query.match(this.userGroupRegex)
 
-  private static trackRegex = /\/audio([0-9]+)_([0-9]+)(_([A-Za-z0-9]*))?/
-
-  public static detectArgType(arg: string): ArgType {
-    if (arg.startsWith('>-')) {
-      return {
-        type: 'group',
-        owner_id: arg.slice(1)
-      }
-    } else if (arg.startsWith('>')) {
-      return {
-        type: 'user',
-        owner_id: arg.slice(1)
-      }
-    } else {
-      try {
-        const url = new URL(arg)
-
-        const match = arg.match(this.trackRegex)
-        if (match) {
-          return {
-            type: 'track',
-            query: `${match[1]}_${match[2]}${match[4] ? '_' + match[4] : ''}`
-          }
-        }
-
-        if (!url.searchParams.has('z')) {
-          if (url.pathname.startsWith('/audios-') && !url.searchParams.has('z'))
-            return {
-              type: 'group',
-              owner_id: url.pathname.slice(7)
-            }
-
-          if (url.pathname.startsWith('/audios') && !url.searchParams.has('z'))
-            return {
-              type: 'user',
-              owner_id: url.pathname.slice(7)
-            }
-        }
-
-        const parsedURL = this.parsePlaylistURL(url)
-
-        if (!parsedURL || !parsedURL.id || !parsedURL.owner_id) {
-          return {
-            type: 'unknown'
-          }
-        }
-
+    if (userOrGroupMatch) {
+      if (userOrGroupMatch[2])
         return {
-          type: 'playlist',
-          id: parsedURL.id,
-          owner_id: parsedURL.owner_id,
-          access_key: parsedURL.access_key
+          type: 'group',
+          owner_id: userOrGroupMatch[2]
         }
-      } catch {
+      if (userOrGroupMatch[4])
         return {
-          type: 'track',
-          query: arg
+          type: 'user',
+          owner_id: userOrGroupMatch[4]
         }
-      }
+    }
+
+    return {
+      type: 'track',
+      query
     }
   }
 

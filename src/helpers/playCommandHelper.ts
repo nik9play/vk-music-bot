@@ -109,7 +109,7 @@ export async function playCommandHandler(
 
   const countQuery = Math.ceil(count / 50) * 50
 
-  const arg = Utils.detectArgType(search)
+  const arg = Utils.detectQueryType(search)
   logger.debug({ arg })
   let req
 
