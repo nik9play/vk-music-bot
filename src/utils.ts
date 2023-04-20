@@ -65,9 +65,7 @@ export default class Utils {
     if (trackMatch) {
       return {
         type: 'track',
-        owner_id: trackMatch[2],
-        id: trackMatch[3],
-        access_key: trackMatch[5]
+        query: `${trackMatch[2]}_${trackMatch[3]}${trackMatch[5] ? '_' + trackMatch[5] : ''}`
       }
     }
 
@@ -188,7 +186,7 @@ export default class Utils {
 
   public static setExitTimeout(player: BotPlayer, client: VkMusicBotClient) {
     this.clearExitTimeout(player.guildId, client)
-    logger.info(`Exit timeout set ${player.guildId}`)
+    logger.info({ guildId: player.guildId }, `Exit timeout set`)
 
     client.timers.set(
       player.guildId,
@@ -199,7 +197,7 @@ export default class Utils {
   }
 
   public static clearExitTimeout(guildId: string, client: VkMusicBotClient) {
-    logger.info(`Exit timeout clear ${guildId}`)
+    logger.info({ guildId }, `Exit timeout clear`)
 
     const timer = client.timers.get(guildId)
     if (timer) clearTimeout(timer)
