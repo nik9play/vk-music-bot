@@ -81,13 +81,13 @@ export class VkMusicBotClient extends Client {
 
         if (message.id === menuMessage.id) {
           this.latestMenus.delete(message.guildId)
-          logger.info('removed latestMenusMessage')
+          logger.info({ guild: message.guildId }, 'Removed latestMenusMessage')
         }
       })
 
       // TODO: fix this shit
       .on('voiceStateUpdate', async (oldState, newState) => {
-        logger.info({
+        logger.debug({
           newState: newState,
           oldState: oldState
         })
