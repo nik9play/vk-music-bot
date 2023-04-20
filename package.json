@@ -11,7 +11,7 @@
   "scripts": {
     "start": "node dist/index.js",
     "build": "tsc",
-    "dev": "tsc && NODE_ENV=development node -r dotenv/config ./dist/index.js"
+    "dev": "tsc && NODE_ENV=development node --enable-source-maps --inspect -r dotenv/config ./dist/index.js"
   },
   "dependencies": {
     "@sinclair/typebox": "^0.25.10",
