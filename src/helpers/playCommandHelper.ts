@@ -202,6 +202,17 @@ export async function playCommandHandler(
         },
         errorTimeout
       )
+    } else if (reqError.type === 'request' && arg.type === 'user') {
+      await respond(
+        {
+          embeds: [
+            Utils.generateErrorMessage(
+              'Возможно, такого пользователя не существует. Попробуйте добавить треки по числовому ID.'
+            )
+          ]
+        },
+        errorTimeout
+      )
     } else if (reqError.type === 'request') {
       await respond(
         {
