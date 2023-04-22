@@ -203,7 +203,8 @@ export class VkMusicBotClient extends Client {
           nodes.push({
             name: node.name,
             state: node.state,
-            penalties: node.penalties
+            penalties: node.penalties,
+            stats: node.stats
           })
         }
 
