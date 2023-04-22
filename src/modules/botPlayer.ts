@@ -219,10 +219,8 @@ export default class BotPlayer {
     if (!(await getConfig(this.guildId)).enable247) Utils.setExitTimeout(this, this.client)
   }
 
-  async skip(count?: number) {
-    if (!count) count = 1
-
-    this.queue.slice(0, count - 1)
+  async skip(count = 1) {
+    this.queue.splice(0, count - 1)
 
     await this.player.setPaused(false)
     await this.player.stopTrack()
