@@ -4,6 +4,8 @@
     "module": "esnext",
     "rootDir": "./src",
     "moduleResolution": "node",
+    "lib": ["esnext"],
+    "types": ["node"],
     "resolveJsonModule": true,
     "outDir": "./dist",
     "esModuleInterop": true,
