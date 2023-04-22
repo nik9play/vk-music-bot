@@ -83,7 +83,7 @@ server.delete<{ Params: NodeDeleteType }>(
   }
 )
 
-const port = parseInt(process.env.API_PORT ?? '4000')
+const port = parseInt(process.env.PORT ?? '5000')
 
 function startApiServer() {
   server.listen({ port }, (err, address) => {
