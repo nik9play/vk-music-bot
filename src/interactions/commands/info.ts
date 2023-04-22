@@ -24,6 +24,8 @@ export const interaction: CommandCustomInteraction = {
 
     avgCPU /= count
 
+    const player = client.queue.get(guild.id)
+
     const embed = {
       author: {
         name: 'Информация о боте'
@@ -78,7 +80,14 @@ export const interaction: CommandCustomInteraction = {
         {
           name: 'ID сервера',
           value: `\`\`\`js\n${guild.id}\`\`\``,
-          inline: true
+          inline: false
+        },
+        {
+          name: 'Статистика Lavalink',
+          value: `\`\`\`Название: ${player?.player.node.name ?? 'N/A'}\nВсего плееров: ${
+            player?.player.node.stats?.players ?? 'N/A'
+          }\`\`\``,
+          inline: false
         }
       ]
     }
