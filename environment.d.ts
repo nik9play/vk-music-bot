@@ -12,6 +12,8 @@ declare global {
       STATS_KEY: string
       SDC_TOKEN: string
       API_PORT?: string
+      VK_TOTAL_SHARDS: string
+      SHARDS_PER_CLUSTER: string
     }
   }
 }

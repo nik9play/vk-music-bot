@@ -7,9 +7,9 @@ import { startApiServer } from './api/apiServer.js'
 
 const options: IndomitableOptions = {
   // Processes to run
-  clusterCount: 1,
+  clusterCount: parseInt(process.env.VK_TOTAL_SHARDS) / parseInt(process.env.SHARDS_PER_CLUSTER),
   // Websocket shards to run
-  shardCount: 1,
+  shardCount: parseInt(process.env.VK_TOTAL_SHARDS),
   // Discord.JS options
   clientOptions: {
     makeCache: Options.cacheWithLimits({
