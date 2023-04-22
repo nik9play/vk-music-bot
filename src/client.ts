@@ -9,6 +9,7 @@ import { CommandInteractionManager } from './interactions/commandInteractions.js
 import { ButtonInteractionManager } from './interactions/buttonInteractions.js'
 import { SelectMenuInteractionManager } from './interactions/selectMenuInteractions.js'
 import { ShardClientUtil } from 'indomitable'
+import { NodeOption } from 'shoukaku'
 
 export interface CaptchaInfo {
   type: 'play' | 'search'
@@ -195,6 +196,28 @@ export class VkMusicBotClient extends Client {
       } else if (msg?.content?.op === 'destroyAll') {
         for (const player of this.queue.values()) {
           player.safeDestroy()
+        }
+      } else if (msg?.content?.op === 'getLavalinkNodes' && msg?.repliable) {
+        const nodes = []
+        for (const node of this.shoukaku.nodes.values()) {
+          nodes.push({
+            name: node.name,
+            state: node.state,
+            penalties: node.penalties
+          })
+        }
+
+        msg?.reply(nodes)
+      } else if (msg?.content?.op === 'addLavalinkNode') {
+        const node = msg.content.node as NodeOption
+        this.shoukaku.addNode(node)
+      } else if (msg?.content?.op === 'removeLavalinkNode' && msg?.repliable) {
+        try {
+          const node = msg.content.nodeName as string
+          this.shoukaku.removeNode(node, 'API')
+          msg.reply(true)
+        } catch {
+          msg.reply(false)
         }
       }
     })

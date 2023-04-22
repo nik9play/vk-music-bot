@@ -5,3 +5,17 @@ export const PlayersOptions = Type.Object({
 })
 
 export type PlayersOptionsType = Static<typeof PlayersOptions>
+
+export const NodeOptionRequest = Type.Object({
+  name: Type.String(),
+  url: Type.String(),
+  auth: Type.String(),
+  secure: Type.Optional(Type.Boolean()),
+  group: Type.Optional(Type.Boolean())
+})
+export type NodeOptionRequestType = Static<typeof NodeOptionRequest>
+
+export const NodeDelete = Type.Object({
+  name: Type.String()
+})
+export type NodeDeleteType = Static<typeof NodeDelete>

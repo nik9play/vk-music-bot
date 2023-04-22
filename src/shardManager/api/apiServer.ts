@@ -2,7 +2,14 @@ import fastify from 'fastify'
 import logger from '../../logger.js'
 import { Type } from '@sinclair/typebox'
 import { manager } from '../manager.js'
-import { PlayersOptions, PlayersOptionsType } from './schemas.js'
+import {
+  NodeDelete,
+  NodeDeleteType,
+  NodeOptionRequest,
+  NodeOptionRequestType,
+  PlayersOptions,
+  PlayersOptionsType
+} from './schemas.js'
 
 const server = fastify()
 
@@ -32,6 +39,47 @@ server.get<{ Params: PlayersOptionsType }>(
       })
 
     return { success: true }
+  }
+)
+
+server.get('/api/lavalink-nodes', async () => {
+  const list: any[] = await manager.ipc
+    ?.send(0, { content: { op: 'getLavalinkNodes' }, repliable: true })
+    .catch((err) => {
+      logger.error({ err }, "Can't get lavalink nodes with api.")
+      return { success: false, error: err.message }
+    })
+
+  return {
+    success: true,
+    list
+  }
+})
+
+server.post<{ Body: NodeOptionRequestType }>(
+  '/api/lavalink-nodes',
+  { schema: { body: Type.Strict(NodeOptionRequest) } },
+  async (req) => {
+    await manager.ipc?.broadcast({ content: { op: 'addLavalinkNode', node: req.body } }).catch((err) => {
+      logger.error({ err }, "Can't add node with api.")
+      return { success: false, error: err.message }
+    })
+
+    return { success: true }
+  }
+)
+
+server.delete<{ Params: NodeDeleteType }>(
+  '/api/lavalink-nodes/:name',
+  { schema: { params: Type.Strict(NodeDelete) } },
+  async (req) => {
+    const reply: boolean[] = (await manager.ipc
+      ?.broadcast({ content: { op: 'removeLavalinkNode', nodeName: req.params.name }, repliable: true })
+      .catch((err) => {
+        logger.error({ err }, "Can't remove node with api.")
+        return { success: false, error: err.message }
+      })) as boolean[]
+    return { success: reply[0] }
   }
 )
 
