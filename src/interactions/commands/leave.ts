@@ -1,4 +1,3 @@
-import { deletePreviousTrackStartMessage } from '../../helpers/playerStartHelper.js'
 import Utils, { ErrorMessageType } from '../../utils.js'
 import { CommandCustomInteraction } from '../commandInteractions.js'
 
