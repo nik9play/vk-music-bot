@@ -11,6 +11,7 @@ declare global {
       DATMUSIC_URL: string
       STATS_KEY: string
       SDC_TOKEN: string
+      BOTICORD_TOKEN: string
       PORT?: string
       VK_TOTAL_SHARDS: string
       SHARDS_PER_CLUSTER: string

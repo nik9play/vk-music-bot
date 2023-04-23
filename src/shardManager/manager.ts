@@ -97,7 +97,7 @@ async function sendStats() {
         }
       })
     })
-    const data = (await res.json()) as any
+    const data = await res.json()
     if (!res.ok) {
       logger.error(`Send metrics error (http error). ${res.status}`)
       return
@@ -117,6 +117,7 @@ async function sendStats() {
       return
     })
 
+  // SDC
   try {
     const res = await fetch(`https://api.server-discord.com/v2/bots/${clientId}/stats`, {
       method: 'POST',
@@ -126,6 +127,32 @@ async function sendStats() {
       }),
       headers: {
         Authorization: 'SDC ' + process.env.SDC_TOKEN
+      }
+    })
+    const data = await res.json()
+    if (!res.ok) {
+      logger.error(`Send stats error (http error). ${res.status}`)
+      return
+    }
+    if (data.error) {
+      logger.error('Error sending stats (server error)')
+    } else {
+      logger.info('Stats sent.')
+    }
+  } catch {
+    logger.error('Error sending stats (connection error)')
+  }
+
+  // Boticord
+  try {
+    const res = await fetch(`https://api.boticord.top/v2/stats`, {
+      method: 'POST',
+      body: JSON.stringify({
+        servers: serverSize,
+        shards: manager.shardCount
+      }),
+      headers: {
+        Authorization: 'Bot ' + process.env.BOTICORD_TOKEN
       }
     })
     const data = (await res.json()) as any
