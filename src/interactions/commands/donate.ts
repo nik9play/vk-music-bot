@@ -1,3 +1,4 @@
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js'
 import { getConfig } from '../../db.js'
 import { CommandCustomInteraction } from '../commandInteractions.js'
 
@@ -29,6 +30,18 @@ export const interaction: CommandCustomInteraction = {
       color: 0x5181b8,
       title: `Статус **Премиума**:  ${premium ? '<:yes2:835498559805063169>' : '<:no2:835498572916195368>'}`,
       description: info
+    }
+
+    if (!premium) {
+      const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+        new ButtonBuilder()
+          .setLabel('Приобрести Премиум')
+          .setStyle(ButtonStyle.Link)
+          .setURL('https://vk.com/app6887721_-197274096')
+      )
+
+      await respond({ embeds: [embed], components: [row] })
+      return
     }
 
     await respond({ embeds: [embed] })
