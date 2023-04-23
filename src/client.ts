@@ -156,7 +156,7 @@ export class VkMusicBotClient extends Client {
               embeds: [
                 Utils.generateErrorMessage(
                   'Я вышел из канала, так как тут никого нет. ' +
-                    'Включите режим 24/7 (/247), если не хотите, чтобы это происходило.',
+                    'Включите режим 24/7 (</247:906533610918666250>), если не хотите, чтобы это происходило.',
                   ErrorMessageType.Info
                 )
               ]
