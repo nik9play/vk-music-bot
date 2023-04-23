@@ -8,8 +8,11 @@ import {
   NodeOptionRequest,
   NodeOptionRequestType,
   PlayersOptions,
-  PlayersOptionsType
+  PlayersOptionsType,
+  PremiumUpdate,
+  PremiumUpdateType
 } from './schemas.js'
+import { updateConfig } from '../../db.js'
 
 const server = fastify()
 
@@ -82,6 +85,11 @@ server.delete<{ Params: NodeDeleteType }>(
     return { success: reply[0] }
   }
 )
+
+server.post<{ Body: PremiumUpdateType }>('/api/premium', { schema: { body: PremiumUpdate } }, async (req) => {
+  await updateConfig(req.body.guildId, { premium: req.body.premium })
+  return { success: true }
+})
 
 const port = parseInt(process.env.PORT ?? '5000')
 

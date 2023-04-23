@@ -19,3 +19,9 @@ export const NodeDelete = Type.Object({
   name: Type.String()
 })
 export type NodeDeleteType = Static<typeof NodeDelete>
+
+export const PremiumUpdate = Type.Object({
+  guildId: Type.String(),
+  premium: Type.Boolean()
+})
+export type PremiumUpdateType = Static<typeof PremiumUpdate>
