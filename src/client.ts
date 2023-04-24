@@ -74,15 +74,29 @@ export class VkMusicBotClient extends Client {
 
       //   Utils.clearExitTimeout(guild.id, this)
       // })
-      .on('messageDelete', (message) => {
-        if (!message.inGuild()) return
+      // .on('messageDelete', (message) => {
+      //   logger.debug({ message }, 'delete')
+      //   if (!message.inGuild()) return
 
-        const menuMessage = this.latestMenus.get(message.guildId)
+      //   const menuMessage = this.latestMenus.get(message.guildId)
+      //   if (!menuMessage) return
+
+      //   if (message.id === menuMessage.id) {
+      //     this.latestMenus.delete(message.guildId)
+      //     logger.info({ guild: message.guildId }, 'Removed latestMenusMessage')
+      //   }
+      // })
+
+      .on('raw', (data) => {
+        if (!data?.d?.guild_id || data.op !== 0 || data?.t !== 'MESSAGE_DELETE') return
+        logger.debug({ data }, 'raw')
+
+        const menuMessage = this.latestMenus.get(data.d.guild_id)
         if (!menuMessage) return
 
-        if (message.id === menuMessage.id) {
-          this.latestMenus.delete(message.guildId)
-          logger.info({ guild: message.guildId }, 'Removed latestMenusMessage')
+        if (data?.d?.id === menuMessage.id) {
+          this.latestMenus.delete(data.d.guild_id)
+          logger.info({ guildId: data.d.guild_id }, 'Removed latestMenusMessage')
         }
       })
 
