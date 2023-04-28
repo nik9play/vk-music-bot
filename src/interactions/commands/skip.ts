@@ -55,8 +55,7 @@ export const interaction: CommandCustomInteraction = {
     //   return
     // }
 
-    player.player.setPaused(false)
-    player.skip(skipCount)
+    await player.skip(skipCount)
 
     await respond(
       {

@@ -27,11 +27,12 @@ export const interaction: CommandCustomInteraction = {
     if (player.player.paused) {
       Utils.clearExitTimeout(guild.id, client)
 
+      await player.player.setPaused(false)
+
       await respond({
         embeds: [Utils.generateErrorMessage('▶️ Пауза снята.', ErrorMessageType.NoTitle)]
       })
 
-      player.player.setPaused(false)
       return
     }
 
@@ -39,11 +40,12 @@ export const interaction: CommandCustomInteraction = {
 
     if (!config.enable247) Utils.setExitTimeout(player, client)
 
+    await player.player.setPaused(true)
+
     await respond({
       embeds: [Utils.generateErrorMessage('⏸️ Пауза поставлена.', ErrorMessageType.NoTitle)]
     })
 
-    player.player.setPaused(true)
     return
   }
 }
