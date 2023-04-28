@@ -12,7 +12,7 @@ import {
   PremiumUpdate,
   PremiumUpdateType
 } from './schemas.js'
-import { updateConfig } from '../../db.js'
+import { connectDb, updateConfig } from '../../db.js'
 
 const server = fastify()
 
@@ -93,7 +93,10 @@ server.post<{ Body: PremiumUpdateType }>('/api/premium', { schema: { body: Premi
 
 const port = parseInt(process.env.PORT ?? '5000')
 
-function startApiServer() {
+async function startApiServer() {
+  await connectDb()
+  logger.info('Api DB connected.')
+
   server.listen({ port }, (err, address) => {
     if (err) {
       logger.error(err)
