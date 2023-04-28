@@ -77,8 +77,6 @@ async function sendStats() {
 
   const serverSize: number = serverResults.reduce((acc, guildCount) => acc + guildCount, 0)
 
-  console.log(serverSize)
-
   await manager.ipc
     ?.broadcast({ content: { op: 'setPresence', data: `/help | ${(serverSize / 1000).toFixed(1)}k серверов` } })
     .catch((err) => {
@@ -174,7 +172,7 @@ async function startShardManager() {
   if (cluster.isPrimary) {
     //;['beforeExit', 'SIGUSR1', 'SIGUSR2', 'SIGINT', 'SIGTERM'].map((event) => process.once(event, exit.bind(event)))
     logger.info('Started spawning clusters.')
-    startApiServer()
+    await startApiServer()
   }
 
   await manager.spawn()

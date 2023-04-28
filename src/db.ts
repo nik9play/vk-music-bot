@@ -64,11 +64,11 @@ export async function getConfig(guildId: string): Promise<ServerConfigType> {
     } catch {
       await redis.del(`config/${guildId}`)
 
-      config = await ServerConfig.findOne({ guildId })
+      config = await ServerConfig.findOne<ServerConfigSchemaModel>({ guildId })
       logger.debug({ guildId }, 'Config mongo get')
     }
   } else {
-    config = await ServerConfig.findOne({ guildId })
+    config = await ServerConfig.findOne<ServerConfigSchemaModel>({ guildId })
     logger.debug({ guildId }, 'Config mongo get')
 
     await redis.set(`config/${guildId}`, JSON.stringify(config))
@@ -87,7 +87,11 @@ export async function getConfig(guildId: string): Promise<ServerConfigType> {
 }
 
 export async function updateConfig(guildId: string, data: Partial<ServerConfigSchemaModel>): Promise<ServerConfigType> {
-  const config = await ServerConfig.findOneAndUpdate({ guildId }, { $set: data }, { upsert: true, new: true })
+  const config = await ServerConfig.findOneAndUpdate<ServerConfigSchemaModel>(
+    { guildId },
+    { $set: data },
+    { upsert: true, new: true }
+  )
 
   await redis.set(`config/${guildId}`, JSON.stringify(config))
 
