@@ -7,10 +7,8 @@ import BaseInteractionManager, {
 } from './baseInteractionManager.js'
 import { VkMusicBotClient } from '../client.js'
 import { Meta } from '../utils.js'
-import glob from 'glob'
-import { promisify } from 'util'
-
-const globPromise = promisify(glob)
+import { glob } from 'glob'
+import logger from '../logger.js'
 
 export interface ButtonCustomInteraction extends BaseCustomInteraction {
   name: string
@@ -33,7 +31,7 @@ export class ButtonInteractionManager implements BaseInteractionManager {
   }
 
   async load() {
-    const files = await globPromise(`**/dist/interactions/buttons/*.js`)
+    const files = await glob(`**/dist/interactions/buttons/*.js`)
 
     for (const file of files) {
       const module = await import(`../../${file}`)
@@ -63,7 +61,7 @@ export class ButtonInteractionManager implements BaseInteractionManager {
     const customId = interaction.customId.split(',')
     const name = customId[0]
     const customAction = customId[1]
-    console.log(interaction.customId)
+    logger.debug(interaction.customId, 'button interaction id')
 
     const respond = getRespondFunction(interaction, meta)
 

@@ -9,10 +9,9 @@ import logger from '../logger.js'
 import Utils, { Meta } from '../utils.js'
 import { VkMusicBotClient } from '../client.js'
 import { getConfig } from '../db.js'
-import glob from 'glob'
-import { promisify } from 'util'
+import { glob } from 'glob'
 
-const globPromise = promisify(glob)
+// const globPromise = promisify(glob)
 
 export interface CommandExecuteParams extends BaseExecuteParams {
   interaction: ChatInputCommandInteraction<'cached'>
@@ -40,7 +39,7 @@ export class CommandInteractionManager implements BaseInteractionManager {
   }
 
   async load() {
-    const files = await globPromise(`**/dist/interactions/commands/*.js`)
+    const files = await glob(`**/dist/interactions/commands/*.js`)
 
     for (const file of files) {
       const module = await import(`../../${file}`)
