@@ -9,7 +9,7 @@ export const interaction: CommandCustomInteraction = {
   premium: false,
   cooldown: 1,
   execute: async ({ client, guild, voice, respond, interaction }) => {
-    const player = client.queue.get(guild.id)
+    const player = client.playerManager.get(guild.id)
     if (!player) {
       await respond({
         embeds: [Utils.generateErrorMessage('Сейчас ничего не играет.')],

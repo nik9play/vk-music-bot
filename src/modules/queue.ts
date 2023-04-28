@@ -5,7 +5,7 @@ import logger from '../logger.js'
 import BotTrack from '../structures/botTrack.js'
 import BotPlayer from './botPlayer.js'
 
-export default class Queue extends Map<string, BotPlayer> {
+export default class PlayerManager extends Map<string, BotPlayer> {
   public client: VkMusicBotClient
 
   constructor(client: VkMusicBotClient) {

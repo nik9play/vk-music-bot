@@ -12,7 +12,7 @@ import { ButtonCustomInteraction } from '../buttonInteractions.js'
 export const interaction: ButtonCustomInteraction = {
   name: 'menu',
   execute: async ({ interaction, respond, client, guild, customAction }) => {
-    const player = client.queue.get(guild.id)
+    const player = client.playerManager.get(guild.id)
 
     if (!player) {
       await deletePreviousTrackStartMessage(client, guild.id)

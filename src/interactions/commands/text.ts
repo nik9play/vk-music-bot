@@ -9,7 +9,7 @@ export const interaction: CommandCustomInteraction = {
   premium: false,
   cooldown: 1,
   execute: async ({ client, guild, respond, voice, text, interaction }) => {
-    const player = client.queue.get(guild.id)
+    const player = client.playerManager.get(guild.id)
     if (!player) {
       await Utils.sendNoPlayerMessage(respond)
       return

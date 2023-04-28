@@ -46,7 +46,7 @@ async function fillQueue(
       return unresolvedTrack
     })
 
-  const result = await client.queue.handle(guild, voiceChannelId, textChannelId, node, tracks)
+  const result = await client.playerManager.handle(guild, voiceChannelId, textChannelId, node, tracks)
   if (result instanceof BotPlayer) {
     result.play()
   }

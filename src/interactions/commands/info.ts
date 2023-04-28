@@ -24,7 +24,7 @@ export const interaction: CommandCustomInteraction = {
 
     avgCPU /= count
 
-    const player = client.queue.get(guild.id)
+    const player = client.playerManager.get(guild.id)
 
     const embed = {
       author: {

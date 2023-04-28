@@ -159,7 +159,7 @@ export default class BotPlayer {
   }
 
   get exists() {
-    return this.client.queue.has(this.guildId)
+    return this.client.playerManager.has(this.guildId)
   }
 
   private async playTrackFromIdentifier(identifier: string) {
@@ -193,7 +193,7 @@ export default class BotPlayer {
 
     this.queue.length = 0
     await this.player.connection.disconnect(destroyRemoteServer)
-    this.client.queue.delete(this.guildId)
+    this.client.playerManager.delete(this.guildId)
 
     Utils.clearExitTimeout(this.guildId, this.client)
 

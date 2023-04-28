@@ -9,7 +9,7 @@ export const interaction: CommandCustomInteraction = {
   adminOnly: false,
   premium: false,
   execute: async ({ guild, respond, interaction, client }) => {
-    const player = client.queue.get(guild.id)
+    const player = client.playerManager.get(guild.id)
     const pageParam = interaction.options.getInteger('страница')
     const page = pageParam ?? 1
 

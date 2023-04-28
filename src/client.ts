@@ -3,7 +3,7 @@ import { Client, ClientOptions, Collection, Message } from 'discord.js'
 import Utils, { ErrorMessageType } from './utils.js'
 import logger from './logger.js'
 import { connectDb, getConfig } from './db.js'
-import Queue from './modules/queue.js'
+import PlayerManager from './modules/queue.js'
 import ShoukakuManager from './modules/shoukakuManager.js'
 import { CommandInteractionManager } from './interactions/commandInteractions.js'
 import { ButtonInteractionManager } from './interactions/buttonInteractions.js'
@@ -35,7 +35,7 @@ export class VkMusicBotClient extends Client {
   public latestMenus = new Collection<string, Message>()
   public playerTrackErrorTrackers: Collection<string, PlayerTrackErrorTracker> = new Collection()
 
-  public queue: Queue
+  public playerManager: PlayerManager
   public shoukaku: ShoukakuManager
 
   public commandInteractionManager: CommandInteractionManager
@@ -46,7 +46,7 @@ export class VkMusicBotClient extends Client {
     if (!process.env.MONGO_URL || !process.env.REDIS_URL) throw new Error('Env not set')
     super(options)
 
-    this.queue = new Queue(this)
+    this.playerManager = new PlayerManager(this)
     this.shoukaku = new ShoukakuManager(this)
     this.commandInteractionManager = new CommandInteractionManager(this)
     this.buttonInteractionManager = new ButtonInteractionManager(this)
@@ -115,7 +115,7 @@ export class VkMusicBotClient extends Client {
           const oldChannelId = oldState.channelId
           const guildId = newState.guild.id
 
-          const player = this.queue.get(guildId)
+          const player = this.playerManager.get(guildId)
           if (!player) return
 
           const config = await getConfig(guildId)
@@ -154,7 +154,7 @@ export class VkMusicBotClient extends Client {
         }
 
         if (channelIsEmpty && voiceChannel && !(await getConfig(voiceChannel.guildId)).enable247) {
-          const player = this.queue.get(voiceChannel.guildId)
+          const player = this.playerManager.get(voiceChannel.guildId)
           if (!player) return
 
           const textId = player.textChannelId
@@ -204,11 +204,11 @@ export class VkMusicBotClient extends Client {
           ]
         })
       } else if (msg?.content?.op === 'clearQueues') {
-        for (const player of this.queue.values()) {
+        for (const player of this.playerManager.values()) {
           player.stop()
         }
       } else if (msg?.content?.op === 'destroyAll') {
-        for (const player of this.queue.values()) {
+        for (const player of this.playerManager.values()) {
           player.safeDestroy()
         }
       } else if (msg?.content?.op === 'getLavalinkNodes' && msg?.repliable) {

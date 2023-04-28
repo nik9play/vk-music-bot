@@ -24,7 +24,7 @@ export const interaction: CommandCustomInteraction = {
         embeds: [Utils.generateErrorMessage('Режим 24/7 выключен.', ErrorMessageType.NoTitle)],
         ephemeral: true
       })
-      const player = client.queue.get(guild.id)
+      const player = client.playerManager.get(guild.id)
       if (player)
         if (player.player.paused || (player.queue.length === 0 && !player.current)) Utils.setExitTimeout(player, client)
     }

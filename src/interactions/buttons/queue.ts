@@ -11,7 +11,7 @@ export const interaction: ButtonCustomInteraction = {
     const page = parseInt(customAction ?? '1')
 
     if (page) {
-      const player = client.queue.get(guild.id)
+      const player = client.playerManager.get(guild.id)
       await interaction.update(generateQueueResponse(page, player) as InteractionUpdateOptions)
     }
   }
