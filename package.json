@@ -1,12 +1,12 @@
 {
   "name": "vk-music-bot-next",
-  "version": "4.1.0",
+  "version": "5.0.0",
   "main": "index.js",
   "author": "nik9",
   "license": "MIT",
   "type": "module",
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=18.0.0 <19"
   },
   "scripts": {
     "start": "node dist/index.js",
