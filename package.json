@@ -11,7 +11,8 @@
   "scripts": {
     "start": "node dist/index.js",
     "build": "tsc",
-    "dev": "tsc && NODE_ENV=development node --enable-source-maps --inspect -r dotenv/config ./dist/index.js"
+    "dev": "tsc && NODE_ENV=development node --enable-source-maps --inspect -r dotenv/config ./dist/index.js",
+    "prepare": "husky install"
   },
   "dependencies": {
     "@sinclair/typebox": "^0.25.10",
@@ -35,8 +36,14 @@
     "cross-env": "^7.0.3",
     "eslint": "^8.39.0",
     "eslint-config-prettier": "^8.5.0",
+    "husky": "^8.0.3",
+    "lint-staged": "^13.2.2",
     "pino-pretty": "^10.0.0",
     "prettier": "2.7.1",
     "typescript": "^5.0.4"
+  },
+  "lint-staged": {
+    "*.{js,ts}": "eslint --cache --fix",
+    "*.{js,ts,css,md}": "prettier --write"
   }
 }
