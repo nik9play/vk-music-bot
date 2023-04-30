@@ -68,18 +68,20 @@ export class ButtonInteractionManager implements BaseInteractionManager {
     const send = getSendFunction(text, this.client, meta)
 
     const buttonInteraction = this.interactions.get(name)
-    await buttonInteraction?.execute({
-      guild,
-      text,
-      voice,
-      client: this.client,
-      user,
-      respond,
-      send,
-      meta,
-      interaction,
-      customAction
-    })
+    await buttonInteraction
+      ?.execute({
+        guild,
+        text,
+        voice,
+        client: this.client,
+        user,
+        respond,
+        send,
+        meta,
+        interaction,
+        customAction
+      })
+      .catch((err) => logger.error({ err, ...meta }, 'Error executing button'))
 
     return
   }

@@ -10,7 +10,6 @@ import Utils, { Meta } from '../utils.js'
 import { VkMusicBotClient } from '../client.js'
 import { getConfig } from '../db.js'
 import { glob } from 'glob'
-
 // const globPromise = promisify(glob)
 
 export interface CommandExecuteParams extends BaseExecuteParams {
@@ -148,8 +147,8 @@ export class CommandInteractionManager implements BaseInteractionManager {
       if (captcha) {
         const embed = {
           description:
-            'Ошибка! Ожидается команда, для которой не введена капча. Введите команду `/captcha`, а после код с картинки. ' +
-            `Если картинки не видно, перейдите по [ссылке](${captcha.url}) (только один раз).`,
+            'Ошибка! Требуется капча. Введите команду </captcha:906533763033464832>, а после введите код с картинки. ' +
+            `Если картинки не видно, перейдите по [ссылке](${captcha?.url})`,
           color: 0x5181b8,
           image: {
             url: captcha.url + Utils.generateRandomCaptchaString()
@@ -173,6 +172,17 @@ export class CommandInteractionManager implements BaseInteractionManager {
         send,
         meta
       })
-      .catch((err) => logger.error({ err, ...meta }, 'Error executing command'))
+      .catch(async (err) => {
+        logger.error({ err, ...meta }, 'Error executing command')
+
+        await respond({
+          embeds: [
+            Utils.generateErrorMessage(
+              'Произошла непредвиденная ошибка. Обратитесь за поддержкой в' +
+                ' [группу ВК](https://vk.com/vkmusicbotds) или на [сервер Discord](https://discord.com/invite/3ts2znePu7).'
+            )
+          ]
+        }).catch((err) => logger.error({ err }, 'Error while sending error message'))
+      })
   }
 }

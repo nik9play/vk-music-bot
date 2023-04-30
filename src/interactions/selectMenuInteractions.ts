@@ -80,7 +80,7 @@ export class SelectMenuInteractionManager implements BaseInteractionManager {
         }
 
         playCommandHandler(partialParams as CommandExecuteParams, id).catch((err: any) =>
-          logger.error({ err, ...meta }, 'Error executing command from button')
+          logger.error({ err, ...meta }, 'Error executing select menu command')
         )
       }
     }
