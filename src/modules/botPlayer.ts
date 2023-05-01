@@ -52,7 +52,7 @@ export default class BotPlayer {
           logger.debug({ channel: channel?.id, current: this.current })
 
           if (!channel?.isTextBased()) return
-          if (channel?.isDMBased()) return
+          if (channel.isDMBased()) return
 
           try {
             //clearTimeout(client.latestMenusTimeouts.get(player.guildId))
