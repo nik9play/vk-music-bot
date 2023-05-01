@@ -1,10 +1,10 @@
 {
   "formation": {
     "web": {
-      "quantity": 0
+      "quantity": 1
     },
     "worker": {
-      "quantity": 1
+      "quantity": 0
     }
   }
 }
