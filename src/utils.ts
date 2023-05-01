@@ -46,7 +46,7 @@ export default class Utils {
     /https?:\/\/.*(z=audio_playlist|\/music\/(playlist|album)\/)(-?\d+)[_|/](\d+)([_|/]([a-zA-Z0-9]+))?/
 
   public static trackRegex = /(^|^https?:\/\/.*\/audio)(-?\d+)_(\d+)(_([a-zA-Z0-9]+))?$/
-  public static userGroupRegex = /(>(-\d+))|(>([a-zA-Z0-9\-._]+))/
+  public static userGroupRegex = /(>(-\d+))|(>([a-zA-Z0-9._]+))/
   public static userGroupUrlRegex = /https?:\/\/vk\.com\/audios(-?\d+)/
 
   public static detectQueryType(query: string): ArgType {
