@@ -129,7 +129,8 @@ export default class BotPlayer {
     // })
   }
 
-  private closeHandlerEvent = async () => {
+  private closeHandlerEvent = async (name: string) => {
+    if (this.player.node.name !== name) return
     if (this.reconnecting) return
 
     await deletePreviousTrackStartMessage(this.client, this.guildId)
