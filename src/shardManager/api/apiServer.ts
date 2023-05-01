@@ -97,7 +97,7 @@ async function startApiServer() {
   await connectDb()
   logger.info('Api DB connected.')
 
-  server.listen({ port }, (err, address) => {
+  server.listen({ port, host: '0.0.0.0' }, (err, address) => {
     if (err) {
       logger.error(err)
     }
