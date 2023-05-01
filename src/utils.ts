@@ -47,6 +47,7 @@ export default class Utils {
 
   public static trackRegex = /(^|^https?:\/\/.*\/audio)(-?\d+)_(\d+)(_([a-zA-Z0-9]+))?$/
   public static userGroupRegex = /(>(-\d+))|(>([a-zA-Z0-9\-._]+))/
+  public static userGroupUrlRegex = /https?:\/\/vk\.com\/audios(-?\d+)/
 
   public static detectQueryType(query: string): ArgType {
     const playlistMatch = query.match(this.playlistRegex)
@@ -82,6 +83,23 @@ export default class Utils {
           type: 'user',
           owner_id: userOrGroupMatch[4]
         }
+    }
+
+    const userOrGroupUrlMatch = query.match(this.userGroupUrlRegex)
+
+    if (userOrGroupUrlMatch) {
+      if (userOrGroupUrlMatch[0]) {
+        if (userOrGroupUrlMatch[0].startsWith('-'))
+          return {
+            type: 'group',
+            owner_id: userOrGroupUrlMatch[0]
+          }
+        else
+          return {
+            type: 'user',
+            owner_id: userOrGroupUrlMatch[0]
+          }
+      }
     }
 
     return {
