@@ -27,7 +27,7 @@ export class ButtonInteractionManager implements BaseInteractionManager {
   constructor(client: VkMusicBotClient) {
     this.client = client
 
-    this.client.on(Events.InteractionCreate, (interaction) => this.handle(interaction))
+    this.client.on(Events.InteractionCreate, (interaction) => this.handle(interaction).catch((err) => logger.error({err}, 'Error handle button')))
   }
 
   async load() {
