@@ -186,7 +186,7 @@ export default class Utils {
 
   public static setExitTimeout(player: BotPlayer, client: VkMusicBotClient) {
     this.clearExitTimeout(player.guildId, client)
-    logger.info({ guildId: player.guildId }, `Exit timeout set`)
+    logger.debug({ guildId: player.guildId }, `Exit timeout set`)
 
     client.timers.set(
       player.guildId,
@@ -197,7 +197,7 @@ export default class Utils {
   }
 
   public static clearExitTimeout(guildId: string, client: VkMusicBotClient) {
-    logger.info({ guildId }, `Exit timeout clear`)
+    logger.debug({ guildId }, `Exit timeout clear`)
 
     const timer = client.timers.get(guildId)
     if (timer) clearTimeout(timer)
