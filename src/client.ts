@@ -1,176 +1,246 @@
-import { Client, ClientOptions, Collection } from 'discord.js'
-import Cluster from 'discord-hybrid-sharding-vk'
-import { Manager } from 'erela.js-vk'
-import { NodeOptions } from 'erela.js-vk/structures/Node'
-import Utils from './Utils'
-import logger from './Logger'
-import db from './DB'
-import { CommandType } from './SlashCommandManager'
-import { RequestManager } from 'discord-cross-ratelimit'
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+import { Client, ClientOptions, Collection, Message } from 'discord.js'
+import Utils, { ErrorMessageType } from './utils.js'
+import logger from './logger.js'
+import { connectDb, getConfig } from './db.js'
+import PlayerManager from './modules/queue.js'
+import ShoukakuManager from './modules/shoukakuManager.js'
+import { CommandInteractionManager } from './interactions/commandInteractions.js'
+import { ButtonInteractionManager } from './interactions/buttonInteractions.js'
+import { SelectMenuInteractionManager } from './interactions/selectMenuInteractions.js'
+import { ShardClientUtil } from 'indomitable'
+import { NodeOption } from 'shoukaku'
 
 export interface CaptchaInfo {
-  type: 'play' | 'search',
-  args: string[]
-  url: string,
-  sid: string,
-  index: number,
+  type: 'play' | 'search'
+  query: string
+  count?: number | null
+  offset?: number | null
+  url: string
+  sid: string
+  index: number
   captcha_key?: string
 }
 
 export interface PlayerTrackErrorTracker {
-  count: number,
+  count: number
   timer: NodeJS.Timeout
 }
 
 export class VkMusicBotClient extends Client {
-  public cooldowns: Collection<string, any> = new Collection()
-  public commands: Collection<string, CommandType> = new Collection()
-  public slashOverwrites: Collection<string, CommandType> = new Collection()
-  public captcha: Collection<string, CaptchaInfo> = new Collection()
-  public timers: Collection<string, NodeJS.Timeout> = new Collection()
-  public cluster: Cluster.Client = new Cluster.Client(this)
-  public db: any
-  public nodes?: NodeOptions[]
-  public manager: Manager
+  private exiting = false
+
+  public captcha = new Collection<string, CaptchaInfo>()
+  public timers = new Collection<string, NodeJS.Timeout>()
+  public latestMenus = new Collection<string, Message>()
   public playerTrackErrorTrackers: Collection<string, PlayerTrackErrorTracker> = new Collection()
 
-  constructor(options: ClientOptions, nodes: NodeOptions[]) {
+  public playerManager: PlayerManager
+  public shoukaku: ShoukakuManager
+
+  public commandInteractionManager: CommandInteractionManager
+  public buttonInteractionManager: ButtonInteractionManager
+  public selectMenuInteractionManager: SelectMenuInteractionManager
+
+  constructor(options: ClientOptions) {
+    if (!process.env.MONGO_URL || !process.env.REDIS_URL) throw new Error('Env not set')
     super(options)
 
-    Object.assign(this, { rest: new RequestManager(this, this.cluster) })
+    this.playerManager = new PlayerManager(this)
+    this.shoukaku = new ShoukakuManager(this)
+    this.commandInteractionManager = new CommandInteractionManager(this)
+    this.buttonInteractionManager = new ButtonInteractionManager(this)
+    this.selectMenuInteractionManager = new SelectMenuInteractionManager(this)
 
-    this.nodes = nodes
+    this.once('ready', async () => {
+      //this.manager.init(this.user?.id)
+      //await this.initDb()
+      // const slashCommandManager = new SlashCommandManager(this)
+      // await slashCommandManager.init()
+      logger.info(`Logged in as ${this.user?.tag} successfully`)
 
-    if (!process.env.MONGO_URL || !process.env.REDIS_URL)
-      throw new Error('Env not set')
-    this.db = new db(process.env.MONGO_URL, process.env.REDIS_URL)
-    this.db.init()
+      await Promise.all([
+        this.commandInteractionManager.load(),
+        this.buttonInteractionManager.load(),
+        this.selectMenuInteractionManager.load()
+      ])
 
-    this.manager = new Manager({
-      nodes: this.nodes,
-      send: (id, payload) => {
-        const guild = this.guilds.cache.get(id)
-        if (guild) guild.shard.send(payload)
-      }
+      logger.info(`Loaded ${this.commandInteractionManager.interactions.size} commands.`)
+      logger.info(`Loaded ${this.buttonInteractionManager.interactions.size} button interactions.`)
     })
-      .on('nodeConnect', node => logger.info({ shard: this.cluster.id }, `Node "${node.options.identifier}" connected.`))
-      .on('nodeError', (node, error) => logger.error(
-        `Node "${node.options.identifier}" encountered an error: ${error.message}.`
-      ))
-      .on('trackStart', async (player, track) => {
-        if (!await this.db.getDisableAnnouncements(player.guild)) {
-          if (player.textChannel) {
-            const channel = this.channels.cache.get(player.textChannel)
+      // .on('guildDelete', (guild) => {
+      //   logger.info({ guild_id: guild.id }, 'Bot leaves')
+      //   this.queue.get(guild.id)?.destroy()
 
-            if (channel?.isText() && track?.author && track?.title) {
-              try {
-                const message = await channel.send({
-                  embeds: [{
-                    description: `Сейчас играет **${Utils.escapeFormat(track.author)} — ${Utils.escapeFormat(track.title)}**.`,
-                    color: 0x5181b8
-                  }]
-                })
+      //   Utils.clearExitTimeout(guild.id, this)
+      // })
+      // .on('messageDelete', (message) => {
+      //   logger.debug({ message }, 'delete')
+      //   if (!message.inGuild()) return
 
-                setTimeout(() => {
-                  if (message && typeof message.delete === 'function') {
-                    message.delete().catch(err => logger.error({ err }, 'Can\'t delete message'))
-                  }
-                }, track.duration)
-              } catch {
-                logger.error('Can\'t send message')
-              }
+      //   const menuMessage = this.latestMenus.get(message.guildId)
+      //   if (!menuMessage) return
+
+      //   if (message.id === menuMessage.id) {
+      //     this.latestMenus.delete(message.guildId)
+      //     logger.info({ guild: message.guildId }, 'Removed latestMenusMessage')
+      //   }
+      // })
+
+      .on('raw', (data) => {
+        if (!data?.d?.guild_id || data.op !== 0 || data?.t !== 'MESSAGE_DELETE') return
+        logger.debug({ data }, 'raw')
+
+        const menuMessage = this.latestMenus.get(data.d.guild_id)
+        if (!menuMessage) return
+
+        if (data?.d?.id === menuMessage.id) {
+          this.latestMenus.delete(data.d.guild_id)
+          logger.info({ guildId: data.d.guild_id }, 'Removed latestMenusMessage')
+        }
+      })
+
+      // TODO: fix this shit
+      .on('voiceStateUpdate', async (oldState, newState) => {
+        logger.debug({
+          newState: newState,
+          oldState: oldState
+        })
+
+        let channelIsEmpty = false
+        let voiceChannel = null
+
+        if (oldState.id === this.user?.id) {
+          const newChannelId = newState.channelId
+          const oldChannelId = oldState.channelId
+          const guildId = newState.guild.id
+
+          const player = this.playerManager.get(guildId)
+          if (!player) return
+
+          const config = await getConfig(guildId)
+
+          let state: 'UNKNOWN' | 'LEFT' | 'JOINED' | 'MOVED' = 'UNKNOWN'
+          if (!oldChannelId && newChannelId) state = 'JOINED'
+          else if (oldChannelId && !newChannelId) state = 'LEFT'
+          else if (oldChannelId && newChannelId && oldChannelId !== newChannelId) state = 'MOVED'
+
+          if (state === 'UNKNOWN') return
+
+          if (state === 'LEFT') {
+            logger.debug({ guildId }, 'Player left')
+            await player.safeDestroy()
+            return
+          }
+
+          if (state === 'MOVED' && !config.enable247) {
+            logger.debug({ guildId }, 'Player moved')
+            voiceChannel = newState.channel
+            const members = voiceChannel?.members.filter((m) => !m.user.bot)
+
+            if (members?.size === 0) {
+              channelIsEmpty = true
             }
           }
+        } else {
+          voiceChannel = oldState.channel || newState.channel
+          if (!voiceChannel) return
+
+          const members = voiceChannel.members.filter((m) => !m.user.bot)
+
+          if (members.size === 0) {
+            channelIsEmpty = true
+          }
+        }
+
+        if (channelIsEmpty && voiceChannel && !(await getConfig(voiceChannel.guildId)).enable247) {
+          const player = this.playerManager.get(voiceChannel.guildId)
+          if (!player) return
+
+          const textId = player.textChannelId
+
+          await player.safeDestroy()
+
+          const channel = this.channels.cache.get(textId)
+          if (!channel?.isTextBased()) return
+
+          await Utils.sendMessageToChannel(
+            channel,
+            {
+              embeds: [
+                Utils.generateErrorMessage(
+                  'Я вышел из канала, так как тут никого нет. ' +
+                    'Включите режим 24/7 (</247:906533610918666250>), если не хотите, чтобы это происходило.',
+                  ErrorMessageType.Info
+                )
+              ]
+            },
+            30_000
+          )
+
+          logger.debug({ guildId: voiceChannel.guildId }, 'Player leaved empty channel')
         }
       })
-      .on('queueEnd', async (player) => {
-        logger.info({ guild_id: player.guild, shard_id: this.cluster.id }, 'End of queue')
-        if (!await this.db.get247(player.guild))
-          if (player) {
-            logger.info({ guild_id: player.guild, shard_id: this.cluster.id }, 'set timeout')
-            this.timers.set(player.guild, Utils.getExitTimeout(player, this))
-          }
-      })
-      .on('playerMove', (player) => {
-        logger.info({ guild_id: player.guild, shard_id: this.cluster.id }, 'moved player')
-        player.pause(true)
-        setTimeout(() => player.pause(false), 2000)
-      })
-      .on('playerDisconnect', (player) => {
-        logger.info({ guild_id: player.guild, shard_id: this.cluster.id }, 'player disconnected')
+  }
 
-        const timer = this.timers.get(player.guild)
-        if (timer)
-          clearTimeout(timer)
+  async login(token?: string | undefined) {
+    await super.login(token)
 
-        player.destroy()
-      })
-      .on('playerDestroy', (player) => {
-        logger.info({ guild_id: player.guild, shard_id: this.cluster.id }, 'player destroyed')
-      })
-      .on('socketClosed', async (player, socket) => {
-        // reconnect on "Abnormal closure"
-        // if (socket.code == 1006) {
-        //   logger.warn({
-        //     guild_id: player.guild,
-        //     shard_id: this.cluster.id
-        //   }, 'caught Abnormal closure, trying to reconnect...')
-        //   const voiceChannel = player.voiceChannel
-        //   const textChannel = player.textChannel
-        //
-        //   try {
-        //     player.disconnect()
-        //   } catch {
-        //     //
-        //   }
-        //
-        //   if (voiceChannel && textChannel) {
-        //     setTimeout(() => {
-        //       player.setVoiceChannel(voiceChannel)
-        //       player.setTextChannel(textChannel)
-        //
-        //       player.connect()
-        //       setTimeout(() => {
-        //         player.pause(false)
-        //       }, 500)
-        //     }, 500)
-        //   }
-        // }
+    await connectDb()
+    logger.info('DB connected.')
 
-        logger.debug({ code: socket.code, guild_id: player.guild }, 'socket closed')
-      })
-      .on('trackStuck', (guildId) => {
-        logger.warn({ guild_id: guildId, shard_id: this.cluster.id }, 'track stuck')
-      })
-      .on('trackError', (player, track) => {
-        // const channel = client.channels.cache.get(player.textChannel)
-        // channel.send({embed: {
-        //   description: `С треком **${track.author} — ${track.title}** произошла проблема, поэтому он был пропущен.`,
-        //   color: 0x5181b8
-        // }}).then(msg => msg.delete({timeout: 30000}).catch(console.error)).catch(console.error)
-        logger.warn({ guild_id: player.guild, shard_id: this.cluster.id, name: track.title, author: track.author, url: track.uri }, 'Track error')
-        
-        const tracker = this.playerTrackErrorTrackers.get(player.guild)
-        if (tracker) {
-          tracker.count = tracker.count + 1
-          clearTimeout(tracker.timer)
-          tracker.timer = setTimeout(() => {
-            this.playerTrackErrorTrackers.delete(player.guild)
-          }, 30 * 1000)
-
-          if (tracker.count >= 5) {
-            player?.queue.clear()
-            clearTimeout(tracker.timer)
-            this.playerTrackErrorTrackers.delete(player.guild)
-          }
-        } else {
-          this.playerTrackErrorTrackers.set(player.guild, {
-            count: 1,
-            timer: setTimeout(() => {
-              this.playerTrackErrorTrackers.delete(player.guild)
-            }, 2000)
+    //@ts-ignore
+    const shardClientUtil = this.shard as ShardClientUtil
+    shardClientUtil.on('message', (msg: any) => {
+      if (msg?.content?.op === 'serverCount' && msg?.repliable) msg.reply(this.guilds.cache.size)
+      else if (msg?.content?.op === 'clientId' && msg?.repliable) msg.reply(this.user?.id)
+      else if (msg?.content?.op === 'setPresence') {
+        this.user?.setPresence({
+          activities: [
+            {
+              name: msg?.content?.data,
+              type: 2
+            }
+          ]
+        })
+      } else if (msg?.content?.op === 'clearQueues') {
+        for (const player of this.playerManager.values()) {
+          player.stop()
+        }
+      } else if (msg?.content?.op === 'destroyAll') {
+        for (const player of this.playerManager.values()) {
+          player.safeDestroy()
+        }
+      } else if (msg?.content?.op === 'getLavalinkNodes' && msg?.repliable) {
+        const nodes = []
+        for (const node of this.shoukaku.nodes.values()) {
+          nodes.push({
+            name: node.name,
+            state: node.state,
+            penalties: node.penalties,
+            stats: node.stats
           })
         }
-      })
+
+        msg?.reply(nodes)
+      } else if (msg?.content?.op === 'addLavalinkNode') {
+        const node = msg.content.node as NodeOption
+        this.shoukaku.addNode(node)
+      } else if (msg?.content?.op === 'removeLavalinkNode' && msg?.repliable) {
+        try {
+          const node = msg.content.nodeName as string
+          this.shoukaku.removeNode(node, 'API')
+          msg.reply(true)
+        } catch {
+          msg.reply(false)
+        }
+      }
+    })
+
+    return this.constructor.name
+  }
+
+  async exit() {
+    //
   }
 }
