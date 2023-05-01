@@ -204,19 +204,6 @@
     "options": [
       {
         "type": 1,
-        "name": "prefix",
-        "description": "Настройка префикса",
-        "options": [
-          {
-            "type": 3,
-            "name": "префикс",
-            "description": "Префикс, 1-5 символов",
-            "required": true
-          }
-        ]
-      },
-      {
-        "type": 1,
         "name": "djrole",
         "description": "Роль DJ режима",
         "options": [
