@@ -1,4 +1,12 @@
-import { EmbedBuilder, InteractionReplyOptions, MessageCreateOptions, TextBasedChannel } from 'discord.js'
+import {
+  EmbedBuilder,
+  InteractionReplyOptions,
+  Message,
+  MessageCreateOptions,
+  PermissionsBitField,
+  TextBasedChannel,
+  User
+} from 'discord.js'
 import { CaptchaInfo, VkMusicBotClient } from './client.js'
 import logger from './logger.js'
 import BotPlayer from './modules/botPlayer.js'
@@ -157,7 +165,8 @@ export default class Utils {
         new EmbedBuilder()
           .setDescription(
             'Ошибка! Требуется капча. Введите команду </captcha:906533763033464832>, а после введите код с картинки. ' +
-              `Если картинки не видно, перейдите по [ссылке](${captcha?.url})`
+              `Если картинки не видно, перейдите по [ссылке](${captcha?.url}).` +
+              '\nЕсли больше не хотите видеть капчу, приобретите **Премиум**. Подробности: </donate:906533685979918396>'
           )
           .setColor(0x5181b8)
           .setImage(captcha.url + this.generateRandomCaptchaString())
@@ -221,7 +230,17 @@ export default class Utils {
     if (timer) clearTimeout(timer)
   }
 
-  public static async sendMessageToChannel(channel: TextBasedChannel, content: MessageCreateOptions, timeout?: number) {
+  public static async sendMessageToChannel(
+    channel: TextBasedChannel,
+    content: MessageCreateOptions,
+    timeout?: number
+  ): Promise<Message | undefined> {
+    if (channel.isDMBased()) return
+    const permissions = channel.permissionsFor(channel.client.user as User)
+    if (!permissions?.has([PermissionsBitField.Flags.SendMessages])) {
+      return
+    }
+
     try {
       const message = await channel.send(content)
 
@@ -229,9 +248,10 @@ export default class Utils {
         setTimeout(async () => {
           if (message.deletable) await message.delete().catch((err) => logger.error({ err }, "Can't delete message"))
         }, timeout)
-      else if (message.deletable) await message.delete().catch((err) => logger.error({ err }, "Can't delete message"))
-    } catch {
-      logger.error("Can't send message")
+
+      return message
+    } catch (err) {
+      logger.error({ err }, "Can't send message")
     }
   }
 

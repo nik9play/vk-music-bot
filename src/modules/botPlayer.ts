@@ -5,7 +5,6 @@ import { deletePreviousTrackStartMessage, generatePlayerStartMessage } from '../
 import logger from '../logger.js'
 import BotTrack from '../structures/botTrack.js'
 import Utils, { ErrorMessageType } from '../utils.js'
-import { PermissionsBitField, User } from 'discord.js'
 
 export default class BotPlayer {
   public client: VkMusicBotClient
@@ -59,13 +58,15 @@ export default class BotPlayer {
 
             if (!this.current) return
 
-            const permissions = channel.permissionsFor(client.user as User)
-            if (!permissions?.has([PermissionsBitField.Flags.SendMessages])) {
-              return
-            }
+            // const permissions = channel.permissionsFor(client.user as User)
+            // if (!permissions?.has([PermissionsBitField.Flags.SendMessages])) {
+            //   return
+            // }
 
-            const message = await channel.send(generatePlayerStartMessage(this, this.current))
-            client.latestMenus.set(this.guildId, message)
+            // const message = await channel.send(generatePlayerStartMessage(this, this.current))
+
+            const message = await Utils.sendMessageToChannel(channel, generatePlayerStartMessage(this, this.current))
+            if (message) client.latestMenus.set(this.guildId, message)
           } catch (err) {
             logger.error({ err }, "Can't send player start message")
           }
