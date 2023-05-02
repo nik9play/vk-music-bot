@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
 import { Client, ClientOptions, Collection, Message } from 'discord.js'
 import Utils, { ErrorMessageType } from './utils.js'
 import logger from './logger.js'
@@ -169,7 +168,7 @@ export class VkMusicBotClient extends Client {
             {
               embeds: [
                 Utils.generateErrorMessage(
-                  'Я вышел из канала, так как тут никого нет. ' +
+                  'Бот вышел из канала, так как тут никого нет. ' +
                     'Включите режим 24/7 (</247:906533610918666250>), если не хотите, чтобы это происходило.',
                   ErrorMessageType.Info
                 )
@@ -189,9 +188,8 @@ export class VkMusicBotClient extends Client {
     await connectDb()
     logger.info('DB connected.')
 
-    //@ts-ignore
-    const shardClientUtil = this.shard as ShardClientUtil
-    shardClientUtil.on('message', (msg: any) => {
+    const shardClientUtil = this.shard as ShardClientUtil | null
+    shardClientUtil?.on('message', (msg: any) => {
       if (msg?.content?.op === 'serverCount' && msg?.repliable) msg.reply(this.guilds.cache.size)
       else if (msg?.content?.op === 'clientId' && msg?.repliable) msg.reply(this.user?.id)
       else if (msg?.content?.op === 'setPresence') {

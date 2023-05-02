@@ -320,7 +320,7 @@ export async function playCommandHandler(
         }
       ])
       .setFooter({
-        text: 'Чтобы добавить больше 10 треков, введите количество треков в аргумент "количество".'
+        text: 'Чтобы добавить больше 50 треков, введите количество треков в аргумент "количество".'
       })
       .setThumbnail(req.info.imgUrl ?? null)
 
@@ -347,7 +347,7 @@ export async function playCommandHandler(
         }
       ])
       .setFooter({
-        text: 'Чтобы добавить больше 10 треков, введите количество треков в аргумент "количество".'
+        text: 'Чтобы добавить больше 50 треков, введите количество треков в аргумент "количество".'
       })
       .setThumbnail(req.info.img ?? null)
 
@@ -377,7 +377,7 @@ export async function playCommandHandler(
         }
       ])
       .setFooter({
-        text: 'Чтобы добавить больше 10 треков, введите количество треков в аргумент "количество".'
+        text: 'Чтобы добавить больше 50 треков, введите количество треков в аргумент "количество".'
       })
       .setThumbnail(req.info.img ?? null)
 

@@ -34,7 +34,9 @@ export class CommandInteractionManager implements BaseInteractionManager {
   constructor(client: VkMusicBotClient) {
     this.client = client
 
-    this.client.on(Events.InteractionCreate, (interaction) => this.handle(interaction).catch((err) => logger.error({err}, 'Error handle command')))
+    this.client.on(Events.InteractionCreate, (interaction) =>
+      this.handle(interaction).catch((err) => logger.error({ err }, 'Error handle command'))
+    )
   }
 
   async load() {
@@ -148,7 +150,8 @@ export class CommandInteractionManager implements BaseInteractionManager {
         const embed = {
           description:
             'Ошибка! Требуется капча. Введите команду </captcha:906533763033464832>, а после введите код с картинки. ' +
-            `Если картинки не видно, перейдите по [ссылке](${captcha?.url})`,
+            `Если картинки не видно, перейдите по [ссылке](${captcha?.url})` +
+            '\nЕсли больше не хотите видеть капчу, приобретите **Премиум**. Подробности: </donate:906533685979918396>',
           color: 0x5181b8,
           image: {
             url: captcha.url + Utils.generateRandomCaptchaString()
