@@ -1,3 +1,4 @@
+// import { ShardClientUtil } from 'indomitable'
 import { CommandCustomInteraction } from '../commandInteractions.js'
 
 export const interaction: CommandCustomInteraction = {
@@ -7,7 +8,11 @@ export const interaction: CommandCustomInteraction = {
   djOnly: false,
   cooldown: 10,
   execute: async function ({ client, respond, guild }) {
-    const totalServers = 0
+    // const totalServers = 0
+
+    // const shardClientUtil = client.shard as ShardClientUtil | null
+
+    // shardClientUtil?.ipc
 
     let totalPlayers = 0
     let totalRam = 0
@@ -52,11 +57,11 @@ export const interaction: CommandCustomInteraction = {
           value: `\`\`\`js\n${client.guilds.cache.size}\`\`\``,
           inline: true
         },
-        {
-          name: 'Всего серверов',
-          value: `\`\`\`js\n${totalServers}\`\`\``,
-          inline: true
-        },
+        // {
+        //   name: 'Всего серверов',
+        //   value: `\`\`\`js\n${totalServers}\`\`\``,
+        //   inline: true
+        // },
         {
           name: 'Кол-во кластеров',
           value: `\`\`\`js\n${process.env.CLUSTER_TOTAL}\`\`\``,
@@ -74,7 +79,7 @@ export const interaction: CommandCustomInteraction = {
         },
         {
           name: 'Пинг',
-          value: `\`\`\`js\n${client.ws.ping} MS\`\`\``,
+          value: `\`\`\`js\n${client.ws.ping.toFixed(2)} MS\`\`\``,
           inline: true
         },
         {
