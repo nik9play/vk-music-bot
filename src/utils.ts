@@ -117,7 +117,7 @@ export default class Utils {
   }
 
   public static escapeFormat(text: string | undefined): string {
-    if (!text) return ''
+    if (!text) return '-'
     //return text.replace(/([*_`~\\])/g, '\\$1')
     return text.replace(/([_*~`|\\<>:!])/g, '\\$1').replace(/@(everyone|here|[!&]?[0-9]{17,21})/g, '@\u200b$1')
   }
