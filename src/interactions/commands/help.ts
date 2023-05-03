@@ -83,7 +83,7 @@ export const interaction: CommandCustomInteraction = {
           inline: true
         },
         {
-          name: '/mashup', // TODO
+          name: '</mashup:1102512413129064519>',
           value: 'Случайный мэшап',
           inline: true
         },
