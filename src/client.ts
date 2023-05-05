@@ -9,6 +9,7 @@ import { ButtonInteractionManager } from './interactions/buttonInteractions.js'
 import { SelectMenuInteractionManager } from './interactions/selectMenuInteractions.js'
 import { ShardClientUtil } from 'indomitable'
 import { NodeOption } from 'shoukaku'
+import { ModalInteractionManager } from './interactions/modalInteractions.js'
 
 export interface CaptchaInfo {
   type: 'play' | 'search'
@@ -40,6 +41,7 @@ export class VkMusicBotClient extends Client {
   public commandInteractionManager: CommandInteractionManager
   public buttonInteractionManager: ButtonInteractionManager
   public selectMenuInteractionManager: SelectMenuInteractionManager
+  public modalInteractionManager: ModalInteractionManager
 
   constructor(options: ClientOptions) {
     if (!process.env.MONGO_URL || !process.env.REDIS_URL) throw new Error('Env not set')
@@ -50,6 +52,7 @@ export class VkMusicBotClient extends Client {
     this.commandInteractionManager = new CommandInteractionManager(this)
     this.buttonInteractionManager = new ButtonInteractionManager(this)
     this.selectMenuInteractionManager = new SelectMenuInteractionManager(this)
+    this.modalInteractionManager = new ModalInteractionManager(this)
 
     this.once('ready', async () => {
       //this.manager.init(this.user?.id)
@@ -61,7 +64,8 @@ export class VkMusicBotClient extends Client {
       await Promise.all([
         this.commandInteractionManager.load(),
         this.buttonInteractionManager.load(),
-        this.selectMenuInteractionManager.load()
+        this.selectMenuInteractionManager.load(),
+        this.modalInteractionManager.load()
       ])
 
       logger.info(`Loaded ${this.commandInteractionManager.interactions.size} commands.`)
@@ -95,7 +99,7 @@ export class VkMusicBotClient extends Client {
 
         if (data?.d?.id === menuMessage.id) {
           this.latestMenus.delete(data.d.guild_id)
-          logger.info({ guildId: data.d.guild_id }, 'Removed latestMenusMessage')
+          logger.debug({ guildId: data.d.guild_id }, 'Removed latestMenusMessage')
         }
       })
 

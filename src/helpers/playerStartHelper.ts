@@ -18,7 +18,8 @@ export enum MenuButtonType {
   Stop = 'stop',
   Queue = 'queue',
   Repeat = 'repeat',
-  Pause = 'pause'
+  Pause = 'pause',
+  Leave = 'leave'
 }
 
 const repeatEmojis = {
@@ -66,6 +67,20 @@ export function generatePlayerStartMessage(player: BotPlayer, track: BotTrack): 
       .setStyle(player.repeat === 'none' ? ButtonStyle.Secondary : ButtonStyle.Primary)
   ])
 
+  const row2 = new ActionRowBuilder<ButtonBuilder>().addComponents([
+    new ButtonBuilder()
+      .setCustomId('openTrackRequestModal')
+      .setStyle(ButtonStyle.Success)
+      .setEmoji('<:add_queue:1103043247883956324>'),
+    new ButtonBuilder().setDisabled(true).setCustomId('empty_btn1').setStyle(ButtonStyle.Secondary).setLabel('⠀'),
+    new ButtonBuilder().setDisabled(true).setCustomId('empty_btn2').setStyle(ButtonStyle.Secondary).setLabel('⠀'),
+    new ButtonBuilder().setDisabled(true).setCustomId('empty_btn3').setStyle(ButtonStyle.Secondary).setLabel('⠀'),
+    new ButtonBuilder()
+      .setCustomId(`menu,${MenuButtonType.Leave}`)
+      .setEmoji('<:leave:1103044077978669156>')
+      .setStyle(ButtonStyle.Danger)
+  ])
+
   const duration = track.duration ?? player.player.position
   const fixedDuration = duration < player.player.position ? player.player.position : duration
   const progress = player.player.position / fixedDuration
@@ -91,7 +106,7 @@ export function generatePlayerStartMessage(player: BotPlayer, track: BotTrack): 
           `${Utils.formatTime(player.player.position)}/${Utils.formatTime(fixedDuration)}${progressBarText}`
         )
     ],
-    components: [row]
+    components: [row, row2]
   }
 }
 

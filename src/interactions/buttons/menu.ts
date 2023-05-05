@@ -56,6 +56,9 @@ export const interaction: ButtonCustomInteraction = {
 
         action = 'update'
         break
+      case MenuButtonType.Leave:
+        player.safeDestroy()
+        break
     }
     //await respond({ embeds: [Utils.generateErrorMessage(msg)], ephemeral: true })
 
