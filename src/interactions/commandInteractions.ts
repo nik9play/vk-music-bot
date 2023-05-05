@@ -63,8 +63,8 @@ export class CommandInteractionManager implements BaseInteractionManager {
     if (!text) return
 
     const meta: Meta = {
-      guild_id: guild?.id,
-      shard_id: guild?.shardId
+      guildId: guild?.id,
+      shardId: guild?.shardId
     }
 
     const respond = getRespondFunction(interaction, meta)

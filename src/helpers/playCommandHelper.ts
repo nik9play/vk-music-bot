@@ -164,7 +164,7 @@ export async function playCommandHandler(
   logger.debug({ req })
 
   if (req.status === 'error') {
-    logger.warn({ req, ...meta }, 'VK Request error')
+    logger.debug({ req, ...meta }, 'VK handle error')
 
     const errorTimeout = 30_000
 
@@ -214,6 +214,8 @@ export async function playCommandHandler(
         errorTimeout
       )
     } else if (reqError.type === 'request') {
+      logger.error({ req, ...meta }, 'VK Request error')
+
       await respond(
         {
           embeds: [

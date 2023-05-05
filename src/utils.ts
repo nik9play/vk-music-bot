@@ -27,8 +27,8 @@ export interface ArgType {
 }
 
 export interface Meta {
-  guild_id?: string
-  shard_id?: number
+  guildId?: string
+  shardId?: number
 }
 
 export interface PlaylistURL {

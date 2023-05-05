@@ -27,7 +27,9 @@ export class SelectMenuInteractionManager implements BaseInteractionManager {
   constructor(client: VkMusicBotClient) {
     this.client = client
 
-    this.client.on(Events.InteractionCreate, (interaction) => this.handle(interaction).catch((err) => logger.error({err}, 'Error handle select menu')))
+    this.client.on(Events.InteractionCreate, (interaction) =>
+      this.handle(interaction).catch((err) => logger.error({ err }, 'Error handle select menu'))
+    )
   }
 
   async load() {
@@ -45,8 +47,8 @@ export class SelectMenuInteractionManager implements BaseInteractionManager {
     const voice = member?.voice?.channel
 
     const meta: Meta = {
-      guild_id: guild?.id,
-      shard_id: guild?.shardId
+      guildId: guild?.id,
+      shardId: guild?.shardId
     }
 
     if (!text) return
@@ -59,8 +61,8 @@ export class SelectMenuInteractionManager implements BaseInteractionManager {
       const id = interaction.values[0].split(',')[1]
 
       const meta: Meta = {
-        guild_id: guild?.id,
-        shard_id: guild?.shardId
+        guildId: guild?.id,
+        shardId: guild?.shardId
       }
 
       logger.info({ ...meta }, 'Search result selected')
