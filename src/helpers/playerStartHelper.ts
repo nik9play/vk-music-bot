@@ -72,9 +72,9 @@ export function generatePlayerStartMessage(player: BotPlayer, track: BotTrack): 
       .setCustomId('openTrackRequestModal')
       .setStyle(ButtonStyle.Success)
       .setEmoji('<:add_queue:1103043247883956324>'),
-    new ButtonBuilder().setDisabled(true).setCustomId('empty_btn1').setStyle(ButtonStyle.Secondary).setLabel('⠀'),
-    new ButtonBuilder().setDisabled(true).setCustomId('empty_btn2').setStyle(ButtonStyle.Secondary).setLabel('⠀'),
-    new ButtonBuilder().setDisabled(true).setCustomId('empty_btn3').setStyle(ButtonStyle.Secondary).setLabel('⠀'),
+    new ButtonBuilder().setDisabled(true).setCustomId('empty_btn1').setStyle(ButtonStyle.Secondary).setLabel('\u2800'),
+    new ButtonBuilder().setDisabled(true).setCustomId('empty_btn2').setStyle(ButtonStyle.Secondary).setLabel('\u2800'),
+    new ButtonBuilder().setDisabled(true).setCustomId('empty_btn3').setStyle(ButtonStyle.Secondary).setLabel('\u2800'),
     new ButtonBuilder()
       .setCustomId(`menu,${MenuButtonType.Leave}`)
       .setEmoji('<:leave:1103044077978669156>')
