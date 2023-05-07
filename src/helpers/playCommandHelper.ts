@@ -245,6 +245,13 @@ export async function playCommandHandler(
           },
           errorTimeout
         )
+      } else if (arg.type === 'group') {
+        await respond(
+          {
+            embeds: [Utils.generateErrorMessage('Нет доступа к аудио сообщества.')]
+          },
+          errorTimeout
+        )
       }
     }
     return

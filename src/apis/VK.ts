@@ -100,6 +100,7 @@ export default class VK {
               type: 'captcha',
               error: data.error
             }
+          case 15:
           case 201:
             return {
               status: 'error',
