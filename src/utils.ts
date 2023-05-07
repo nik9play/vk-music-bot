@@ -100,12 +100,12 @@ export default class Utils {
         if (userOrGroupUrlMatch[0].startsWith('-'))
           return {
             type: 'group',
-            owner_id: userOrGroupUrlMatch[0]
+            owner_id: userOrGroupUrlMatch[1]
           }
         else
           return {
             type: 'user',
-            owner_id: userOrGroupUrlMatch[0]
+            owner_id: userOrGroupUrlMatch[1]
           }
       }
     }
