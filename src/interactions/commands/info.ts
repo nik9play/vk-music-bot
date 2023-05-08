@@ -64,12 +64,12 @@ export const interaction: CommandCustomInteraction = {
         // },
         {
           name: 'Кол-во кластеров',
-          value: `\`\`\`js\n${process.env.CLUSTER_TOTAL}\`\`\``,
+          value: `\`\`\`js\n${process.env.INDOMITABLE_CLUSTER_TOTAL}\`\`\``,
           inline: true
         },
         {
           name: 'Номер кластера',
-          value: `\`\`\`js\n${process.env.CLUSTER}\`\`\``,
+          value: `\`\`\`js\n${process.env.INDOMITABLE_CLUSTER}\`\`\``,
           inline: true
         },
         {
