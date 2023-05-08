@@ -99,7 +99,9 @@ export function generatePlayerStartMessage(player: BotPlayer, track: BotTrack): 
       new EmbedBuilder()
         .setColor(0x5181b8)
         .setAuthor({
-          name: `Сейчас играет ${Utils.escapeFormat(track.author)} — ${Utils.escapeFormat(track.title)}.`,
+          name: `Сейчас играет ${Utils.escapeFormat(track.author).slice(0, 100)} — ${Utils.escapeFormat(
+            track.title
+          ).slice(0, 100)}.`,
           iconURL: track.thumb
         })
         .setDescription(
