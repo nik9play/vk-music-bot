@@ -148,6 +148,8 @@ export class VkMusicBotClient extends Client {
         } else {
           voiceChannel = oldState.channel || newState.channel
           if (!voiceChannel) return
+          if (this?.user && !voiceChannel.members.has(this.user.id)) return
+          logger.debug(voiceChannel.id)
 
           const members = voiceChannel.members.filter((m) => !m.user.bot)
 
