@@ -196,18 +196,29 @@ export default class BotPlayer {
     }
   }
 
-  async destroy(destroyRemoteServer = true, reason?: string) {
+  async destroy(destroyRemotePlayer = true, reason?: string) {
     this.client.shoukaku.off('close', this.closeHandlerEvent)
     this.client.shoukaku.off('disconnect', this.disconnectHandlerEvent)
 
     this.queue.length = 0
-    await this.player.connection.disconnect(destroyRemoteServer)
+    try {
+      await this.player.connection.disconnect(destroyRemotePlayer)
+    } catch (err) {
+      logger.error({ err }, 'Unable to destroy connection, trying to disconnect without destroying remote player')
+      if (destroyRemotePlayer)
+        try {
+          await this.player.connection.disconnect(false)
+        } catch (err) {
+          logger.error({ err }, 'Unable to destroy connection')
+        }
+    }
     this.client.playerManager.delete(this.guildId)
 
     Utils.clearExitTimeout(this.guildId, this.client)
 
     logger.debug(
-      `Destroyed the player & connection @ guild "${this.guildId}"\nReason: ${reason || 'No Reason Provided'}`
+      { guildId: this.guildId },
+      `Destroyed the player & connection \nReason: ${reason || 'No Reason Provided'}`
     )
     if (this.stopped) return
   }
