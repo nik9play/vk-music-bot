@@ -4,6 +4,7 @@ import { VkMusicBotClient } from '../client.js'
 import logger from '../logger.js'
 import cluster from 'cluster'
 import { startApiServer } from './api/apiServer.js'
+import { fetch } from 'undici'
 
 const options: IndomitableOptions = {
   // Processes to run
@@ -15,6 +16,7 @@ const options: IndomitableOptions = {
     makeCache: Options.cacheWithLimits({
       ...Options.DefaultMakeCacheSettings,
       MessageManager: 0,
+
       //ThreadManager: 20,
       PresenceManager: 0,
       GuildStickerManager: 0,
@@ -23,7 +25,15 @@ const options: IndomitableOptions = {
       GuildEmojiManager: 0,
       ReactionManager: 0,
       GuildScheduledEventManager: 0,
-      AutoModerationRuleManager: 0
+      AutoModerationRuleManager: 0,
+      GuildMemberManager: {
+        maxSize: 1,
+        keepOverLimit: (member) => member.id === process.env.CLIENT_ID
+      },
+      UserManager: {
+        maxSize: 1,
+        keepOverLimit: (user) => user.id === process.env.CLIENT_ID
+      }
     }),
     intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildVoiceStates, GatewayIntentBits.GuildMessages],
     rest: {
@@ -63,6 +73,21 @@ export const manager = new Indomitable(options)
 //   logger.info({ info }, 'debug sharder')
 // })
 
+// manager.on('message', async (msg: any) => {
+//   if (msg?.content?.op === 'serverCount' && msg?.repliable) {
+//     const serverResults = await manager.ipc
+//       ?.broadcast({ content: { op: 'serverCount' }, repliable: true })
+//       .catch((err) => {
+//         logger.error({ err }, "Can't get server count.")
+//         return
+//       })
+
+//     msg?.reply({
+//       servers: serverResults
+//     })
+//   }
+// })
+
 let clientId: string
 
 async function sendStats() {
@@ -95,7 +120,7 @@ async function sendStats() {
         }
       })
     })
-    const data = await res.json()
+    const data = (await res.json()) as any
     if (!res.ok) {
       logger.error(`Send metrics error (http error). ${res.status}`)
       return
@@ -127,7 +152,7 @@ async function sendStats() {
         Authorization: 'SDC ' + process.env.SDC_TOKEN
       }
     })
-    const data = await res.json()
+    const data = (await res.json()) as any
     if (!res.ok) {
       logger.error(`Send stats error (http error). ${res.status}`)
       return
@@ -159,7 +184,7 @@ async function sendStats() {
       return
     }
     if (data.error) {
-      logger.error('Error sending stats (server error)')
+      logger.error({ err: data.error }, 'Error sending stats (server error)')
     } else {
       logger.info('Stats sent.')
     }
@@ -187,10 +212,10 @@ async function startShardManager() {
   }
 }
 
-async function exit() {
-  logger.info('exit')
-  process.exit()
-}
+// async function exit() {
+//   logger.info('exit')
+//   process.exit()
+// }
 
 // process.on('uncaughtException', (err, origin) => {
 //   logger.error({ err, origin }, 'uncaughtException')
