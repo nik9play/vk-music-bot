@@ -9,7 +9,7 @@
     "node": ">=18.0.0 <19"
   },
   "scripts": {
-    "start": "node dist/index.js",
+    "start": "node --inspect dist/index.js",
     "build": "tsc",
     "dev": "tsc && NODE_ENV=development node --enable-source-maps --inspect -r dotenv/config ./dist/index.js",
     "prepare": "husky install"
