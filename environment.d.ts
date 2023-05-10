@@ -15,6 +15,7 @@ declare global {
       PORT?: string
       VK_TOTAL_SHARDS: string
       SHARDS_PER_CLUSTER: string
+      CLIENT_ID: string
     }
   }
 }
