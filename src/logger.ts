@@ -9,7 +9,7 @@ if (process.env.NODE_ENV === 'development') {
   })
 } else {
   transport = pino.destination({
-    minLength: 256,
+    minLength: 512,
     sync: false
   })
 }
