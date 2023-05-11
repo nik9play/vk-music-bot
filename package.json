@@ -9,9 +9,9 @@
     "node": ">=18.0.0 <19"
   },
   "scripts": {
-    "start": "node --inspect dist/index.js",
+    "start": "node --inspect=0.0.0.0 dist/index.js",
     "build": "tsc",
-    "dev": "tsc && NODE_ENV=development node --enable-source-maps --inspect -r dotenv/config ./dist/index.js",
+    "dev": "tsc && NODE_ENV=development node --enable-source-maps --inspect=0.0.0.0 -r dotenv/config ./dist/index.js",
     "prepare": "husky install"
   },
   "dependencies": {
@@ -27,7 +27,8 @@
     "pino": "^8.12.1",
     "shoukaku": "github:Deivu/Shoukaku#aed09b27d0a9d824d7e4ee9bc91852ebe5726117",
     "undici": "^5.22.0",
-    "utf-8-validate": "^6.0.3"
+    "utf-8-validate": "^6.0.3",
+    "zlib-sync": "^0.1.8"
   },
   "devDependencies": {
     "@types/glob": "^8.1.0",
