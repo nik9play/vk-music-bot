@@ -40,7 +40,10 @@ async function fillQueue(
         author: e.author,
         title: e.title,
         thumb: e.thumb,
-        duration: e.duration
+        duration: e.duration,
+        id: e.id,
+        owner_id: e.id,
+        access_key: e.access_key
       })
 
       return unresolvedTrack
@@ -69,6 +72,7 @@ export async function playCommandHandler(
     return
   }
 
+  logger.debug({ user: client.user })
   const permissions = voice.permissionsFor(client.user as User)
   if (
     !permissions?.has([

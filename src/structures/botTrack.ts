@@ -5,6 +5,9 @@ type VkTrackInfo = {
   title: string
   duration: number
   thumb?: string
+  id?: string
+  owner_id?: string
+  access_key?: string
 }
 
 export default class BotTrack {

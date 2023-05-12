@@ -99,13 +99,20 @@ export function generatePlayerStartMessage(player: BotPlayer, track: BotTrack): 
       new EmbedBuilder()
         .setColor(0x5181b8)
         .setAuthor({
-          name: `Сейчас играет ${Utils.escapeFormat(track.author).slice(0, 100)} — ${Utils.escapeFormat(
-            track.title
-          ).slice(0, 100)}.`,
-          iconURL: track.thumb
+          name: 'Сейчас играет'
         })
+        .setTitle(Utils.escapeFormat(track.title).slice(0, 100))
+        .setURL(Utils.generateTrackUrl(track.vkTrackInfo?.id as string, track.vkTrackInfo?.access_key))
+        // .setAuthor({
+        //   name: `Сейчас играет ${Utils.escapeFormat(track.author).slice(0, 100)} — ${Utils.escapeFormat(
+        //     track.title
+        //   ).slice(0, 100)}.`,
+        //   iconURL: track.thumb
+        // })
+        .setThumbnail(track.thumb ?? null)
         .setDescription(
-          `${Utils.formatTime(player.player.position)}/${Utils.formatTime(fixedDuration)}${progressBarText}`
+          `${Utils.escapeFormat(track.author).slice(0, 100)}\n\n` +
+            `${Utils.formatTime(player.player.position)} ${progressBarText} ${Utils.formatTime(fixedDuration)}`
         )
     ],
     components: [row, row2]
