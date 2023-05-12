@@ -1,4 +1,4 @@
-import { InteractionReplyOptions } from 'discord.js'
+import { InteractionReplyOptions, PermissionsBitField } from 'discord.js'
 import { getConfig } from '../../db.js'
 import {
   deletePreviousTrackStartMessage,
@@ -11,12 +11,38 @@ import { ButtonCustomInteraction } from '../buttonInteractions.js'
 
 export const interaction: ButtonCustomInteraction = {
   name: 'menu',
-  execute: async ({ interaction, respond, client, guild, customAction }) => {
+  execute: async ({ interaction, respond, client, guild, customAction, voice }) => {
     const player = client.playerManager.get(guild.id)
 
     if (!player) {
       await deletePreviousTrackStartMessage(client, guild.id)
       return
+    }
+
+    if (!voice) {
+      await Utils.sendNoVoiceChannelMessage(respond)
+      return
+    }
+
+    const config = await getConfig(guild.id)
+
+    if (config.djMode) {
+      const djRole = config.djRoleName
+
+      if (
+        !interaction.member.permissions.has(PermissionsBitField.Flags.ManageGuild) &&
+        !interaction.member.roles.cache.some((role) => role.name === djRole)
+      ) {
+        await respond({
+          embeds: [
+            Utils.generateErrorMessage(
+              `Сейчас включен DJ режим, и вы не можете использовать кнопки, так как у вас нет роли \`${djRole}\`.`
+            )
+          ],
+          ephemeral: true
+        })
+        return
+      }
     }
 
     await Utils.checkNodeState(player, respond)
