@@ -175,6 +175,7 @@ async function sendStats() {
         shards: manager.shardCount
       }),
       headers: {
+        'Content-Type': 'application/json',
         Authorization: 'Bot ' + process.env.BOTICORD_TOKEN
       }
     })
