@@ -1,4 +1,4 @@
-import { GatewayIntentBits, Options } from 'discord.js'
+import { GatewayIntentBits, Options, Partials } from 'discord.js'
 import { Indomitable, IndomitableOptions } from 'indomitable'
 import { VkMusicBotClient } from '../client.js'
 import logger from '../logger.js'
@@ -26,15 +26,16 @@ const options: IndomitableOptions = {
       ReactionManager: 0,
       GuildScheduledEventManager: 0,
       AutoModerationRuleManager: 0,
-      GuildMemberManager: {
-        maxSize: 1,
-        keepOverLimit: (member) => member.id === process.env.CLIENT_ID
-      },
+      // GuildMemberManager: {
+      //   maxSize: 1,
+      //   keepOverLimit: (member) => member.id === process.env.CLIENT_ID
+      // },
       UserManager: {
         maxSize: 1,
         keepOverLimit: (user) => user.id === process.env.CLIENT_ID
       }
     }),
+    partials: [Partials.GuildMember, Partials.Message, Partials.ThreadMember, Partials.User],
     intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildVoiceStates, GatewayIntentBits.GuildMessages],
     rest: {
       api: process.env.DISCORD_PROXY_URL
