@@ -4,8 +4,7 @@ import {
   Message,
   MessageCreateOptions,
   PermissionsBitField,
-  TextBasedChannel,
-  User
+  TextBasedChannel
 } from 'discord.js'
 import { CaptchaInfo, VkMusicBotClient } from './client.js'
 import logger from './logger.js'
@@ -227,7 +226,10 @@ export default class Utils {
     logger.debug({ guildId }, `Exit timeout clear`)
 
     const timer = client.timers.get(guildId)
-    if (timer) clearTimeout(timer)
+    if (timer) {
+      clearTimeout(timer)
+      client.timers.delete(guildId)
+    }
   }
 
   public static async sendMessageToChannel(
@@ -236,7 +238,8 @@ export default class Utils {
     timeout?: number
   ): Promise<Message | undefined> {
     if (channel.isDMBased()) return
-    const permissions = channel.permissionsFor(channel.client.user as User)
+
+    const permissions = channel.permissionsFor(channel.client.user)
     if (!permissions?.has([PermissionsBitField.Flags.SendMessages])) {
       return
     }
