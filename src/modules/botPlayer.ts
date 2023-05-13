@@ -155,8 +155,7 @@ export default class BotPlayer {
 
   private disconnectHandlerEvent = async (name: string) => {
     if (this.player.node.name === name) {
-      deletePreviousTrackStartMessage(this.client, this.guildId)
-      await this.destroy(false)
+      await Promise.all([deletePreviousTrackStartMessage(this.client, this.guildId), this.destroy(false)])
     }
   }
 
