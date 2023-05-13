@@ -1,4 +1,4 @@
-import { Client, ClientOptions, Collection, Message } from 'discord.js'
+import { Client, ClientOptions, Collection, Events, Message } from 'discord.js'
 import Utils, { ErrorMessageType } from './utils.js'
 import logger from './logger.js'
 import { connectDb, getConfig } from './db.js'
@@ -54,7 +54,7 @@ export class VkMusicBotClient extends Client {
     this.selectMenuInteractionManager = new SelectMenuInteractionManager(this)
     this.modalInteractionManager = new ModalInteractionManager(this)
 
-    this.once('ready', async () => {
+    this.once(Events.ClientReady, async () => {
       //this.manager.init(this.user?.id)
       //await this.initDb()
       // const slashCommandManager = new SlashCommandManager(this)
@@ -90,21 +90,37 @@ export class VkMusicBotClient extends Client {
       //   }
       // })
 
-      .on('raw', (data) => {
-        if (!data?.d?.guild_id || data.op !== 0 || data?.t !== 'MESSAGE_DELETE') return
-        logger.debug({ data }, 'raw')
+      // .on('raw', (data) => {
+      //   // logger.debug({ data }, 'raw2')
 
-        const menuMessage = this.latestMenus.get(data.d.guild_id)
-        if (!menuMessage) return
+      //   if (!data?.d?.guild_id || data.op !== 0 || data?.t !== 'MESSAGE_DELETE') return
+      //   logger.debug({ data }, 'raw')
 
-        if (data?.d?.id === menuMessage.id) {
-          this.latestMenus.delete(data.d.guild_id)
-          logger.debug({ guildId: data.d.guild_id }, 'Removed latestMenusMessage')
+      //   const menuMessage = this.latestMenus.get(data.d.guild_id)
+      //   if (!menuMessage) return
+
+      //   if (data?.d?.id === menuMessage.id) {
+      //     this.latestMenus.delete(data.d.guild_id)
+      //     logger.debug({ guildId: data.d.guild_id }, 'Removed latestMenusMessage')
+      //   }
+      // })
+
+      .on(Events.MessageDelete, (message) => {
+        logger.debug({ message })
+
+        if (message.id && message.guildId) {
+          const menuMessage = this.latestMenus.get(message.guildId)
+          if (!menuMessage) return
+
+          if (message.id === menuMessage.id) {
+            this.latestMenus.delete(message.guildId)
+            logger.debug({ guildId: message.guildId }, 'Removed latestMenusMessage')
+          }
         }
       })
 
       // TODO: fix this shit
-      .on('voiceStateUpdate', async (oldState, newState) => {
+      .on(Events.VoiceStateUpdate, async (oldState, newState) => {
         logger.debug({
           newState: newState,
           oldState: oldState
@@ -141,21 +157,17 @@ export class VkMusicBotClient extends Client {
             voiceChannel = newState.channel
             const members = voiceChannel?.members.filter((m) => !m.user.bot)
 
-            if (members?.size === 0) {
-              channelIsEmpty = true
-            }
+            channelIsEmpty = members?.size === 0
           }
         } else {
           voiceChannel = oldState.channel || newState.channel
           if (!voiceChannel) return
+
           if (this?.user && !voiceChannel.members.has(this.user.id)) return
-          logger.debug(voiceChannel.id)
 
           const members = voiceChannel.members.filter((m) => !m.user.bot)
 
-          if (members.size === 0) {
-            channelIsEmpty = true
-          }
+          channelIsEmpty = members.size === 0
         }
 
         if (channelIsEmpty && voiceChannel && !(await getConfig(voiceChannel.guildId)).enable247) {
