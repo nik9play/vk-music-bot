@@ -1,4 +1,4 @@
-import { Guild } from 'discord.js'
+import { Guild, VoiceBasedChannel } from 'discord.js'
 import { Node } from 'shoukaku'
 import { VkMusicBotClient } from '../client.js'
 import logger from '../logger.js'
@@ -17,12 +17,25 @@ export default class PlayerManager extends Map<string, BotPlayer> {
     const existing = this.get(guild.id)
     if (!existing) {
       if (this.client.shoukaku.players.has(guild.id)) return 'Busy'
-      const player = await node.joinChannel({
-        guildId: guild.id,
-        shardId: guild.shardId,
-        channelId: voiceChannelId,
-        deaf: true
-      })
+      let player
+
+      const channel = guild.client.channels.cache.get(voiceChannelId) as VoiceBasedChannel | undefined
+
+      try {
+        player = await node.joinChannel({
+          guildId: guild.id,
+          shardId: guild.shardId,
+          channelId: voiceChannelId,
+          deaf: true
+        })
+      } catch (err) {
+        logger.error(
+          { guildId: guild.id, shardId: guild.shardId, nodeName: node.name, region: channel?.rtcRegion ?? 'auto', err },
+          "Can't connect to voice channel"
+        )
+        throw err
+      }
+
       logger.debug(`New connection @ guild "${guild.id}"`)
       const dispatcher = new BotPlayer(this.client, guild.id, textChannelId, player)
       dispatcher.queue.push(...tracks)
