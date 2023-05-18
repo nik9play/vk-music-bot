@@ -5,6 +5,8 @@ import logger from '../logger.js'
 import cluster from 'cluster'
 import { startApiServer } from './api/apiServer.js'
 import { fetch } from 'undici'
+// import { Influx } from '../modules/analytics.js'
+// import { Point } from '@influxdata/influxdb-client'
 
 const options: IndomitableOptions = {
   // Processes to run
@@ -35,6 +37,17 @@ const options: IndomitableOptions = {
         keepOverLimit: (user) => user.id === process.env.CLIENT_ID
       }
     }),
+    sweepers: {
+      ...Options.DefaultSweeperSettings,
+      guildMembers: {
+        interval: 1800,
+        filter: () => (member) => member.user.bot && member.id !== process.env.CLIENT_ID
+      },
+      users: {
+        interval: 1800,
+        filter: () => (user) => user.bot && user.id !== process.env.CLIENT_ID
+      }
+    },
     partials: [Partials.GuildMember, Partials.Message, Partials.ThreadMember, Partials.User],
     intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildVoiceStates, GatewayIntentBits.GuildMessages],
     rest: {
@@ -108,6 +121,31 @@ async function sendStats() {
     .catch((err) => {
       logger.error({ err }, "Can't set presence.")
     })
+
+  // const list: any[] = await manager.ipc
+  //   ?.send(0, { content: { op: 'getLavalinkNodes' }, repliable: true })
+  //   .catch((err) => {
+  //     logger.error({ err }, "Can't get lavalink nodes with api.")
+  //     return { success: false, error: err.message }
+  //   })
+
+  // Influx?.writePoints(
+  //   list.map((el) =>
+  //     new Point('lavalink')
+  //       .timestamp(new Date())
+  //       .tag('name', el.name)
+  //       .intField('penalties', el.penalties)
+  //       .intField('players', el.stats.players)
+  //       .intField('playingPlayers', el.stats.playingPlayers)
+  //   )
+  // )
+
+  // Influx?.writePoint(
+  //   new Point('bot')
+  //     .intField('totalServers', serverSize)
+  //     .intField('shardCount', manager.shardCount)
+  //     .intField('clusterCount', manager.clusterCount)
+  // )
 
   try {
     const res = await fetch('https://vk-api-v2.megaworld.space/metrics', {
