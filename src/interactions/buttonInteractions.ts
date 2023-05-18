@@ -63,7 +63,7 @@ export class ButtonInteractionManager implements BaseInteractionManager {
     const customId = interaction.customId.split(',')
     const name = customId[0]
     const customAction = customId[1]
-    logger.debug(interaction.customId, 'button interaction id')
+    logger.debug(interaction.customId, 'Button interaction id')
 
     const respond = getRespondFunction(interaction, meta)
 
