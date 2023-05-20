@@ -7,9 +7,8 @@ import ShoukakuManager from './modules/shoukakuManager.js'
 import { CommandInteractionManager } from './interactions/commandInteractions.js'
 import { ButtonInteractionManager } from './interactions/buttonInteractions.js'
 import { SelectMenuInteractionManager } from './interactions/selectMenuInteractions.js'
-import { ShardClientUtil } from 'indomitable'
-import { NodeOption } from 'shoukaku'
 import { ModalInteractionManager } from './interactions/modalInteractions.js'
+import { IPCManager } from './events/ipcManager.js'
 
 export interface CaptchaInfo {
   type: 'play' | 'search'
@@ -42,6 +41,7 @@ export class VkMusicBotClient extends Client {
   public buttonInteractionManager: ButtonInteractionManager
   public selectMenuInteractionManager: SelectMenuInteractionManager
   public modalInteractionManager: ModalInteractionManager
+  public ipcManager: IPCManager
 
   constructor(options: ClientOptions) {
     if (!process.env.MONGO_URL || !process.env.REDIS_URL) throw new Error('Env not set')
@@ -53,6 +53,7 @@ export class VkMusicBotClient extends Client {
     this.buttonInteractionManager = new ButtonInteractionManager(this)
     this.selectMenuInteractionManager = new SelectMenuInteractionManager(this)
     this.modalInteractionManager = new ModalInteractionManager(this)
+    this.ipcManager = new IPCManager(this)
 
     this.once(Events.ClientReady, async () => {
       //this.manager.init(this.user?.id)
@@ -206,52 +207,7 @@ export class VkMusicBotClient extends Client {
     await connectDb()
     logger.info('DB connected.')
 
-    const shardClientUtil = this.shard as ShardClientUtil | null
-    shardClientUtil?.on('message', (msg: any) => {
-      if (msg?.content?.op === 'serverCount' && msg?.repliable) msg.reply(this.guilds.cache.size)
-      else if (msg?.content?.op === 'clientId' && msg?.repliable) msg.reply(this.user?.id)
-      else if (msg?.content?.op === 'setPresence') {
-        this.user?.setPresence({
-          activities: [
-            {
-              name: msg?.content?.data,
-              type: 2
-            }
-          ]
-        })
-      } else if (msg?.content?.op === 'clearQueues') {
-        for (const player of this.playerManager.values()) {
-          player.stop()
-        }
-      } else if (msg?.content?.op === 'destroyAll') {
-        for (const player of this.playerManager.values()) {
-          player.safeDestroy()
-        }
-      } else if (msg?.content?.op === 'getLavalinkNodes' && msg?.repliable) {
-        const nodes = []
-        for (const node of this.shoukaku.nodes.values()) {
-          nodes.push({
-            name: node.name,
-            state: node.state,
-            penalties: node.penalties,
-            stats: node.stats
-          })
-        }
-
-        msg?.reply(nodes)
-      } else if (msg?.content?.op === 'addLavalinkNode') {
-        const node = msg.content.node as NodeOption
-        this.shoukaku.addNode(node)
-      } else if (msg?.content?.op === 'removeLavalinkNode' && msg?.repliable) {
-        try {
-          const node = msg.content.nodeName as string
-          this.shoukaku.removeNode(node, 'API')
-          msg.reply(true)
-        } catch {
-          msg.reply(false)
-        }
-      }
-    })
+    await this.ipcManager.load()
 
     return this.constructor.name
   }
