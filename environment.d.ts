@@ -16,6 +16,10 @@ declare global {
       VK_TOTAL_SHARDS: string
       SHARDS_PER_CLUSTER: string
       CLIENT_ID: string
+      INFLUX_URL: string
+      INFLUX_TOKEN: string
+      INFLUX_ORG: string
+      INFLUX_BUCKET: string
     }
   }
 }

@@ -15,6 +15,7 @@
     "prepare": "husky install"
   },
   "dependencies": {
+    "@influxdata/influxdb-client": "^1.33.2",
     "@sinclair/typebox": "^0.28.9",
     "bufferutil": "^4.0.7",
     "discord.js": "^14.11.0",
