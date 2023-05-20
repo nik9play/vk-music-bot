@@ -5,8 +5,8 @@ import logger from '../logger.js'
 import cluster from 'cluster'
 import { startApiServer } from './api/apiServer.js'
 import { fetch } from 'undici'
-// import { Influx } from '../modules/analytics.js'
-// import { Point } from '@influxdata/influxdb-client'
+import { Influx } from '../modules/analytics.js'
+import { Point } from '@influxdata/influxdb-client'
 
 const options: IndomitableOptions = {
   // Processes to run
@@ -34,18 +34,18 @@ const options: IndomitableOptions = {
       // },
       UserManager: {
         maxSize: 1,
-        keepOverLimit: (user) => user.id === process.env.CLIENT_ID
+        keepOverLimit: (user) => user.id === user.client.user.id
       }
     }),
     sweepers: {
       ...Options.DefaultSweeperSettings,
       guildMembers: {
         interval: 1800,
-        filter: () => (member) => member.user.bot && member.id !== process.env.CLIENT_ID
+        filter: () => (member) => member.user.bot && member.id !== member.client.user.id
       },
       users: {
         interval: 1800,
-        filter: () => (user) => user.bot && user.id !== process.env.CLIENT_ID
+        filter: () => (user) => user.bot && user.id !== user.client.user.id
       }
     },
     partials: [Partials.GuildMember, Partials.Message, Partials.ThreadMember, Partials.User],
@@ -105,47 +105,49 @@ export const manager = new Indomitable(options)
 let clientId: string
 
 async function sendStats() {
-  const serverResults = await manager.ipc
-    ?.broadcast({ content: { op: 'serverCount' }, repliable: true })
-    .catch((err) => {
-      logger.error({ err }, "Can't get server count.")
-      return
-    })
+  const shardsInfo = await manager.ipc?.broadcast({ content: { op: 'shardInfo' }, repliable: true }).catch((err) => {
+    logger.error({ err }, "Can't get shardsInfo.")
+    return
+  })
 
-  if (!serverResults) return
+  if (!shardsInfo) return
 
-  const serverSize: number = serverResults.reduce((acc, guildCount) => acc + guildCount, 0)
+  const guildCount: number = shardsInfo.reduce((acc, info) => acc + info.guildsCount, 0)
 
   await manager.ipc
-    ?.broadcast({ content: { op: 'setPresence', data: `/help | ${(serverSize / 1000).toFixed(1)}k серверов` } })
+    ?.broadcast({ content: { op: 'setPresence', data: `/help | ${(guildCount / 1000).toFixed(1)}k серверов` } })
     .catch((err) => {
       logger.error({ err }, "Can't set presence.")
     })
 
-  // const list: any[] = await manager.ipc
-  //   ?.send(0, { content: { op: 'getLavalinkNodes' }, repliable: true })
-  //   .catch((err) => {
-  //     logger.error({ err }, "Can't get lavalink nodes with api.")
-  //     return { success: false, error: err.message }
-  //   })
+  const list: any[] = await manager.ipc
+    ?.send(0, { content: { op: 'getLavalinkNodes' }, repliable: true })
+    .catch((err) => {
+      logger.error({ err }, "Can't get lavalink nodes with api.")
+      return { success: false, error: err.message }
+    })
 
-  // Influx?.writePoints(
-  //   list.map((el) =>
-  //     new Point('lavalink')
-  //       .timestamp(new Date())
-  //       .tag('name', el.name)
-  //       .intField('penalties', el.penalties)
-  //       .intField('players', el.stats.players)
-  //       .intField('playingPlayers', el.stats.playingPlayers)
-  //   )
-  // )
-
-  // Influx?.writePoint(
-  //   new Point('bot')
-  //     .intField('totalServers', serverSize)
-  //     .intField('shardCount', manager.shardCount)
-  //     .intField('clusterCount', manager.clusterCount)
-  // )
+  Influx?.writePoints([
+    ...list.map((el) =>
+      new Point('lavalink')
+        .timestamp(new Date())
+        .tag('name', el.name)
+        .intField('penalties', el.penalties)
+        .intField('players', el.stats.players)
+        .intField('playingPlayers', el.stats.playingPlayers)
+    ),
+    ...shardsInfo.map((el) =>
+      new Point('shards')
+        .timestamp(new Date())
+        .tag('id', el.id)
+        .intField('guilds', el.guilds)
+        .floatField('ping', el.ping)
+    ),
+    new Point('bot')
+      .intField('guilds', guildCount)
+      .intField('shards', manager.shardCount)
+      .intField('clusters', manager.clusterCount)
+  ])
 
   try {
     const res = await fetch('https://vk-api-v2.megaworld.space/metrics', {
@@ -153,8 +155,8 @@ async function sendStats() {
       body: JSON.stringify({
         token: process.env.API_TOKEN,
         metrics: {
-          servers: serverSize,
-          serverShards: serverResults
+          servers: guildCount,
+          serverShards: shardsInfo.map((el) => el.guildsCount)
           //lavalinkInfo
         }
       })
@@ -184,7 +186,7 @@ async function sendStats() {
     const res = await fetch(`https://api.server-discord.com/v2/bots/${clientId}/stats`, {
       method: 'POST',
       body: JSON.stringify({
-        servers: serverSize,
+        servers: guildCount,
         shards: manager.shardCount
       }),
       headers: {
@@ -210,7 +212,7 @@ async function sendStats() {
     const res = await fetch(`https://api.boticord.top/v2/stats`, {
       method: 'POST',
       body: JSON.stringify({
-        servers: serverSize,
+        servers: guildCount,
         shards: manager.shardCount
       }),
       headers: {
