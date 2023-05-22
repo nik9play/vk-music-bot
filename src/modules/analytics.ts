@@ -12,13 +12,13 @@ export const Influx = influxDB?.getWriteApi(influxOrg, influxBucket)
 let savingAnalyticsId: NodeJS.Timer | undefined = undefined
 if (!savingAnalyticsId) {
   savingAnalyticsId = setInterval(() => {
-    logger.info(`[Influx - REST] Saving events...`)
+    logger.debug(`[Influx - REST] Saving events...`)
     Influx?.flush()
       .then(() => {
-        logger.info(`[Influx - REST] Saved events!`)
+        logger.debug(`[Influx - REST] Saved events!`)
       })
       .catch((err) => {
-        logger.error({ err }, `[Influx - REST] Error saving events!`)
+        logger.debug({ err }, `[Influx - REST] Error saving events!`)
       })
   }, 30_000)
 }
