@@ -24,14 +24,17 @@ const options: ShoukakuOptions = {
   resume: false,
   resumeKey: `shoukaku_cluster_asdf`,
   resumeTimeout: 30,
-  resumeByLibrary: true
+  resumeByLibrary: true,
+  voiceConnectionTimeout: 45
 }
 
 export default class ShoukakuManager extends Shoukaku {
   constructor(client: VkMusicBotClient) {
     super(new Connectors.DiscordJS(client), nodes, options)
+    this.setMaxListeners(5000)
     this.on('ready', (name, reconnected) =>
       logger.info(
+        { id: this.id },
         `Shoukaku Lavalink Node: ${name} is now connected, This connection is ${
           reconnected ? 'resumed' : 'a new connection'
         }`
