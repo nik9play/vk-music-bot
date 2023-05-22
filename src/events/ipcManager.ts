@@ -20,16 +20,11 @@ export interface IPCHandler {
 
 export class IPCManager {
   private events: Collection<string, IPCHandler> = new Collection()
-  private shardUtil: ShardClientUtil | null
+  // private shardUtil: ShardClientUtil | null
   public client: VkMusicBotClient
 
   constructor(client: VkMusicBotClient) {
     this.client = client
-    this.shardUtil = client.shard as ShardClientUtil | null
-
-    this.shardUtil?.on('message', (msg) => {
-      this.handle(msg as IPCMessage).catch((err) => logger.error({ err }, 'Error handle ipc message'))
-    })
   }
 
   async load() {
@@ -37,17 +32,21 @@ export class IPCManager {
 
     for (const file of files) {
       const module = await import(`../../${file}`)
-      const event: IPCHandler = module.handler
+      const event: IPCHandler = module.ipcHandler
 
       this.events.set(event.op, event)
     }
+
+    const shardUtil = this.client.shard as ShardClientUtil | null
+    shardUtil?.on('message', (msg) => {
+      console.log(msg)
+      this.handle(msg as IPCMessage).catch((err) => logger.error({ err }, 'Error handle ipc message'))
+    })
   }
 
   private async handle(msg: IPCMessage) {
     const handler = this.events.get(msg.content.op)
 
-    if (!handler) return
-
-    handler.handle(msg, this.client)
+    handler?.handle(msg, this.client)
   }
 }
