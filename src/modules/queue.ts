@@ -21,19 +21,32 @@ export default class PlayerManager extends Map<string, BotPlayer> {
 
       const channel = guild.client.channels.cache.get(voiceChannelId) as VoiceBasedChannel | undefined
 
+      const playerOptions = {
+        guildId: guild.id,
+        shardId: guild.shardId,
+        channelId: voiceChannelId,
+        deaf: true
+      }
+
       try {
-        player = await node.joinChannel({
+        player = await node.joinChannel(playerOptions)
+      } catch (err) {
+        const loggerInfo = {
           guildId: guild.id,
           shardId: guild.shardId,
-          channelId: voiceChannelId,
-          deaf: true
-        })
-      } catch (err) {
-        logger.error(
-          { guildId: guild.id, shardId: guild.shardId, nodeName: node.name, region: channel?.rtcRegion ?? 'auto', err },
-          "Can't connect to voice channel"
-        )
-        throw err
+          nodeName: node.name,
+          region: channel?.rtcRegion ?? 'auto',
+          err
+        }
+
+        logger.error(loggerInfo, "Can't connect to voice channel")
+
+        try {
+          player = await node.joinChannel(playerOptions)
+        } catch (err) {
+          logger.error(loggerInfo, "Can't connect to voice channel a second time(((")
+          throw err
+        }
       }
 
       logger.debug(`New connection @ guild "${guild.id}"`)
