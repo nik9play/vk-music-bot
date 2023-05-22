@@ -20,6 +20,8 @@ declare global {
       INFLUX_TOKEN: string
       INFLUX_ORG: string
       INFLUX_BUCKET: string
+      INDOMITABLE_CLUSTER_TOTAL: string
+      INDOMITABLE_CLUSTER: string
     }
   }
 }
