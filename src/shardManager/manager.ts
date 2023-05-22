@@ -7,6 +7,8 @@ import { startApiServer } from './api/apiServer.js'
 import { fetch } from 'undici'
 import { Influx } from '../modules/analytics.js'
 import { Point } from '@influxdata/influxdb-client'
+import { ClusterInfo } from '../events/ipc/clustersInfo.js'
+import { NodeInfo } from '../events/ipc/getLavalinkNodes.js'
 
 const options: IndomitableOptions = {
   // Processes to run
@@ -41,7 +43,9 @@ const options: IndomitableOptions = {
       ...Options.DefaultSweeperSettings,
       guildMembers: {
         interval: 1800,
-        filter: () => (member) => member.user.bot && member.id !== member.client.user.id
+        filter: () => (member) =>
+          // remove GuildMember from cache if it is not in voice channel
+          (member.user.bot && member.id !== member.client.user.id) || (!member.voice.channelId && !member.user.bot)
       },
       users: {
         interval: 1800,
@@ -105,14 +109,16 @@ export const manager = new Indomitable(options)
 let clientId: string
 
 async function sendStats() {
-  const shardsInfo = await manager.ipc?.broadcast({ content: { op: 'shardInfo' }, repliable: true }).catch((err) => {
-    logger.error({ err }, "Can't get shardsInfo.")
-    return
-  })
+  const clustersInfo: ClusterInfo[] | undefined | void = await manager.ipc
+    ?.broadcast({ content: { op: 'clustersInfo' }, repliable: true })
+    .catch((err) => {
+      logger.error({ err }, "Can't get clustersInfo.")
+      return
+    })
 
-  if (!shardsInfo) return
+  if (!clustersInfo) return
 
-  const guildCount: number = shardsInfo.reduce((acc, info) => acc + info.guildsCount, 0)
+  const guildCount: number = clustersInfo.reduce((acc, info) => acc + info.guilds, 0)
 
   await manager.ipc
     ?.broadcast({ content: { op: 'setPresence', data: `/help | ${(guildCount / 1000).toFixed(1)}k серверов` } })
@@ -120,24 +126,26 @@ async function sendStats() {
       logger.error({ err }, "Can't set presence.")
     })
 
-  const list: any[] = await manager.ipc
+  const lavalinkInfo: NodeInfo[] | undefined = await manager.ipc
     ?.send(0, { content: { op: 'getLavalinkNodes' }, repliable: true })
     .catch((err) => {
       logger.error({ err }, "Can't get lavalink nodes with api.")
       return { success: false, error: err.message }
     })
 
+  if (!lavalinkInfo) return
+
   Influx?.writePoints([
-    ...list.map((el) =>
+    ...lavalinkInfo.map((el) =>
       new Point('lavalink')
         .timestamp(new Date())
         .tag('name', el.name)
         .intField('penalties', el.penalties)
-        .intField('players', el.stats.players)
-        .intField('playingPlayers', el.stats.playingPlayers)
+        .intField('players', el.stats?.players)
+        .intField('playingPlayers', el.stats?.playingPlayers)
     ),
-    ...shardsInfo.map((el) =>
-      new Point('shards')
+    ...clustersInfo.map((el) =>
+      new Point('clusters')
         .timestamp(new Date())
         .tag('id', el.id)
         .intField('guilds', el.guilds)
@@ -156,7 +164,7 @@ async function sendStats() {
         token: process.env.API_TOKEN,
         metrics: {
           servers: guildCount,
-          serverShards: shardsInfo.map((el) => el.guildsCount)
+          serverShards: clustersInfo.map((el) => el.guilds)
           //lavalinkInfo
         }
       })
@@ -190,6 +198,7 @@ async function sendStats() {
         shards: manager.shardCount
       }),
       headers: {
+        'Content-Type': 'application/json',
         Authorization: 'SDC ' + process.env.SDC_TOKEN
       }
     })
