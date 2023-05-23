@@ -1,5 +1,5 @@
 import { Guild, VoiceBasedChannel } from 'discord.js'
-import { Node } from 'shoukaku'
+import { Node, Player } from 'shoukaku'
 import { VkMusicBotClient } from '../client.js'
 import logger from '../logger.js'
 import BotTrack from '../structures/botTrack.js'
@@ -17,7 +17,7 @@ export default class PlayerManager extends Map<string, BotPlayer> {
     const existing = this.get(guild.id)
     if (!existing) {
       if (this.client.shoukaku.players.has(guild.id)) return 'Busy'
-      let player
+      let player: Player | null = null
 
       const channel = guild.client.channels.cache.get(voiceChannelId) as VoiceBasedChannel | undefined
 
