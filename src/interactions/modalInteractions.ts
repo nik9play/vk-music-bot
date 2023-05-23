@@ -59,7 +59,7 @@ export class ModalInteractionManager implements BaseInteractionManager {
 
     const respond = getRespondFunction(interaction, meta)
 
-    const send = getSendFunction(text, this.client, meta)
+    const send = getSendFunction(text, meta)
 
     if (interaction?.customId === 'trackRequestModal') {
       logger.info({ ...meta }, 'Search result selected')

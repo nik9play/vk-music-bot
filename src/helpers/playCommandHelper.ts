@@ -1,13 +1,5 @@
 import Utils, { ErrorMessageType } from '../utils.js'
-import {
-  ActionRowBuilder,
-  ButtonBuilder,
-  ButtonStyle,
-  EmbedBuilder,
-  Guild,
-  PermissionsBitField,
-  User
-} from 'discord.js'
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, Guild } from 'discord.js'
 import logger from '../logger.js'
 import VK, { APIResponse, GroupInfo, OneTrackResponse, PlaylistResponse, UserResponse } from '../apis/VK.js'
 import { getConfig } from '../db.js'
@@ -71,16 +63,9 @@ export async function playCommandHandler(
     })
     return
   }
+  if (!guild.members.me) return
 
-  logger.debug({ user: client.user })
-  const permissions = voice.permissionsFor(client.user as User)
-  if (
-    !permissions?.has([
-      PermissionsBitField.Flags.Speak,
-      PermissionsBitField.Flags.Connect,
-      PermissionsBitField.Flags.ViewChannel
-    ])
-  ) {
+  if (!Utils.checkVoicePermissions(voice)) {
     respond({
       embeds: [Utils.generateErrorMessage('Мне нужны права, чтобы войти в канал.')],
       ephemeral: true

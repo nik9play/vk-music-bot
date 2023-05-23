@@ -1,10 +1,12 @@
 import {
   EmbedBuilder,
+  GuildTextBasedChannel,
   InteractionReplyOptions,
   Message,
   MessageCreateOptions,
   PermissionsBitField,
-  TextBasedChannel
+  TextBasedChannel,
+  VoiceBasedChannel
 } from 'discord.js'
 import { CaptchaInfo, VkMusicBotClient } from './client.js'
 import logger from './logger.js'
@@ -232,17 +234,35 @@ export default class Utils {
     }
   }
 
+  public static checkTextPermissions(channel: GuildTextBasedChannel): boolean {
+    if (channel.isDMBased() || !channel.guild.members.me) return false
+
+    logger.debug({ id: channel.id }, 'check...')
+
+    const permissions = channel.permissionsFor(channel.guild.members.me)
+
+    return permissions?.has([PermissionsBitField.Flags.SendMessages])
+  }
+
+  public static checkVoicePermissions(channel: VoiceBasedChannel): boolean {
+    if (channel.isDMBased() || !channel.guild.members.me) return false
+
+    const permissions = channel.permissionsFor(channel.guild.members.me)
+    return permissions?.has([
+      PermissionsBitField.Flags.Speak,
+      PermissionsBitField.Flags.Connect,
+      PermissionsBitField.Flags.ViewChannel
+    ])
+  }
+
   public static async sendMessageToChannel(
     channel: TextBasedChannel,
     content: MessageCreateOptions,
     timeout?: number
   ): Promise<Message | undefined> {
-    if (channel.isDMBased()) return
+    if (channel.isDMBased() || !channel.guild.members.me) return
 
-    const permissions = channel.permissionsFor(channel.client.user)
-    if (!permissions?.has([PermissionsBitField.Flags.SendMessages])) {
-      return
-    }
+    if (!this.checkTextPermissions(channel)) return
 
     try {
       const message = await channel.send(content)

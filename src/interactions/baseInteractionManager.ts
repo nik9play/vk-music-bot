@@ -7,12 +7,11 @@ import {
   Interaction,
   InteractionReplyOptions,
   Message,
-  PermissionsBitField,
   User,
   VoiceBasedChannel
 } from 'discord.js'
 import { VkMusicBotClient, CaptchaInfo } from '../client.js'
-import { Meta } from '../utils.js'
+import Utils, { Meta } from '../utils.js'
 import logger from '../logger.js'
 
 export interface BaseExecuteParams {
@@ -60,9 +59,9 @@ export function getRespondFunction(interaction: Interaction, meta: Meta) {
   }
 }
 
-export function getSendFunction(text: GuildTextBasedChannel, client: VkMusicBotClient, meta: Meta) {
+export function getSendFunction(text: GuildTextBasedChannel, meta: Meta) {
   return async (data: BaseMessageOptions, timeout?: number): Promise<void> => {
-    if (!text.permissionsFor(client.user as User)?.has(PermissionsBitField.Flags.SendMessages)) return
+    if (!Utils.checkTextPermissions(text)) return
 
     try {
       const message = await text.send(data)

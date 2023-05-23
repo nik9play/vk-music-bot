@@ -69,7 +69,7 @@ export class CommandInteractionManager implements BaseInteractionManager {
 
     const respond = getRespondFunction(interaction, meta)
 
-    const send = getSendFunction(text, this.client, meta)
+    const send = getSendFunction(text, meta)
 
     const command = this.interactions.get(interaction.commandName)
 

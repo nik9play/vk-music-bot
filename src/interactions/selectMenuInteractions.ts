@@ -55,7 +55,7 @@ export class SelectMenuInteractionManager implements BaseInteractionManager {
 
     const respond = getRespondFunction(interaction, meta)
 
-    const send = getSendFunction(text, this.client, meta)
+    const send = getSendFunction(text, meta)
 
     if (interaction?.customId === 'search') {
       const id = interaction.values[0].split(',')[1]

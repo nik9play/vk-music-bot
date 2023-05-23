@@ -67,7 +67,7 @@ export class ButtonInteractionManager implements BaseInteractionManager {
 
     const respond = getRespondFunction(interaction, meta)
 
-    const send = getSendFunction(text, this.client, meta)
+    const send = getSendFunction(text, meta)
 
     const buttonInteraction = this.interactions.get(name)
     await buttonInteraction
