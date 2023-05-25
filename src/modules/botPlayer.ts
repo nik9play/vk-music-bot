@@ -5,6 +5,7 @@ import { deletePreviousTrackStartMessage, generatePlayerStartMessage } from '../
 import logger from '../logger.js'
 import BotTrack from '../structures/botTrack.js'
 import Utils, { ErrorMessageType } from '../utils.js'
+import { DiscordAPIError } from 'discord.js'
 
 export default class BotPlayer {
   public client: VkMusicBotClient
@@ -101,9 +102,21 @@ export default class BotPlayer {
           if (!message) return
 
           if (message.editable)
-            message
-              .edit(generatePlayerStartMessage(this, this.current))
-              .catch((err) => logger.error({ err: err.message }, "Can't edit player start message"))
+            message.edit(generatePlayerStartMessage(this, this.current)).catch((err) => {
+              if (err instanceof DiscordAPIError) {
+                if (err.code === 10008) {
+                  this.client.latestMenus.delete(this.guildId)
+                  logger.warn(
+                    { err: err.message, guildId: message.guildId },
+                    "Can't edit player start message:, message is not found"
+                  )
+
+                  return
+                }
+              }
+
+              logger.error({ err: err.message, guildId: message.guildId }, "Can't edit player start message")
+            })
         }
       })
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
