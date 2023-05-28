@@ -4,6 +4,7 @@ import { VkMusicBotClient } from '../client.js'
 import logger from '../logger.js'
 import BotTrack from '../structures/botTrack.js'
 import BotPlayer from './botPlayer.js'
+import Utils from '../utils.js'
 
 export default class PlayerManager extends Map<string, BotPlayer> {
   public client: VkMusicBotClient
@@ -29,7 +30,22 @@ export default class PlayerManager extends Map<string, BotPlayer> {
       }
 
       try {
+        // force disconnect from channel if player is not existing
+
+        if (guild.members.me?.voice.channelId) {
+          Utils.forceLeave(guild)
+          await Utils.delay(1000)
+        }
+
+        logger.info(
+          { botVoiceStateVoiceId: guild.members.me?.voice.channelId, sessionId: guild.members.me?.voice.sessionId },
+          'Bot voice info'
+        )
         player = await node.joinChannel(playerOptions)
+        logger.info(
+          { botVoiceStateVoiceId: guild.members.me?.voice.channelId, sessionId: guild.members.me?.voice.sessionId },
+          'Bot voice info 2'
+        )
       } catch (err) {
         const loggerInfo = {
           guildId: guild.id,
@@ -40,13 +56,14 @@ export default class PlayerManager extends Map<string, BotPlayer> {
         }
 
         logger.error(loggerInfo, "Can't connect to voice channel")
+        throw err
 
-        try {
-          player = await node.joinChannel(playerOptions)
-        } catch (err) {
-          logger.error(loggerInfo, "Can't connect to voice channel a second time(((")
-          throw err
-        }
+        // try {
+        //   player = await node.joinChannel(playerOptions)
+        // } catch (err) {
+        //   logger.error(loggerInfo, "Can't connect to voice channel a second time(((")
+        //   throw err
+        // }
       }
 
       logger.debug(`New connection @ guild "${guild.id}"`)

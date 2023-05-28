@@ -14,6 +14,8 @@ export const interaction: CommandCustomInteraction = {
 
     await player?.safeDestroy()
 
+    Utils.forceLeave(guild)
+
     await respond({
       embeds: [Utils.generateErrorMessage('🔧', ErrorMessageType.NoTitle)]
     })

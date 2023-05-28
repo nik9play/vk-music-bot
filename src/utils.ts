@@ -1,5 +1,6 @@
 import {
   EmbedBuilder,
+  Guild,
   GuildTextBasedChannel,
   InteractionReplyOptions,
   Message,
@@ -278,6 +279,11 @@ export default class Utils {
     }
   }
 
+  public static forceLeave(guild: Guild) {
+    logger.info({ guildId: guild.id, shardId: guild.shardId }, 'Force leaving channel...')
+    guild.shard.send({ op: 4, d: { guild_id: guild.id, channel_id: null, self_mute: false, self_deaf: false } }, false)
+  }
+
   // public static async checkPlayerState(
   //   respond: RespondFunction,
   //   player?: BotPlayer,
@@ -363,5 +369,9 @@ export default class Utils {
     const remainingSeconds = Math.round(seconds % 60)
 
     return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`
+  }
+
+  public static delay(ms: number): Promise<void> {
+    return new Promise((resolve) => setTimeout(resolve, ms))
   }
 }
