@@ -140,7 +140,7 @@ export default class Utils {
     const captcha = captchaInfo
 
     if (autoSolve && (await getConfig(params.guild.id)).premium) {
-      const captchaSolveResponse = await VK.solveCaptcha(captcha.sid)
+      const captchaSolveResponse = await VK.solveCaptcha(captcha.url)
 
       if (captchaSolveResponse) {
         logger.info('Captcha solved')

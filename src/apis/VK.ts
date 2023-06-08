@@ -342,12 +342,12 @@ export default class VK {
     }
   }
 
-  static async solveCaptcha(captchaSid: string): Promise<string | null> {
+  static async solveCaptcha(url: string): Promise<string | null> {
     try {
-      const res = await fetch(`${process.env.CAPTCHA_SOLVER_URL}solve/${captchaSid}`)
+      const res = await fetch(`${process.env.CAPTCHA_SOLVER_URL}solve/?url=${url}`)
       const body = (await res.json()) as any
       if (!res.ok || !body?.success || !body?.answer) {
-        logger.error({ body: res.body }, 'Captcha solve error')
+        logger.error({ body, url }, 'Captcha solve error')
         return null
       }
 
