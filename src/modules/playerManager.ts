@@ -29,6 +29,13 @@ export default class PlayerManager extends Map<string, BotPlayer> {
         deaf: true
       }
 
+      const loggerInfo = {
+        guildId: guild.id,
+        shardId: guild.shardId,
+        nodeName: node.name,
+        region: channel?.rtcRegion ?? 'auto'
+      }
+
       try {
         // force disconnect from channel if player is not existing
 
@@ -38,24 +45,24 @@ export default class PlayerManager extends Map<string, BotPlayer> {
         }
 
         logger.info(
-          { botVoiceStateVoiceId: guild.members.me?.voice.channelId, sessionId: guild.members.me?.voice.sessionId },
+          {
+            botVoiceStateVoiceId: guild.members.me?.voice.channelId,
+            sessionId: guild.members.me?.voice.sessionId,
+            ...loggerInfo
+          },
           'Bot voice info'
         )
         player = await node.joinChannel(playerOptions)
         logger.info(
-          { botVoiceStateVoiceId: guild.members.me?.voice.channelId, sessionId: guild.members.me?.voice.sessionId },
+          {
+            botVoiceStateVoiceId: guild.members.me?.voice.channelId,
+            sessionId: guild.members.me?.voice.sessionId,
+            ...loggerInfo
+          },
           'Bot voice info 2'
         )
       } catch (err) {
-        const loggerInfo = {
-          guildId: guild.id,
-          shardId: guild.shardId,
-          nodeName: node.name,
-          region: channel?.rtcRegion ?? 'auto',
-          err
-        }
-
-        logger.error(loggerInfo, "Can't connect to voice channel")
+        logger.error({ ...loggerInfo, err }, "Can't connect to voice channel")
         throw err
 
         // try {
