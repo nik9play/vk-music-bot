@@ -39,17 +39,27 @@ const options: IndomitableOptions = {
         keepOverLimit: (user) => user.id === user.client.user.id
       }
     }),
+
     sweepers: {
       ...Options.DefaultSweeperSettings,
       guildMembers: {
         interval: 1800,
         filter: () => (member) =>
           // remove GuildMember from cache if it is not in voice channel
+          // (member.user.bot && member.id !== member.client.user.id) ||
+          // (!member.voice.channelId && !member.user.bot) ||
+          // (!!member.voice.channelId &&
+          //   member.voice.channelId !== member.guild.members.me?.voice.channelId &&
+          //   !member.user.bot)
           (member.user.bot && member.id !== member.client.user.id) || (!member.voice.channelId && !member.user.bot)
       },
       users: {
         interval: 1800,
         filter: () => (user) => user.bot && user.id !== user.client.user.id
+      },
+      voiceStates: {
+        interval: 1800,
+        filter: () => (voice) => !voice.channelId
       }
     },
     partials: [Partials.GuildMember, Partials.Message, Partials.ThreadMember, Partials.User],
