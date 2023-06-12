@@ -53,7 +53,7 @@ export default class Utils {
   }
 
   public static playlistRegex =
-    /https?:\/\/.*(z=audio_playlist|\/music\/(playlist|album)\/)(-?\d+)[_|/](\d+)([_|/]([a-zA-Z0-9]+))?/
+    /https?:\/\/.*(audio_playlist|\/music\/(playlist|album)\/)(?<owner_id>-?\d+)[_|/](?<id>\d+)([_|/](?<access_key>[a-zA-Z0-9]+))?/
 
   public static trackRegex = /(^|^https?:\/\/.*\/audio)(-?\d+)_(\d+)(_([a-zA-Z0-9]+))?$/
   public static userGroupRegex = /(>(-\d+))|(>([a-zA-Z0-9._]+))/
@@ -62,12 +62,12 @@ export default class Utils {
   public static detectQueryType(query: string): ArgType {
     const playlistMatch = query.match(this.playlistRegex)
 
-    if (playlistMatch) {
+    if (playlistMatch && playlistMatch.groups) {
       return {
         type: 'playlist',
-        owner_id: playlistMatch[3],
-        id: playlistMatch[4],
-        access_key: playlistMatch[6]
+        owner_id: playlistMatch.groups['owner_id'],
+        id: playlistMatch.groups['id'],
+        access_key: playlistMatch.groups['access_key']
       }
     }
 
@@ -168,7 +168,7 @@ export default class Utils {
           .setDescription(
             'Ошибка! Требуется капча. Введите команду </captcha:906533763033464832>, а после введите код с картинки. ' +
               `Если картинки не видно, перейдите по [ссылке](${captcha?.url}).` +
-              '\nЕсли больше не хотите видеть капчу, приобретите **Премиум**. Подробности: </donate:906533685979918396>'
+              '\nЕсли хотите видеть капчу реже, приобретите **Премиум**. Подробности: </donate:906533685979918396>'
           )
           .setColor(0x5181b8)
           .setImage(captcha.url + this.generateRandomCaptchaString())
