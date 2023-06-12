@@ -151,7 +151,7 @@ export class CommandInteractionManager implements BaseInteractionManager {
           description:
             'Ошибка! Требуется капча. Введите команду </captcha:906533763033464832>, а после введите код с картинки. ' +
             `Если картинки не видно, перейдите по [ссылке](${captcha?.url})` +
-            '\nЕсли больше не хотите видеть капчу, приобретите **Премиум**. Подробности: </donate:906533685979918396>',
+            '\nЕсли хотите видеть капчу реже, приобретите **Премиум**. Подробности: </donate:906533685979918396>',
           color: 0x5181b8,
           image: {
             url: captcha.url + Utils.generateRandomCaptchaString()
