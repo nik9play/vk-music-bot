@@ -143,7 +143,7 @@ export default class Utils {
       const captchaSolveResponse = await VK.solveCaptcha(captcha.url)
 
       if (captchaSolveResponse) {
-        logger.info('Captcha solved')
+        logger.info({ url: captcha.url, captchaSolveResponse }, 'Captcha solved')
         params.client.captcha.delete(params.guild.id)
 
         captcha.captcha_key = captchaSolveResponse
