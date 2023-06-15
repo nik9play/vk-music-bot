@@ -59,7 +59,7 @@ const options: IndomitableOptions = {
       },
       voiceStates: {
         interval: 1800,
-        filter: () => (voice) => !voice.channelId
+        filter: () => (voice) => !voice.channelId && voice.id !== voice.client.user.id
       }
     },
     partials: [Partials.GuildMember, Partials.Message, Partials.ThreadMember, Partials.User],
