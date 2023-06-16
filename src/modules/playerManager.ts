@@ -63,14 +63,16 @@ export default class PlayerManager extends Map<string, BotPlayer> {
         )
       } catch (err) {
         logger.error({ ...loggerInfo, err }, "Can't connect to voice channel")
-        throw err
+        // throw err
 
-        // try {
-        //   player = await node.joinChannel(playerOptions)
-        // } catch (err) {
-        //   logger.error(loggerInfo, "Can't connect to voice channel a second time(((")
-        //   throw err
-        // }
+        try {
+          Utils.forceLeave(guild)
+          await Utils.delay(1000)
+          player = await node.joinChannel(playerOptions)
+        } catch (err) {
+          logger.error(loggerInfo, "Can't connect to voice channel a second time(((")
+          throw err
+        }
       }
 
       logger.debug(`New connection @ guild "${guild.id}"`)
