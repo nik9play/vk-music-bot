@@ -17,8 +17,8 @@ const nodes: NodeOption[] = LavalinkServersString.split(';').map((val): NodeOpti
 })
 
 const options: ShoukakuOptions = {
-  reconnectTries: 500,
-  reconnectInterval: 10,
+  reconnectTries: 8,
+  reconnectInterval: 15,
   restTimeout: 60,
   moveOnDisconnect: false,
   resume: false,
