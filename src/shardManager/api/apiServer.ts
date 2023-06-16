@@ -63,7 +63,7 @@ server.post<{ Body: NodeOptionRequestType }>(
   '/api/lavalink-nodes',
   { schema: { body: Type.Strict(NodeOptionRequest) } },
   async (req) => {
-    await manager.ipc?.broadcast({ content: { op: 'addLavalinkNode', node: req.body } }).catch((err) => {
+    await manager.ipc?.broadcast({ content: { op: 'addLavalinkNode', data: req.body } }).catch((err) => {
       logger.error({ err }, "Can't add node with api.")
       return { success: false, error: err.message }
     })
@@ -77,7 +77,7 @@ server.delete<{ Params: NodeDeleteType }>(
   { schema: { params: Type.Strict(NodeDelete) } },
   async (req) => {
     const reply: boolean[] = (await manager.ipc
-      ?.broadcast({ content: { op: 'removeLavalinkNode', nodeName: req.params.name }, repliable: true })
+      ?.broadcast({ content: { op: 'removeLavalinkNode', data: req.params.name }, repliable: true })
       .catch((err) => {
         logger.error({ err }, "Can't remove node with api.")
         return { success: false, error: err.message }
