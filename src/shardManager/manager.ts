@@ -62,7 +62,7 @@ const options: IndomitableOptions = {
         filter: () => (voice) => !voice.channelId && voice.id !== voice.client.user.id
       }
     },
-    partials: [Partials.GuildMember, Partials.Message, Partials.ThreadMember, Partials.User],
+    partials: [Partials.GuildMember, Partials.Message, Partials.ThreadMember, Partials.User, Partials.Channel],
     intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildVoiceStates, GatewayIntentBits.GuildMessages],
     rest: {
       api: process.env.DISCORD_PROXY_URL
@@ -71,6 +71,8 @@ const options: IndomitableOptions = {
   autoRestart: true,
   spawnTimeout: 120_000,
   client: VkMusicBotClient as any,
+  handleConcurrency: true,
+  waitForReady: false,
   token: process.env.DISCORD_TOKEN
 }
 
@@ -119,29 +121,25 @@ export const manager = new Indomitable(options)
 let clientId: string
 
 async function sendStats() {
-  const clustersInfo: ClusterInfo[] | undefined | void = await manager.ipc
-    ?.broadcast({ content: { op: 'clustersInfo' }, repliable: true })
-    .catch((err) => {
-      logger.error({ err }, "Can't get clustersInfo.")
-      return
-    })
+  const clustersInfo = (await manager.broadcast({ content: { op: 'clustersInfo' }, repliable: true }).catch((err) => {
+    logger.error({ err }, "Can't get clustersInfo.")
+    return
+  })) as ClusterInfo[] | undefined
 
   if (!clustersInfo) return
 
   const guildCount: number = clustersInfo.reduce((acc, info) => acc + info.guilds, 0)
 
-  await manager.ipc
-    ?.broadcast({ content: { op: 'setPresence', data: `/help | ${(guildCount / 1000).toFixed(1)}k серверов` } })
+  await manager
+    .broadcast({ content: { op: 'setPresence', data: `/help | ${(guildCount / 1000).toFixed(1)}k серверов` } })
     .catch((err) => {
       logger.error({ err }, "Can't set presence.")
     })
 
-  const lavalinkInfo: NodeInfo[] | undefined = await manager.ipc
-    ?.send(0, { content: { op: 'getLavalinkNodes' }, repliable: true })
-    .catch((err) => {
-      logger.error({ err }, "Can't get lavalink nodes with api.")
-      return { success: false, error: err.message }
-    })
+  const lavalinkInfo = (await manager.send(0, { content: { op: 'getLavalinkNodes' }, repliable: true }).catch((err) => {
+    logger.error({ err }, "Can't get lavalink nodes with api.")
+    return { success: false, error: err.message }
+  })) as NodeInfo[] | undefined
 
   if (!lavalinkInfo) return
 
@@ -194,10 +192,10 @@ async function sendStats() {
   }
 
   if (!clientId)
-    clientId = await manager.ipc?.send(0, { content: { op: 'clientId' }, repliable: true }).catch((err) => {
+    clientId = (await manager?.send(0, { content: { op: 'clientId' }, repliable: true }).catch((err) => {
       logger.error({ err }, "Can't get client id.")
       return
-    })
+    })) as string
 
   // SDC
   try {
