@@ -30,13 +30,13 @@ server.get<{ Params: PlayersOptionsType }>(
   { schema: { params: Type.Strict(PlayersOptions) } },
   async (req) => {
     if (req.params.action === 'clear-queues')
-      await manager.ipc?.broadcast({ content: { op: 'clearQueues' } }).catch((err) => {
+      await manager.broadcast({ content: { op: 'clearQueues' } }).catch((err) => {
         logger.error({ err }, "Can't clear queues with api.")
         return { success: false, error: err.message }
       })
 
     if (req.params.action === 'destroy-all')
-      await manager.ipc?.broadcast({ content: { op: 'destroyAll' } }).catch((err) => {
+      await manager.broadcast({ content: { op: 'destroyAll' } }).catch((err) => {
         logger.error({ err }, "Can't destroy players with api.")
         return { success: false, error: err.message }
       })
@@ -46,12 +46,10 @@ server.get<{ Params: PlayersOptionsType }>(
 )
 
 server.get('/api/lavalink-nodes', async () => {
-  const list: any[] = await manager.ipc
-    ?.send(0, { content: { op: 'getLavalinkNodes' }, repliable: true })
-    .catch((err) => {
-      logger.error({ err }, "Can't get lavalink nodes with api.")
-      return { success: false, error: err.message }
-    })
+  const list = (await manager.send(0, { content: { op: 'getLavalinkNodes' }, repliable: true }).catch((err: any) => {
+    logger.error({ err }, "Can't get lavalink nodes with api.")
+    return { success: false, error: err.message }
+  })) as any[]
 
   return {
     success: true,
@@ -63,7 +61,7 @@ server.post<{ Body: NodeOptionRequestType }>(
   '/api/lavalink-nodes',
   { schema: { body: Type.Strict(NodeOptionRequest) } },
   async (req) => {
-    await manager.ipc?.broadcast({ content: { op: 'addLavalinkNode', data: req.body } }).catch((err) => {
+    await manager.broadcast({ content: { op: 'addLavalinkNode', data: req.body } }).catch((err) => {
       logger.error({ err }, "Can't add node with api.")
       return { success: false, error: err.message }
     })
@@ -76,8 +74,8 @@ server.delete<{ Params: NodeDeleteType }>(
   '/api/lavalink-nodes/:name',
   { schema: { params: Type.Strict(NodeDelete) } },
   async (req) => {
-    const reply: boolean[] = (await manager.ipc
-      ?.broadcast({ content: { op: 'removeLavalinkNode', data: req.params.name }, repliable: true })
+    const reply: boolean[] = (await manager
+      .broadcast({ content: { op: 'removeLavalinkNode', data: req.params.name }, repliable: true })
       .catch((err) => {
         logger.error({ err }, "Can't remove node with api.")
         return { success: false, error: err.message }
