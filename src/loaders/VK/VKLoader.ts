@@ -104,10 +104,20 @@ export default class VKLoader implements BaseLoader {
       })
   }
 
+  public checkQuery(query: string): boolean {
+    return (
+      this.userGroupNumberUrlRegex.test(query) ||
+      this.userGroupTextUrlRegex.test(query) ||
+      this.userGroupRegex.test(query) ||
+      this.trackRegex.test(query) ||
+      this.playlistRegex.test(query)
+    )
+  }
+
   public async resolveTracks(
     query: string,
-    count?: number,
-    offset?: number,
+    count?: number | null,
+    offset?: number | null,
     captcha?: CaptchaInfo
   ): Promise<[BotTrack[], EmbedBuilder, string[]]> {
     count = count ?? 50

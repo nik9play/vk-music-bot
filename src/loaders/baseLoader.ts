@@ -35,10 +35,12 @@ export default abstract class BaseLoader {
     this.client = client
   }
 
+  public abstract checkQuery(query: string): boolean
+
   public abstract resolveTracks(
     query: string,
-    count?: number,
-    offset?: number,
+    count?: number | null,
+    offset?: number | null,
     captcha?: CaptchaInfo
   ): Promise<[BotTrack[], EmbedBuilder, string[]]>
 }

@@ -15,6 +15,8 @@ export default class PlayerManager extends Map<string, BotPlayer> {
   }
 
   async handle(guild: Guild, voiceChannelId: string, textChannelId: string, node: Node, tracks: BotTrack[]) {
+    if (tracks.length === 0) return null
+
     const existing = this.get(guild.id)
     if (!existing) {
       if (this.client.shoukaku.players.has(guild.id)) return 'Busy'

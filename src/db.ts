@@ -8,26 +8,26 @@ export const redis = new Redis(process.env.REDIS_URL)
 type ServerConfigSchemaModel = {
   guildId: string
   premium?: boolean
+  volume?: number
+  defaultSource?: string
   announcements?: boolean
   djMode?: boolean
   djRoleName?: string
-  djRoleId?: string
   prefix?: string
   enable247?: boolean
-  menuMessageId?: string
 }
 
 const serverConfigSchema = new Schema<ServerConfigSchemaModel>(
   {
     guildId: { type: String, required: true, index: true },
     premium: Boolean,
+    volume: Number,
+    defaultSource: String,
     announcements: Boolean,
     djMode: Boolean,
     djRoleName: String,
-    djRoleId: String,
     prefix: String,
-    enable247: Boolean,
-    menuMessageId: String
+    enable247: Boolean
   },
   { versionKey: false }
 )
@@ -48,9 +48,18 @@ redis.on('connect', () => {
 //   'prefix' | 'premium' | 'announcements' | 'djMode' | 'djRoleName'
 // >
 
-type ServerConfigType = Required<
-  Pick<ServerConfigSchemaModel, 'premium' | 'announcements' | 'djMode' | 'djRoleName' | 'prefix' | 'enable247'>
->
+type ServerConfigType = Required<ServerConfigSchemaModel>
+
+const defaultConfig = {
+  premium: false,
+  volume: 100,
+  defaultSource: 'vk',
+  announcements: true,
+  djMode: false,
+  djRoleName: 'DJ',
+  prefix: '-v',
+  enable247: false
+}
 
 export async function getConfig(guildId: string): Promise<ServerConfigType> {
   let config: ServerConfigSchemaModel | null = null
@@ -76,12 +85,7 @@ export async function getConfig(guildId: string): Promise<ServerConfigType> {
 
   return {
     guildId,
-    premium: false,
-    announcements: true,
-    djMode: false,
-    djRoleName: 'DJ',
-    prefix: '-v',
-    enable247: false,
+    ...defaultConfig,
     ...config
   }
 }
@@ -96,12 +100,7 @@ export async function updateConfig(guildId: string, data: Partial<ServerConfigSc
   await redis.set(`config/${guildId}`, JSON.stringify(config))
 
   return {
-    premium: false,
-    announcements: true,
-    djMode: false,
-    djRoleName: 'DJ',
-    prefix: '-v',
-    enable247: false,
+    ...defaultConfig,
     ...config
   }
 }

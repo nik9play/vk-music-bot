@@ -9,6 +9,8 @@ import { ButtonInteractionManager } from './interactions/buttonInteractions.js'
 import { SelectMenuInteractionManager } from './interactions/selectMenuInteractions.js'
 import { ModalInteractionManager } from './interactions/modalInteractions.js'
 import { IPCManager } from './events/ipcManager.js'
+import BaseLoader from 'loaders/baseLoader.js'
+import VKLoader from 'loaders/VK/VKLoader.js'
 
 export interface CaptchaInfo {
   type: 'play' | 'search'
@@ -34,6 +36,8 @@ export class VkMusicBotClient extends Client {
   public latestMenus = new Collection<string, Message>()
   public playerTrackErrorTrackers: Collection<string, PlayerTrackErrorTracker> = new Collection()
 
+  public loaders: Collection<string, BaseLoader> = new Collection()
+
   public playerManager: PlayerManager
   public shoukaku: ShoukakuManager
 
@@ -54,6 +58,9 @@ export class VkMusicBotClient extends Client {
     this.selectMenuInteractionManager = new SelectMenuInteractionManager(this)
     this.modalInteractionManager = new ModalInteractionManager(this)
     this.ipcManager = new IPCManager(this)
+
+    this.loaders.set('vk', new VKLoader(this))
+    this.loaders.set('ya', new VKLoader(this))
 
     this.once(Events.ClientReady, async () => {
       //this.manager.init(this.user?.id)
