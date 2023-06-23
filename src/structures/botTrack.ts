@@ -5,8 +5,8 @@ type VkTrackInfo = {
   title: string
   duration: number
   thumb?: string
-  id?: string
-  owner_id?: string
+  id?: number
+  owner_id?: number
   access_key?: string
 }
 
@@ -29,6 +29,12 @@ export default class BotTrack {
 
   get thumb() {
     return this.vkTrackInfo?.thumb
+  }
+
+  get vkFullId() {
+    if (this.vkTrackInfo?.id && this.vkTrackInfo?.owner_id) {
+      return `${this.vkTrackInfo.owner_id}_${this.vkTrackInfo.id}`
+    }
   }
 
   constructor(loadedTrack?: Track, identifier?: string, vkTrackInfo?: VkTrackInfo) {
