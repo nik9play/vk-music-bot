@@ -126,6 +126,12 @@ export default class VKLoader implements BaseLoader {
 
     const countQuery = Math.ceil(count / 50) * 50
 
+    const captchaInfo = {
+      captcha_sid: captcha?.sid,
+      captcha_key: captcha?.key,
+      captcha_index: captcha?.index
+    }
+
     // let tracks: BotTrack[]
     // let wrongTracks: string[]
     // let embed: EmbedBuilder
@@ -139,8 +145,7 @@ export default class VKLoader implements BaseLoader {
         access_key: playlistMatch.groups['access_key'],
         audio_count: countQuery,
         audio_offset: offset,
-        captcha_sid: captcha?.sid,
-        captcha_key: captcha?.key
+        ...captchaInfo
       }
 
       const response = await this.makeRequest<VKPlaylistResponse>('execute.getPlaylist', urlParams)
@@ -267,8 +272,7 @@ export default class VKLoader implements BaseLoader {
         owner_id: groupId,
         audio_count: countQuery,
         audio_offset: offset,
-        captcha_sid: captcha?.sid,
-        captcha_key: captcha?.key
+        ...captchaInfo
       })
 
       if (isVKErrorResponse(response)) {
@@ -319,8 +323,7 @@ export default class VKLoader implements BaseLoader {
         owner_id: userId,
         audio_count: countQuery,
         audio_offset: offset,
-        captcha_sid: captcha?.sid,
-        captcha_key: captcha?.key
+        ...captchaInfo
       })
 
       if (isVKErrorResponse(response)) {
@@ -379,7 +382,8 @@ export default class VKLoader implements BaseLoader {
       const accessKey = trackMatch.groups['access_key']
 
       const response = await this.makeRequest<VKTrack[]>('audio.getById', {
-        audios: `${ownerId}_${id}${accessKey ? '_' + accessKey : ''}`
+        audios: `${ownerId}_${id}${accessKey ? '_' + accessKey : ''}`,
+        ...captchaInfo
       })
 
       if (isVKErrorResponse(response)) {
@@ -393,7 +397,8 @@ export default class VKLoader implements BaseLoader {
 
     if (!oneTrack) {
       const response = await this.makeRequest<{ count: number; items: VKTrack[] }>('audio.search', {
-        q: Utils.escapeQuery(query)
+        q: Utils.escapeQuery(query),
+        ...captchaInfo
       })
 
       if (isVKErrorResponse(response)) {
