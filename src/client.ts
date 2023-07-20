@@ -9,8 +9,8 @@ import { ButtonInteractionManager } from './interactions/buttonInteractions.js'
 import { SelectMenuInteractionManager } from './interactions/selectMenuInteractions.js'
 import { ModalInteractionManager } from './interactions/modalInteractions.js'
 import { IPCManager } from './events/ipcManager.js'
-import BaseLoader from 'loaders/baseLoader.js'
-import VKLoader from 'loaders/VK/VKLoader.js'
+import BaseLoader from './loaders/baseLoader.js'
+import VKLoader from './loaders/VK/VKLoader.js'
 
 export interface CaptchaInfo {
   type: 'play' | 'search'
