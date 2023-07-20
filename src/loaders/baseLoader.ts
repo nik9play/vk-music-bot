@@ -16,13 +16,15 @@ export interface CaptchaInfo {
 export class LoaderError extends Error {}
 
 export class CaptchaLoaderError extends LoaderError {
-  public captcha_sid: string
+  public captcha_sid: number
   public captcha_url: string
+  public captcha_index: number
 
-  constructor(captcha_sid: string, captcha_url: string) {
+  constructor(captcha_sid: number, captcha_url: string, captcha_index: number) {
     super('Требуется капча.')
     this.captcha_sid = captcha_sid
     this.captcha_url = captcha_url
+    this.captcha_index = captcha_index
   }
 }
 

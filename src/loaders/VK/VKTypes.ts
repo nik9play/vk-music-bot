@@ -10,8 +10,10 @@ export interface VKTrack {
   access_key?: string
   duration: number
   url: string
-  thumb?: {
-    photo_300: string
+  album?: {
+    thumb?: {
+      photo_300: string
+    }
   }
 }
 
@@ -42,28 +44,35 @@ export interface VKUserInfo {
 }
 
 export interface VKPlaylistResponse {
-  playlist: VKPlaylistInfo
-  audios: VKTrack[]
+  response: {
+    playlist: VKPlaylistInfo
+    audios: VKTrack[]
+  }
 }
 
 export interface VKGroupResponse {
-  owner: VKGroupInfo
-  audios: { count: number; items: VKTrack[] }
+  response: {
+    owner: VKGroupInfo
+    audios: { count: number; items: VKTrack[] }
+  }
 }
 
 export interface VKUserResponse {
-  owner: VKUserInfo
-  audios: { count: number; items: VKTrack[] }
-}
-
-export interface VKError {
-  error: {
-    error_msg: string
-    error_code: number
-    captcha_sid?: string
-    captcha_url?: string
+  response: {
+    owner: VKUserInfo
+    audios: { count: number; items: VKTrack[] }
   }
 }
+
+// export interface VKError {
+//   error: {
+//     error_msg: string
+//     error_code: number
+//     captcha_sid?: number
+//     captcha_url?: string
+//     captcha_index?: number
+//   }
+// }
 
 export enum VKErrorCode {
   CAPTCHA = 14,
@@ -75,20 +84,23 @@ export enum VKErrorCode {
 }
 
 export interface VKErrorResponse {
-  error?: VKError
-  execute_errors?: VKError[]
+  code: number
+  message: string
+  captchaSid?: number
+  captchaUrl?: string
+  captchaIndex: number
 }
 
-export interface VKSingleErrorResponse extends VKErrorResponse {
-  error: VKError
-}
+// export interface VKSingleErrorResponse extends VKErrorResponse {
+//   error: VKError
+// }
 
-export interface VKExecuteErrorsResponse extends VKErrorResponse {
-  execute_errors: VKError[]
-}
+// export interface VKExecuteErrorsResponse extends VKErrorResponse {
+//   execute_errors: VKError[]
+// }
 
 export const isVKErrorResponse = (response: any): response is VKErrorResponse => {
-  return (response as VKErrorResponse).error !== undefined || (response as VKErrorResponse).execute_errors?.length !== 0
+  return response?.name === 'APIError' || response?.name === 'ExecuteError' || response?.vk
 }
 
 // export const isVKSingleError = (response: VKErrorResponse): response is VKSingleErrorResponse => {

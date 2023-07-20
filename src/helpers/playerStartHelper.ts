@@ -102,7 +102,12 @@ export function generatePlayerStartMessage(player: BotPlayer, track: BotTrack): 
           name: 'Сейчас играет'
         })
         .setTitle(Utils.escapeFormat(track.title).slice(0, 100))
-        .setURL(Utils.generateTrackUrl(track.vkTrackInfo?.id as string, track.vkTrackInfo?.access_key))
+        .setURL(
+          Utils.generateTrackUrl(
+            `${track.vkTrackInfo?.owner_id}_${track.vkTrackInfo?.id}`,
+            track.vkTrackInfo?.access_key
+          )
+        )
         // .setAuthor({
         //   name: `Сейчас играет ${Utils.escapeFormat(track.author).slice(0, 100)} — ${Utils.escapeFormat(
         //     track.title

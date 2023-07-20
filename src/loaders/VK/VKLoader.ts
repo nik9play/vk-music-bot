@@ -1,20 +1,19 @@
-import BotTrack from 'structures/botTrack.js'
+import BotTrack from '../../structures/botTrack.js'
 import BaseLoader, { CaptchaInfo, CaptchaLoaderError, LoaderError } from '../baseLoader.js'
 import { fetch } from 'undici'
 import { EmbedBuilder } from 'discord.js'
 import {
-  VKError,
   VKErrorCode,
   VKErrorResponse,
   VKGroupResponse,
   VKPlaylistResponse,
-  VKResponse,
   VKTrack,
   VKUserResponse,
   isVKErrorResponse
 } from './VKTypes.js'
-import Utils from 'utils.js'
+import Utils from '../../utils.js'
 import { VkMusicBotClient } from 'client.js'
+import logger from '../../logger.js'
 
 export default class VKLoader implements BaseLoader {
   public get name() {
@@ -46,34 +45,31 @@ export default class VKLoader implements BaseLoader {
   private userGroupNumberUrlRegex = /^https:\/\/vk\.com\/(audios?(?<owner_id>-?\d+))$/
   private userGroupTextUrlRegex = /^https:\/\/vk\.com\/(?<screen_name>[a-zA-Z0-9._]+)$/
 
-  private prepareParams(params: Record<string, string | number | undefined | null>): URLSearchParams {
-    return new URLSearchParams(
-      Object.fromEntries(
-        Object.entries(params)
-          .filter(([, value]) => value !== null && value !== undefined)
-          .map(([key, value]) => [key, value?.toString()])
-      ) as Record<string, string>
-    )
+  private prepareParams(params: Record<string, string | number | undefined | null>): Record<string, string | number> {
+    return Object.fromEntries(
+      Object.entries(params).filter(([, value]) => value !== null && value !== undefined)
+    ) as Record<string, string | number>
   }
 
   private async makeRequest<T>(
     path: string,
     params: Record<string, string | number | undefined | null>
   ): Promise<T | VKErrorResponse> {
-    const urlParams = this.prepareParams(params)
+    const body = this.prepareParams(params)
 
-    const response = await fetch(`${this.url}/${path}?${urlParams}`)
+    const response = await fetch(`${this.url}/${path}`, {
+      method: 'POST',
+      body: JSON.stringify(body)
+    })
     const json = await response.json()
-    if (response.ok) return (json as VKResponse<T>).response
+    if (response.ok) return json as T
 
     return json as VKErrorResponse
   }
 
-  private getErrorOrThrowCaptcha(response: VKErrorResponse) {
-    const error = response.error?.error ?? ((response.execute_errors as VKError[])[0] as VKError).error
-
-    if (error.error_code === VKErrorCode.CAPTCHA) {
-      throw new CaptchaLoaderError(error.captcha_sid as string, error.captcha_url as string)
+  private getErrorOrThrowCaptcha(error: VKErrorResponse) {
+    if (error.code === VKErrorCode.CAPTCHA) {
+      throw new CaptchaLoaderError(error.captchaSid as number, error.captchaUrl as string, error.captchaIndex)
     }
 
     return error
@@ -93,7 +89,7 @@ export default class VKLoader implements BaseLoader {
         const unresolvedTrack = new BotTrack(undefined, e.url, {
           author: e.artist,
           title: e.title,
-          thumb: e.thumb?.photo_300,
+          thumb: e.album?.thumb?.photo_300,
           duration: e.duration,
           id: e.id,
           owner_id: e.owner_id,
@@ -143,6 +139,7 @@ export default class VKLoader implements BaseLoader {
         id: playlistMatch.groups['id'],
         owner_id: playlistMatch.groups['owner_id'],
         access_key: playlistMatch.groups['access_key'],
+        need_playlist: 1,
         audio_count: countQuery,
         audio_offset: offset,
         ...captchaInfo
@@ -153,7 +150,7 @@ export default class VKLoader implements BaseLoader {
       if (isVKErrorResponse(response)) {
         const error = this.getErrorOrThrowCaptcha(response)
 
-        switch (error.error_code) {
+        switch (error.code) {
           case VKErrorCode.ACCESS_DENIED:
           case VKErrorCode.ACCESS_DENIED_ALBUM:
           case VKErrorCode.ACCESS_DENIED_AUDIO:
@@ -167,20 +164,20 @@ export default class VKLoader implements BaseLoader {
         }
       }
 
-      if (response.audios.length === 0) {
+      if (response.response.audios.length === 0) {
         throw new LoaderError('Плейлист пуст.')
       }
-
-      let description: string | null = Utils.escapeFormat(response.playlist.description)
+      logger.info(response)
+      let description: string | null = Utils.escapeFormat(response.response.playlist.description)
       description = description.length === 0 ? null : description
 
-      const tracks = response.audios.slice(0, count)
+      const tracks = response.response.audios.slice(0, count)
 
       const embed = new EmbedBuilder()
-        .setTitle(Utils.escapeFormat(response.playlist.title).slice(0, 100))
+        .setTitle(Utils.escapeFormat(response.response.playlist.title).slice(0, 100))
         .setURL(
-          `https://vk.com/music/playlist/${response.playlist.owner_id}_${response.playlist.id}${
-            response.playlist.access_key ? '_' + response.playlist.access_key : ''
+          `https://vk.com/music/playlist/${response.response.playlist.owner_id}_${response.response.playlist.id}${
+            response.response.playlist.access_key ? '_' + response.response.playlist.access_key : ''
           }`
         )
         .setDescription(description)
@@ -194,14 +191,14 @@ export default class VKLoader implements BaseLoader {
           },
           {
             name: 'Всего треков',
-            value: response.playlist.count.toString(),
+            value: response.response.playlist.count.toString(),
             inline: true
           }
         ])
         .setFooter({
           text: 'Чтобы добавить больше 50 треков, введите количество треков в аргумент "количество".'
         })
-        .setThumbnail(response.playlist.photo?.photo_300 ?? null)
+        .setThumbnail(response.response.playlist.photo?.photo_300 ?? null)
 
       const wrongTracks: string[] = []
       return [this.convertToBotTracks(tracks, wrongTracks), embed, wrongTracks]
@@ -278,7 +275,7 @@ export default class VKLoader implements BaseLoader {
       if (isVKErrorResponse(response)) {
         const error = this.getErrorOrThrowCaptcha(response)
 
-        switch (error.error_code) {
+        switch (error.code) {
           case VKErrorCode.ACCESS_DENIED:
           case VKErrorCode.ACCESS_DENIED_ALBUM:
           case VKErrorCode.ACCESS_DENIED_AUDIO:
@@ -290,15 +287,15 @@ export default class VKLoader implements BaseLoader {
         }
       }
 
-      if (response.audios.items.length === 0) {
+      if (response.response.audios.items.length === 0) {
         throw new LoaderError('Аудио пусты.')
       }
 
-      const tracks = response.audios.items.slice(0, count)
+      const tracks = response.response.audios.items.slice(0, count)
 
       const embed = new EmbedBuilder()
-        .setTitle(Utils.escapeFormat(response.owner.name).slice(0, 100))
-        .setURL(`https://vk.com/club${response.owner.id}`)
+        .setTitle(Utils.escapeFormat(response.response.owner.name).slice(0, 100))
+        .setURL(`https://vk.com/club${response.response.owner.id}`)
         // .setDescription(description)
         .setColor(this.color)
         .setAuthor({
@@ -314,7 +311,7 @@ export default class VKLoader implements BaseLoader {
         .setFooter({
           text: 'Чтобы добавить больше 50 треков, введите количество треков в аргумент "количество".'
         })
-        .setThumbnail(response.owner.photo_200 ?? null)
+        .setThumbnail(response.response.owner.photo_200 ?? null)
 
       const wrongTracks: string[] = []
       return [this.convertToBotTracks(tracks, wrongTracks), embed, wrongTracks]
@@ -329,7 +326,7 @@ export default class VKLoader implements BaseLoader {
       if (isVKErrorResponse(response)) {
         const error = this.getErrorOrThrowCaptcha(response)
 
-        switch (error.error_code) {
+        switch (error.code) {
           case VKErrorCode.ACCESS_DENIED:
           case VKErrorCode.ACCESS_DENIED_ALBUM:
           case VKErrorCode.ACCESS_DENIED_AUDIO:
@@ -343,15 +340,17 @@ export default class VKLoader implements BaseLoader {
         }
       }
 
-      if (response.audios.items.length === 0) {
+      if (response.response.audios.items.length === 0) {
         throw new LoaderError('Аудио пусты.')
       }
 
-      const tracks = response.audios.items.slice(0, count)
+      const tracks = response.response.audios.items.slice(0, count)
 
       const embed = new EmbedBuilder()
-        .setTitle(Utils.escapeFormat(`${response.owner.first_name} ${response.owner.last_name}`).slice(0, 100))
-        .setURL(`https://vk.com/id${response.owner.id}`)
+        .setTitle(
+          Utils.escapeFormat(`${response.response.owner.first_name} ${response.response.owner.last_name}`).slice(0, 100)
+        )
+        .setURL(`https://vk.com/id${response.response.owner.id}`)
         .setColor(this.color)
         .setAuthor({
           name: 'Добавлены треки пользователя'
@@ -366,7 +365,7 @@ export default class VKLoader implements BaseLoader {
         .setFooter({
           text: 'Чтобы добавить больше 50 треков, введите количество треков в аргумент "количество".'
         })
-        .setThumbnail(response.owner.photo_200 ?? null)
+        .setThumbnail(response.response.owner.photo_200 ?? null)
 
       const wrongTracks: string[] = []
       return [this.convertToBotTracks(tracks, wrongTracks), embed, wrongTracks]
@@ -424,7 +423,7 @@ export default class VKLoader implements BaseLoader {
           value: Utils.formatTime(oneTrack.duration * 1000)
         }
       ])
-      .setThumbnail(oneTrack.thumb?.photo_300 ?? null)
+      .setThumbnail(oneTrack.album?.thumb?.photo_300 ?? null)
 
     const wrongTracks: string[] = []
     return [this.convertToBotTracks([oneTrack], wrongTracks), embed, wrongTracks]
