@@ -9,7 +9,7 @@ import {
   TextBasedChannel,
   VoiceBasedChannel
 } from 'discord.js'
-import { CaptchaInfo, VkMusicBotClient } from './client.js'
+import { VkMusicBotClient } from './client.js'
 import logger from './logger.js'
 import BotPlayer from './modules/botPlayer.js'
 import { Constants } from 'shoukaku'
@@ -19,6 +19,7 @@ import VK from './apis/VK.js'
 import { playCommandHandler } from './helpers/playCommandHelper.js'
 import { CommandExecuteParams } from './interactions/commandInteractions.js'
 import { searchCommandHandler } from './helpers/searchCommandHelper.js'
+import { CaptchaInfo } from './loaders/baseLoader.js'
 
 export interface ArgType {
   type: 'group' | 'playlist' | 'user' | 'track' | 'unknown'
@@ -80,12 +81,12 @@ export default class Utils {
         logger.info({ url: captcha.url, captchaSolveResponse }, 'Captcha solved')
         params.client.captcha.delete(params.guild.id)
 
-        captcha.captcha_key = captchaSolveResponse
+        captcha.key = captchaSolveResponse
 
         params.captcha = captcha
 
         if (captcha.type === 'play') {
-          await playCommandHandler(params, captcha.query, captcha.count, captcha.offset)
+          await playCommandHandler(params, captcha.query, captcha.count, captcha.offset, 'vk')
           return null
         }
 
@@ -307,5 +308,11 @@ export default class Utils {
 
   public static delay(ms: number): Promise<void> {
     return new Promise((resolve) => setTimeout(resolve, ms))
+  }
+
+  public static generateErrorId(): string {
+    return Math.random()
+      .toString(36)
+      .substring(2, 8 + 2)
   }
 }
