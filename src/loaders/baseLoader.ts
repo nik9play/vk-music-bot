@@ -1,6 +1,6 @@
-import { VkMusicBotClient } from 'client.js'
+import { VkMusicBotClient } from '../client.js'
 import { EmbedBuilder } from 'discord.js'
-import BotTrack from 'structures/botTrack.js'
+import BotTrack from '../structures/botTrack.js'
 
 export interface CaptchaInfo {
   type: 'play' | 'search'

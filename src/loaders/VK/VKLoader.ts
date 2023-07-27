@@ -12,7 +12,7 @@ import {
   isVKErrorResponse
 } from './VKTypes.js'
 import Utils from '../../utils.js'
-import { VkMusicBotClient } from 'client.js'
+import { VkMusicBotClient } from '../../client.js'
 import logger from '../../logger.js'
 
 export default class VKLoader implements BaseLoader {

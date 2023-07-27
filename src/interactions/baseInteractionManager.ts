@@ -13,7 +13,7 @@ import {
 import { VkMusicBotClient } from '../client.js'
 import Utils, { Meta } from '../utils.js'
 import logger from '../logger.js'
-import { CaptchaInfo } from 'loaders/baseLoader.js'
+import { CaptchaInfo } from '../loaders/baseLoader.js'
 
 export interface BaseExecuteParams {
   guild: Guild
