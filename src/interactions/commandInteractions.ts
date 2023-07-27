@@ -1,4 +1,11 @@
-import { ChatInputCommandInteraction, Collection, Events, Interaction, PermissionsBitField } from 'discord.js'
+import {
+  ChatInputCommandInteraction,
+  Collection,
+  EmbedBuilder,
+  Events,
+  Interaction,
+  PermissionsBitField
+} from 'discord.js'
 import BaseInteractionManager, {
   BaseCustomInteraction,
   BaseExecuteParams,
@@ -176,14 +183,18 @@ export class CommandInteractionManager implements BaseInteractionManager {
         meta
       })
       .catch(async (err) => {
-        logger.error({ err, ...meta }, 'Error executing command')
+        const errorId = Utils.generateErrorId()
+        logger.error({ err, ...meta, errorId }, 'Error executing command')
 
         await respond({
           embeds: [
-            Utils.generateErrorMessage(
-              'Произошла непредвиденная ошибка. Обратитесь за поддержкой в' +
-                ' [группу ВК](https://vk.com/vkmusicbotds) или на [сервер Discord](https://discord.com/invite/3ts2znePu7).'
-            )
+            new EmbedBuilder()
+              .setDescription(
+                'Произошла непредвиденная ошибка. Обратитесь за поддержкой в' +
+                  ' [группу ВК](https://vk.com/vkmusicbotds) или на [сервер Discord](https://discord.com/invite/3ts2znePu7).'
+              )
+              .setFooter({ text: `ID ошибки: ${errorId}` })
+              .setColor(0xed4245)
           ]
         }).catch((err) => logger.error({ err }, 'Error while sending error message'))
       })
