@@ -17,6 +17,10 @@ import logger from '../../logger.js'
 
 export default class VKLoader implements BaseLoader {
   public get name() {
+    return 'vk'
+  }
+
+  public get displayName() {
     return 'VK'
   }
 
@@ -57,14 +61,17 @@ export default class VKLoader implements BaseLoader {
   ): Promise<T | VKErrorResponse> {
     const body = this.prepareParams(params)
 
-    const response = await fetch(`${this.url}/${path}`, {
+    const response = await fetch(`${this.url}/api/raw/${path}`, {
       method: 'POST',
+      headers: {
+        Authorization: `Bearer ${process.env.VK_PROXY_TOKEN}`
+      },
       body: JSON.stringify(body)
     })
-    const json = await response.json()
-    if (response.ok) return json as T
 
-    return json as VKErrorResponse
+    if (response.ok) return (await response.json()) as T
+
+    return (await response.json()) as VKErrorResponse
   }
 
   private getErrorOrThrowCaptcha(error: VKErrorResponse) {
@@ -73,6 +80,18 @@ export default class VKLoader implements BaseLoader {
     }
 
     return error
+  }
+
+  private getTrackUrl(url: string, ownerId: number, id: number, accessKey?: string): string {
+    const params = new URLSearchParams({
+      url,
+      ownerId: ownerId.toString(),
+      id: id.toString()
+    })
+
+    if (accessKey) params.append('accessKey', accessKey)
+
+    return `${this.url}/stream?${params}`
   }
 
   private convertToBotTracks(tracks: VKTrack[], wrongTrackNames: string[]) {
@@ -86,15 +105,20 @@ export default class VKLoader implements BaseLoader {
         }
       })
       .map((e) => {
-        const unresolvedTrack = new BotTrack(undefined, e.url, {
-          author: e.artist,
-          title: e.title,
-          thumb: e.album?.thumb?.photo_300,
-          duration: e.duration,
-          id: e.id,
-          owner_id: e.owner_id,
-          access_key: e.access_key
-        })
+        const unresolvedTrack = new BotTrack(
+          this.name,
+          undefined,
+          this.getTrackUrl(e.url, e.owner_id, e.id, e.access_key),
+          {
+            author: e.artist,
+            title: e.title,
+            thumb: e.album?.thumb?.photo_300,
+            duration: e.duration,
+            id: e.id,
+            ownerId: e.owner_id,
+            accessKey: e.access_key
+          }
+        )
 
         return unresolvedTrack
       })
@@ -223,7 +247,7 @@ export default class VKLoader implements BaseLoader {
       }
 
       if (response.type === 'group') {
-        groupId = response.object_id.toString()
+        groupId = `-${response.object_id.toString()}`
       }
     }
 
@@ -258,7 +282,7 @@ export default class VKLoader implements BaseLoader {
 
     if (userGroupNumberUrlMatch && userGroupNumberUrlMatch.groups) {
       if (userGroupNumberUrlMatch.groups['owner_id'].startsWith('-')) {
-        groupId = userGroupNumberUrlMatch.groups['owner_id'].slice(1)
+        groupId = userGroupNumberUrlMatch.groups['owner_id']
       } else {
         userId = userGroupNumberUrlMatch.groups['owner_id']
       }
@@ -269,6 +293,7 @@ export default class VKLoader implements BaseLoader {
         owner_id: groupId,
         audio_count: countQuery,
         audio_offset: offset,
+        need_owner: '1',
         ...captchaInfo
       })
 
@@ -320,6 +345,7 @@ export default class VKLoader implements BaseLoader {
         owner_id: userId,
         audio_count: countQuery,
         audio_offset: offset,
+        need_owner: '1',
         ...captchaInfo
       })
 
@@ -371,7 +397,7 @@ export default class VKLoader implements BaseLoader {
       return [this.convertToBotTracks(tracks, wrongTracks), embed, wrongTracks]
     }
 
-    let oneTrack: VKTrack | null = null
+    let oneTrack: VKTrack | null | undefined = null
 
     const trackMatch = query.match(this.trackRegex)
 
@@ -397,6 +423,7 @@ export default class VKLoader implements BaseLoader {
     if (!oneTrack) {
       const response = await this.makeRequest<{ count: number; items: VKTrack[] }>('audio.search', {
         q: Utils.escapeQuery(query),
+        count: 1,
         ...captchaInfo
       })
 
@@ -406,7 +433,13 @@ export default class VKLoader implements BaseLoader {
         throw new LoaderError('Ничего не найдено по запросу.')
       }
 
-      oneTrack = response.items[0]
+      oneTrack = response.items[0] as VKTrack | undefined
+    }
+
+    logger.info({ q: Utils.escapeQuery(query), oneTrack }, 'test query')
+
+    if (!oneTrack) {
+      throw new LoaderError('Не удалось ничего найти по запросу.')
     }
 
     const embed = new EmbedBuilder()
