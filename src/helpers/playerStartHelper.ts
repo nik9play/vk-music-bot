@@ -12,6 +12,7 @@ import { VkMusicBotClient } from '../client.js'
 import logger from '../logger.js'
 import BotPlayer from '../modules/botPlayer.js'
 import BotTrack from '../structures/botTrack.js'
+import BaseLoader from '../loaders/baseLoader.js'
 
 export enum MenuButtonType {
   Skip = 'skip',
@@ -94,20 +95,16 @@ export function generatePlayerStartMessage(player: BotPlayer, track: BotTrack): 
     emptyCount
   )}${filledCount === 10 ? progressEmojis.endFilled : progressEmojis.endEmpty}`
 
+  const loader = player.client.loaders.get(track.sourceNameCode) as BaseLoader
+
   return {
     embeds: [
       new EmbedBuilder()
-        .setColor(0x5181b8)
+        .setColor(loader?.color)
         .setAuthor({
           name: 'Сейчас играет'
         })
         .setTitle(Utils.escapeFormat(track.title).slice(0, 100))
-        .setURL(
-          Utils.generateTrackUrl(
-            `${track.vkTrackInfo?.owner_id}_${track.vkTrackInfo?.id}`,
-            track.vkTrackInfo?.access_key
-          )
-        )
         // .setAuthor({
         //   name: `Сейчас играет ${Utils.escapeFormat(track.author).slice(0, 100)} — ${Utils.escapeFormat(
         //     track.title
@@ -119,6 +116,13 @@ export function generatePlayerStartMessage(player: BotPlayer, track: BotTrack): 
           `${Utils.escapeFormat(track.author).slice(0, 100)}\n\n` +
             `${Utils.formatTime(player.player.position)} ${progressBarText} ${Utils.formatTime(fixedDuration)}`
         )
+        .addFields([
+          {
+            name: 'Источник',
+            value: loader.displayName
+          }
+        ])
+        .setURL(track.uri ?? null)
     ],
     components: [row, row2]
   }

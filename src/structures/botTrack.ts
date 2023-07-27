@@ -6,14 +6,16 @@ type VkTrackInfo = {
   duration: number
   thumb?: string
   id?: number
-  owner_id?: number
-  access_key?: string
+  ownerId?: number
+  accessKey?: string
 }
 
 export default class BotTrack {
   loadedTrack?: Track
   identifier?: string
   vkTrackInfo?: VkTrackInfo
+
+  sourceNameCode: string
 
   get author() {
     return this.vkTrackInfo ? this.vkTrackInfo.author : this.loadedTrack?.info.author ?? ''
@@ -32,19 +34,27 @@ export default class BotTrack {
   }
 
   get vkFullId() {
-    if (this.vkTrackInfo?.id && this.vkTrackInfo?.owner_id) {
-      return `${this.vkTrackInfo.owner_id}_${this.vkTrackInfo.id}`
+    if (this.vkTrackInfo?.id && this.vkTrackInfo?.ownerId) {
+      return `${this.vkTrackInfo.ownerId}_${this.vkTrackInfo.id}`
     }
   }
 
-  constructor(loadedTrack?: Track, identifier?: string, vkTrackInfo?: VkTrackInfo) {
+  get uri() {
+    if (this.vkTrackInfo)
+      return `https://vk.com/audio${this.vkFullId}${this.vkTrackInfo.accessKey ? '_' + this.vkTrackInfo.accessKey : ''}`
+    else return this.loadedTrack?.info.uri
+  }
+
+  constructor(sourceNameCode: string, loadedTrack?: Track, identifier?: string, vkTrackInfo?: VkTrackInfo) {
+    this.sourceNameCode = sourceNameCode
+
     if (loadedTrack) {
       this.loadedTrack = loadedTrack
-      this.vkTrackInfo = {
-        author: this.loadedTrack.info.author,
-        title: this.loadedTrack.info.author,
-        duration: this.loadedTrack.info.length
-      }
+      // this.vkTrackInfo = {
+      //   author: this.loadedTrack.info.author,
+      //   title: this.loadedTrack.info.author,
+      //   duration: this.loadedTrack.info.length
+      // }
       return
     }
 
