@@ -8,7 +8,7 @@ export interface CaptchaInfo {
   count?: number | null
   offset?: number | null
   url: string
-  sid: string
+  sid: number
   index: number
   key?: string
 }
@@ -16,21 +16,22 @@ export interface CaptchaInfo {
 export class LoaderError extends Error {}
 
 export class CaptchaLoaderError extends LoaderError {
-  public captcha_sid: number
-  public captcha_url: string
-  public captcha_index: number
+  public captchaSid: number
+  public captchaUrl: string
+  public captchaIndex: number
 
   constructor(captcha_sid: number, captcha_url: string, captcha_index: number) {
     super('Требуется капча.')
-    this.captcha_sid = captcha_sid
-    this.captcha_url = captcha_url
-    this.captcha_index = captcha_index
+    this.captchaSid = captcha_sid
+    this.captchaUrl = captcha_url
+    this.captchaIndex = captcha_index
   }
 }
 
 export default abstract class BaseLoader {
   public abstract get name(): string
   public abstract get color(): number
+  public abstract get displayName(): string
   public client: VkMusicBotClient
 
   constructor(client: VkMusicBotClient) {

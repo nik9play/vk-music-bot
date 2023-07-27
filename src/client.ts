@@ -9,19 +9,20 @@ import { ButtonInteractionManager } from './interactions/buttonInteractions.js'
 import { SelectMenuInteractionManager } from './interactions/selectMenuInteractions.js'
 import { ModalInteractionManager } from './interactions/modalInteractions.js'
 import { IPCManager } from './events/ipcManager.js'
-import BaseLoader from './loaders/baseLoader.js'
+import BaseLoader, { CaptchaInfo } from './loaders/baseLoader.js'
 import VKLoader from './loaders/VK/VKLoader.js'
+import YandexMusicLoader from './loaders/YandexMusic/YandexMusicLoader.js'
 
-export interface CaptchaInfo {
-  type: 'play' | 'search'
-  query: string
-  count?: number | null
-  offset?: number | null
-  url: string
-  sid: string
-  index: number
-  captcha_key?: string
-}
+// export interface CaptchaInfo {
+//   type: 'play' | 'search'
+//   query: string
+//   count?: number | null
+//   offset?: number | null
+//   url: string
+//   sid: string
+//   index: number
+//   captcha_key?: string
+// }
 
 export interface PlayerTrackErrorTracker {
   count: number
@@ -60,7 +61,7 @@ export class VkMusicBotClient extends Client {
     this.ipcManager = new IPCManager(this)
 
     this.loaders.set('vk', new VKLoader(this))
-    this.loaders.set('ya', new VKLoader(this))
+    this.loaders.set('ya', new YandexMusicLoader(this))
 
     this.once(Events.ClientReady, async () => {
       //this.manager.init(this.user?.id)

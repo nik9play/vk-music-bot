@@ -16,7 +16,7 @@ export const interaction: CommandCustomInteraction = {
     if (captcha) {
       params.client.captcha.delete(params.guild.id)
 
-      captcha.captcha_key = params.interaction.options.getString('код', true)
+      captcha.key = params.interaction.options.getString('код', true)
 
       params.captcha = captcha
 

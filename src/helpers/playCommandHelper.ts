@@ -3,45 +3,7 @@ import { EmbedBuilder } from 'discord.js'
 import { getConfig } from '../db.js'
 import BotPlayer from '../modules/botPlayer.js'
 import { CommandExecuteParams } from '../interactions/commandInteractions.js'
-
-// async function fillQueue(
-//   trackResponses: OneTrackResponse[],
-//   client: VkMusicBotClient,
-//   guild: Guild,
-//   voiceChannelId: string,
-//   textChannelId: string,
-//   node: Node,
-//   wrongTracks: OneTrackResponse[]
-// ) {
-//   const tracks: BotTrack[] = trackResponses
-//     .filter((e) => {
-//       if (!e.url || e.duration > 1800) {
-//         wrongTracks.push(e)
-//         return false
-//       } else {
-//         return true
-//       }
-//     })
-//     .map((e) => {
-//       const unresolvedTrack = new BotTrack(undefined, e.url, {
-//         author: e.author,
-//         title: e.title,
-//         thumb: e.thumb,
-//         duration: e.duration,
-//         id: e.id,
-//         owner_id: e.id,
-//         access_key: e.access_key
-//       })
-
-//       return unresolvedTrack
-//     })
-
-//   const result = await client.playerManager.handle(guild, voiceChannelId, textChannelId, node, tracks)
-//   if (result instanceof BotPlayer) {
-//     result.play()
-//   }
-//   return result
-// }
+import { CaptchaLoaderError, LoaderError } from '../loaders/baseLoader.js'
 
 export async function playCommandHandler(
   params: CommandExecuteParams,
@@ -98,61 +60,88 @@ export async function playCommandHandler(
     return
   }
 
-  const [tracks, embed, wrongTracks] = await loader.resolveTracks(queryParam, countParam, offsetParam, captcha)
+  try {
+    const [tracks, embed, wrongTracks] = await loader.resolveTracks(queryParam, countParam, offsetParam, captcha)
 
-  const player = await client.playerManager.handle(guild, voice.id, text.id, node, tracks)
-  if (player instanceof BotPlayer) {
-    player.play()
-  }
+    const player = await client.playerManager.handle(guild, voice.id, text.id, node, tracks)
+    if (player instanceof BotPlayer) {
+      player.play()
+    }
 
-  await respond({ embeds: [embed] })
+    await respond({ embeds: [embed] })
 
-  if (wrongTracks.length > 0) {
-    let desc = wrongTracks
-      .slice(0, 5)
-      .map((e) => {
-        return Utils.escapeFormat(e)
-      })
-      .join('\n')
-
-    desc = `${desc}\n${
-      wrongTracks.length > 5
-        ? `...\nи еще ${wrongTracks.length - 5} ${Utils.declOfNum(wrongTracks.length - 5, [
-            'трек',
-            'трека',
-            'треков'
-          ])}.`
-        : ''
-    }`
-
-    await send(
-      {
-        embeds: [
-          new EmbedBuilder()
-            .setColor(loader.color)
-            .setAuthor({
-              name: 'Следующие треки не могут быть добавлены из-за решения автора или представителя, либо они длиннее 30 минут.'
-            })
-            .setDescription(desc)
-        ]
-      },
-      30_000
-    )
-  }
-
-  if (!config.premium) {
-    if (player instanceof BotPlayer)
-      if (player.queue.length > 200) {
-        player.queue.length = 200
-        await send({
-          embeds: [
-            Utils.generateErrorMessage(
-              'В очереди было больше 200 треков, поэтому лишние треки были удалены. ' +
-                'Хотите больше треков? Приобретите Премиум, подробности: </donate:906533685979918396>.',
-              ErrorMessageType.Warning
-            )
-          ]
+    if (wrongTracks.length > 0) {
+      let desc = wrongTracks
+        .slice(0, 5)
+        .map((e) => {
+          return Utils.escapeFormat(e)
         })
-      }
+        .join('\n')
+
+      desc = `${desc}\n${
+        wrongTracks.length > 5
+          ? `...\nи еще ${wrongTracks.length - 5} ${Utils.declOfNum(wrongTracks.length - 5, [
+              'трек',
+              'трека',
+              'треков'
+            ])}.`
+          : ''
+      }`
+
+      await send(
+        {
+          embeds: [
+            new EmbedBuilder()
+              .setColor(loader.color)
+              .setAuthor({
+                name: 'Следующие треки не могут быть добавлены из-за решения автора или представителя, либо они длиннее 30 минут.'
+              })
+              .setDescription(desc)
+          ]
+        },
+        30_000
+      )
+    }
+
+    if (!config.premium) {
+      if (player instanceof BotPlayer)
+        if (player.queue.length > 200) {
+          player.queue.length = 200
+          await send({
+            embeds: [
+              Utils.generateErrorMessage(
+                'В очереди было больше 200 треков, поэтому лишние треки были удалены. ' +
+                  'Хотите больше треков? Приобретите Премиум, подробности: </donate:906533685979918396>.',
+                ErrorMessageType.Warning
+              )
+            ]
+          })
+        }
+    }
+  } catch (err) {
+    if (err instanceof CaptchaLoaderError) {
+      const captchaResponse = await Utils.handleCaptchaError(
+        {
+          sid: err.captchaSid,
+          url: err.captchaUrl,
+          type: 'play',
+          query: queryParam,
+          index: err.captchaIndex,
+          count: countParam,
+          offset: offsetParam
+        },
+        params,
+        !captcha
+      )
+      if (captchaResponse) await respond(captchaResponse)
+
+      return
+    }
+
+    if (err instanceof LoaderError) {
+      await respond({ embeds: [Utils.generateErrorMessage(err.message, ErrorMessageType.Error)] })
+      return
+    }
+    throw err
   }
 }

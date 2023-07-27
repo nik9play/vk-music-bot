@@ -5,13 +5,13 @@ import Utils from '../utils.js'
 import { ActionRowBuilder, StringSelectMenuBuilder } from 'discord.js'
 
 export async function searchCommandHandler(params: CommandExecuteParams, queryParam: string) {
-  const { guild, client, captcha, respond, meta } = params
+  const { captcha, respond, meta } = params
 
   const query: any = {}
 
   if (captcha) {
     query.captcha_id = captcha.sid
-    query.captcha_key = captcha.captcha_key
+    query.captcha_key = captcha.key
     query.captcha_index = captcha.index
   }
 

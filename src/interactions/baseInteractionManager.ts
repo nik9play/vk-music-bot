@@ -10,9 +10,10 @@ import {
   User,
   VoiceBasedChannel
 } from 'discord.js'
-import { VkMusicBotClient, CaptchaInfo } from '../client.js'
+import { VkMusicBotClient } from '../client.js'
 import Utils, { Meta } from '../utils.js'
 import logger from '../logger.js'
+import { CaptchaInfo } from 'loaders/baseLoader.js'
 
 export interface BaseExecuteParams {
   guild: Guild
