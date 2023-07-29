@@ -38,6 +38,7 @@ export class VkMusicBotClient extends Client {
   public playerTrackErrorTrackers: Collection<string, PlayerTrackErrorTracker> = new Collection()
 
   public loaders: Collection<string, BaseLoader> = new Collection()
+  public loaderNames: string[] = []
 
   public playerManager: PlayerManager
   public shoukaku: ShoukakuManager
@@ -62,6 +63,8 @@ export class VkMusicBotClient extends Client {
 
     this.loaders.set('vk', new VKLoader(this))
     this.loaders.set('ya', new YandexMusicLoader(this))
+
+    this.loaderNames = [...this.loaders.keys()]
 
     this.once(Events.ClientReady, async () => {
       //this.manager.init(this.user?.id)
