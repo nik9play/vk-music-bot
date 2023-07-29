@@ -1,13 +1,21 @@
-import { ChannelType } from 'discord.js'
+import { ChannelType, SlashCommandBuilder } from 'discord.js'
 import Utils, { ErrorMessageType } from '../../utils.js'
 import { CommandCustomInteraction } from '../commandInteractions.js'
 
 export const interaction: CommandCustomInteraction = {
   name: 'text',
   djOnly: true,
-  adminOnly: false,
-  premium: false,
   cooldown: 1,
+  data: new SlashCommandBuilder()
+    .setName('text')
+    .setDescription('Установка этого канала или любого другого как канала для уведомлений')
+    .addChannelOption((option) =>
+      option
+        .setName('канал')
+        .setDescription('Текстовый канал')
+        .addChannelTypes(ChannelType.GuildText)
+    )
+    .setDMPermission(false),
   execute: async ({ client, guild, respond, voice, text, interaction }) => {
     const player = client.playerManager.get(guild.id)
     if (!player) {
@@ -46,7 +54,12 @@ export const interaction: CommandCustomInteraction = {
         textChannelId = channel.id
       } else {
         await respond({
-          embeds: [Utils.generateErrorMessage('Необходимо указать текстовый канал.', ErrorMessageType.Error)]
+          embeds: [
+            Utils.generateErrorMessage(
+              'Необходимо указать текстовый канал.',
+              ErrorMessageType.Error
+            )
+          ]
         })
         return
       }

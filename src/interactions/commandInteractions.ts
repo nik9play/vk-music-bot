@@ -4,7 +4,8 @@ import {
   EmbedBuilder,
   Events,
   Interaction,
-  PermissionsBitField
+  PermissionsBitField,
+  SlashCommandBuilder
 } from 'discord.js'
 import BaseInteractionManager, {
   BaseCustomInteraction,
@@ -26,11 +27,13 @@ export interface CommandExecuteParams extends BaseExecuteParams {
 export interface CommandCustomInteraction extends BaseCustomInteraction {
   name: string
   aliases?: string[]
-  adminOnly: boolean
-  premium: boolean
+  adminOnly?: boolean
+  premium?: boolean
   cooldown?: number
-  djOnly: boolean
+  djOnly?: boolean
   deferred?: boolean
+  dev?: boolean
+  data: SlashCommandBuilder
   execute(params: CommandExecuteParams): Promise<void>
 }
 
@@ -94,7 +97,9 @@ export class CommandInteractionManager implements BaseInteractionManager {
     if (command.adminOnly && !member.permissions.has(PermissionsBitField.Flags.ManageGuild)) {
       await respond({
         embeds: [
-          Utils.generateErrorMessage('Эту команду могут выполнять только пользователи с правом `Управление сервером`.')
+          Utils.generateErrorMessage(
+            'Эту команду могут выполнять только пользователи с правом `Управление сервером`.'
+          )
         ],
         ephemeral: true
       })

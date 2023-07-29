@@ -1,3 +1,4 @@
+import { SlashCommandBuilder } from 'discord.js'
 import Utils, { ErrorMessageType } from '../../utils.js'
 import { CommandCustomInteraction } from '../commandInteractions.js'
 
@@ -8,6 +9,30 @@ export const interaction: CommandCustomInteraction = {
   premium: true,
   adminOnly: false,
   djOnly: true,
+  data: new SlashCommandBuilder()
+    .setName('bass')
+    .setDescription('Переключение режима усиления басов')
+    .addStringOption((option) =>
+      option.setName('режим').setDescription('Режим усиления басов').setRequired(true).addChoices(
+        {
+          name: 'выкл',
+          value: 'выкл'
+        },
+        {
+          name: 'слабый',
+          value: 'слабый'
+        },
+        {
+          name: 'средний',
+          value: 'средний'
+        },
+        {
+          name: 'мощный',
+          value: 'мощный'
+        }
+      )
+    )
+    .setDMPermission(false),
   execute: async function ({ respond, client, guild, interaction }) {
     const player = client.playerManager.get(guild.id)
 
@@ -58,7 +83,9 @@ export const interaction: CommandCustomInteraction = {
       })
     } else {
       await respond({
-        embeds: [Utils.generateErrorMessage('🔈 Доступные уровни: `выкл`, `слабый`, `средний`, `мощный`')]
+        embeds: [
+          Utils.generateErrorMessage('🔈 Доступные уровни: `выкл`, `слабый`, `средний`, `мощный`')
+        ]
       })
     }
   }

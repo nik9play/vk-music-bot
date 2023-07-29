@@ -1,13 +1,15 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js'
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, SlashCommandBuilder } from 'discord.js'
 import { getConfig } from '../../db.js'
 import { CommandCustomInteraction } from '../commandInteractions.js'
+import { Emojis } from '../../utils.js'
 
 export const interaction: CommandCustomInteraction = {
   name: 'donate',
-  aliases: ['premium', 'd'],
   adminOnly: true,
-  premium: false,
-  djOnly: false,
+  data: new SlashCommandBuilder()
+    .setName('donate')
+    .setDescription('Вывод информации о донате и премиуме')
+    .setDMPermission(false),
   execute: async ({ guild, respond }) => {
     const config = await getConfig(guild.id)
 
@@ -25,11 +27,13 @@ export const interaction: CommandCustomInteraction = {
 ● Бас буст 
 ● Автоматический пропуск капчи
 Все деньги идут на развитие и поддержание бота. Вы можете пользоваться всеми остальными функциями бота абсолютно бесплатно.`
-    else info += 'Если вы хотите задонатить на развитие бота, нажмите [сюда](https://vk.com/app6887721_-197274096)'
+    else
+      info +=
+        'Если вы хотите задонатить на развитие бота, нажмите [сюда](https://vk.com/app6887721_-197274096)'
 
     const embed = {
       color: 0x5181b8,
-      title: `Статус **Премиума**:  ${premium ? '<:yes2:835498559805063169>' : '<:no2:835498572916195368>'}`,
+      title: `Статус **Премиума**:  ${premium ? Emojis.Yes : Emojis.No}`,
       description: info
     }
 

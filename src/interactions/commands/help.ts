@@ -1,12 +1,14 @@
+import { SlashCommandBuilder } from 'discord.js'
 import { CommandCustomInteraction } from '../commandInteractions.js'
 
 export const interaction: CommandCustomInteraction = {
   name: 'help',
   cooldown: 1,
   aliases: ['h'],
-  adminOnly: false,
-  premium: false,
-  djOnly: false,
+  data: new SlashCommandBuilder()
+    .setName('help')
+    .setDescription('Вывод справки')
+    .setDMPermission(false),
   execute: async function ({ respond }) {
     const embed = {
       title: '❔ Справка',
@@ -34,7 +36,8 @@ export const interaction: CommandCustomInteraction = {
         },
         {
           name: '</pause:906533312628142191>',
-          value: 'Поставить текущий трек на паузу. Бот выйдет из канала через 20 минут, если не включен режим 24/7',
+          value:
+            'Поставить текущий трек на паузу. Бот выйдет из канала через 20 минут, если не включен режим 24/7',
           inline: true
         },
         {
@@ -69,7 +72,8 @@ export const interaction: CommandCustomInteraction = {
         },
         {
           name: ':star: </247:906533610918666250>',
-          value: 'Режим 24/7. Бот не выйдет из канала после окончания очереди, паузы и выхода всех людей из канала',
+          value:
+            'Режим 24/7. Бот не выйдет из канала после окончания очереди, паузы и выхода всех людей из канала',
           inline: true
         },
         {

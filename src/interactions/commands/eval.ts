@@ -1,10 +1,11 @@
+import { SlashCommandBuilder } from 'discord.js'
 import { CommandCustomInteraction } from '../commandInteractions.js'
 
 export const interaction: CommandCustomInteraction = {
   name: 'eval',
   adminOnly: true,
-  premium: false,
-  djOnly: false,
+  dev: true,
+  data: new SlashCommandBuilder().setName('eval').setDescription('EVAL'),
   execute: async function (params) {
     if (params.user.id !== '241175583709593600') return
 

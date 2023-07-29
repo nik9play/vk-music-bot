@@ -1,12 +1,15 @@
 // import { ShardClientUtil } from 'indomitable'
+import { SlashCommandBuilder } from 'discord.js'
 import { CommandCustomInteraction } from '../commandInteractions.js'
 
 export const interaction: CommandCustomInteraction = {
   name: 'info',
   adminOnly: true,
-  premium: false,
-  djOnly: false,
   cooldown: 10,
+  data: new SlashCommandBuilder()
+    .setName('info')
+    .setDescription('Вывод информации о боте')
+    .setDMPermission(false),
   execute: async function ({ client, respond, guild }) {
     // const totalServers = 0
 
@@ -39,7 +42,9 @@ export const interaction: CommandCustomInteraction = {
       fields: [
         {
           name: 'Cluster RAM',
-          value: `\`\`\`js\n${Math.round((process.memoryUsage().rss / 1024 / 1024) * 100) / 100} MB\`\`\``,
+          value: `\`\`\`js\n${
+            Math.round((process.memoryUsage().rss / 1024 / 1024) * 100) / 100
+          } MB\`\`\``,
           inline: true
         },
         {

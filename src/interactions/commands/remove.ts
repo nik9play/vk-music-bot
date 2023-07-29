@@ -1,12 +1,20 @@
+import { SlashCommandBuilder } from 'discord.js'
 import Utils, { ErrorMessageType } from '../../utils.js'
 import { CommandCustomInteraction } from '../commandInteractions.js'
 
 export const interaction: CommandCustomInteraction = {
   name: 'remove',
-  aliases: ['r'],
   djOnly: true,
-  adminOnly: false,
-  premium: false,
+  data: new SlashCommandBuilder()
+    .setName('remove')
+    .setDescription('Удаление треков из очереди')
+    .addStringOption((option) =>
+      option
+        .setName('треки')
+        .setDescription('Номер трека или треков в формате 1-5')
+        .setRequired(true)
+    )
+    .setDMPermission(false),
   execute: async function ({ guild, voice, client, interaction, respond }) {
     const player = client.playerManager.get(guild.id)
     if (!player) {
@@ -43,7 +51,9 @@ export const interaction: CommandCustomInteraction = {
     }
 
     await respond({
-      embeds: [Utils.generateErrorMessage(`🗑️ Удалено треков: ${removedTracks}.`, ErrorMessageType.NoTitle)]
+      embeds: [
+        Utils.generateErrorMessage(`🗑️ Удалено треков: ${removedTracks}.`, ErrorMessageType.NoTitle)
+      ]
     })
   }
 }

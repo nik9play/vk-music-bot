@@ -1,3 +1,4 @@
+import { SlashCommandBuilder } from 'discord.js'
 import Utils from '../../utils.js'
 import { CommandCustomInteraction } from '../commandInteractions.js'
 
@@ -5,9 +6,14 @@ export const interaction: CommandCustomInteraction = {
   name: 'skip',
   aliases: ['n'],
   djOnly: true,
-  adminOnly: false,
-  premium: false,
   cooldown: 1,
+  data: new SlashCommandBuilder()
+    .setName('skip')
+    .setDescription('Пропуск текущего трека')
+    .addIntegerOption((option) =>
+      option.setName('количество').setDescription('Количество треков для пропуска')
+    )
+    .setDMPermission(false),
   execute: async ({ client, guild, voice, respond, interaction }) => {
     const player = client.playerManager.get(guild.id)
     if (!player) {

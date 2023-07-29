@@ -1,14 +1,44 @@
+import { PermissionFlagsBits, SlashCommandBuilder } from 'discord.js'
 import { getConfig, updateConfig } from '../../db.js'
 import Utils, { ErrorMessageType } from '../../utils.js'
 import { CommandCustomInteraction } from '../commandInteractions.js'
+import { generateSettingsShowResponse } from '../../helpers/settingsCommandHelper.js'
 
 export const interaction: CommandCustomInteraction = {
   name: 'settings',
   cooldown: 5,
   adminOnly: true,
-  premium: false,
-  djOnly: false,
-  execute: async ({ guild, respond, interaction }) => {
+  data: new SlashCommandBuilder()
+    .setName('settings')
+    .setDescription('Настройки')
+    .addSubcommand((subcommand) =>
+      subcommand
+        .setName('dj')
+        .setDescription('Переключение DJ режима')
+        .addBooleanOption((option) =>
+          option.setName('включен').setDescription('Состояние DJ режима').setRequired(true)
+        )
+    )
+    .addSubcommand((subcommand) =>
+      subcommand
+        .setName('djrole')
+        .setDescription('Роль DJ режима')
+        .addRoleOption((option) => option.setName('роль').setDescription('Роль').setRequired(true))
+    )
+    .addSubcommand((subcommand) =>
+      subcommand
+        .setName('announcements')
+        .setDescription('Настройка поведения оповещений')
+        .addBooleanOption((option) =>
+          option.setName('включены').setDescription('Состояние оповещений').setRequired(true)
+        )
+    )
+    .addSubcommand((subcommand) =>
+      subcommand.setName('show').setDescription('Показать текущие настройки')
+    )
+    .setDMPermission(false)
+    .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild),
+  execute: async ({ guild, respond, interaction, client }) => {
     const type = interaction.options.getSubcommand()
     const config = await getConfig(guild.id)
 
@@ -62,7 +92,10 @@ export const interaction: CommandCustomInteraction = {
         await respond(
           {
             embeds: [
-              Utils.generateErrorMessage(`Нельзя установить роль ${Utils.escapeFormat(name)}.`, ErrorMessageType.Error)
+              Utils.generateErrorMessage(
+                `Нельзя установить роль ${Utils.escapeFormat(name)}.`,
+                ErrorMessageType.Error
+              )
             ]
           },
           10_000
@@ -74,7 +107,10 @@ export const interaction: CommandCustomInteraction = {
       await respond(
         {
           embeds: [
-            Utils.generateErrorMessage(`DJ роль "${Utils.escapeFormat(name)}" установлена.`, ErrorMessageType.NoTitle)
+            Utils.generateErrorMessage(
+              `DJ роль "${Utils.escapeFormat(name)}" установлена.`,
+              ErrorMessageType.NoTitle
+            )
           ]
         },
         10_000
@@ -86,38 +122,16 @@ export const interaction: CommandCustomInteraction = {
       await respond(
         {
           embeds: [
-            Utils.generateErrorMessage('Оповещения ' + (enable ? 'включены.' : 'выключены.'), ErrorMessageType.NoTitle)
+            Utils.generateErrorMessage(
+              'Оповещения ' + (enable ? 'включены.' : 'выключены.'),
+              ErrorMessageType.NoTitle
+            )
           ]
         },
         10_000
       )
     } else if (type === 'show') {
-      const { djMode, djRoleName, announcements } = config
-
-      const embed = {
-        title: '⚙ Настройки',
-        color: 0x5181b8,
-        fields: [
-          // {
-          //   name: `prefix: ${Utils.escapeFormat(await client.db.getPrefix(guild.id))}`,
-          //   value: 'Настройка префикса.'
-          // },
-          {
-            name: `dj: ${djMode ? '<:yes2:835498559805063169>' : '<:no2:835498572916195368>'}`,
-            value: 'DJ режим. Позволяет пользоваться ботом только если у пользователя есть определенная роль.'
-          },
-          {
-            name: `djrole: ${Utils.escapeFormat(djRoleName)}`,
-            value: 'Установка имени роли для DJ режима.'
-          },
-          {
-            name: `announcements: ${announcements ? '<:yes2:835498559805063169>' : '<:no2:835498572916195368>'}`,
-            value: 'Включить/выключить сообщения о каждом играющем треке.'
-          }
-        ]
-      }
-
-      await respond({ embeds: [embed] }, 30_000)
+      await respond(await generateSettingsShowResponse(guild.id, client))
     }
   }
 }

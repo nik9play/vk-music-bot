@@ -1,3 +1,4 @@
+import { SlashCommandBuilder } from 'discord.js'
 import { playCommandHandler } from '../../helpers/playCommandHelper.js'
 import { searchCommandHandler } from '../../helpers/searchCommandHelper.js'
 import Utils, { ErrorMessageType } from '../../utils.js'
@@ -6,10 +7,15 @@ import { CommandCustomInteraction } from '../commandInteractions.js'
 export const interaction: CommandCustomInteraction = {
   name: 'captcha',
   djOnly: true,
-  adminOnly: false,
-  premium: false,
   deferred: true,
   cooldown: 5,
+  data: new SlashCommandBuilder()
+    .setName('captcha')
+    .setDescription('Ввод капчи')
+    .addStringOption((option) =>
+      option.setName('код').setDescription('Код с капчи').setRequired(true)
+    )
+    .setDMPermission(false),
   execute: async (params) => {
     const captcha = params.client.captcha.get(params.guild.id)
 
@@ -29,7 +35,12 @@ export const interaction: CommandCustomInteraction = {
       }
     } else {
       await params.respond({
-        embeds: [Utils.generateErrorMessage('В данный момент капчу вводить не надо.', ErrorMessageType.Info)],
+        embeds: [
+          Utils.generateErrorMessage(
+            'В данный момент капчу вводить не надо.',
+            ErrorMessageType.Info
+          )
+        ],
         ephemeral: true
       })
     }

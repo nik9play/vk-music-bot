@@ -1,12 +1,30 @@
+import { SlashCommandBuilder } from 'discord.js'
 import Utils, { ErrorMessageType } from '../../utils.js'
 import { CommandCustomInteraction } from '../commandInteractions.js'
 
 export const interaction: CommandCustomInteraction = {
   name: 'repeat',
-  aliases: ['l', 'rp', 'loop'],
   djOnly: true,
-  adminOnly: false,
-  premium: false,
+  data: new SlashCommandBuilder()
+    .setName('repeat')
+    .setDescription('Повтор трека или очереди')
+    .addStringOption((option) =>
+      option.setName('режим').setDescription('Режим повтора').addChoices(
+        {
+          name: 'выкл',
+          value: 'выкл'
+        },
+        {
+          name: 'трек',
+          value: 'трек'
+        },
+        {
+          name: 'очередь',
+          value: 'очередь'
+        }
+      )
+    )
+    .setDMPermission(false),
   execute: async function ({ guild, voice, client, interaction, respond }) {
     const player = client.playerManager.get(guild.id)
     if (!player) {
@@ -25,7 +43,9 @@ export const interaction: CommandCustomInteraction = {
       if (repeatParam === 'очередь') {
         player.repeat = 'queue'
         await respond({
-          embeds: [Utils.generateErrorMessage('🔁 Включен повтор очереди.', ErrorMessageType.NoTitle)]
+          embeds: [
+            Utils.generateErrorMessage('🔁 Включен повтор очереди.', ErrorMessageType.NoTitle)
+          ]
         })
         return
       }

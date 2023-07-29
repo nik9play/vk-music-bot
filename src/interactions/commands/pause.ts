@@ -1,13 +1,15 @@
+import { SlashCommandBuilder } from 'discord.js'
 import { getConfig } from '../../db.js'
 import Utils, { ErrorMessageType } from '../../utils.js'
 import { CommandCustomInteraction } from '../commandInteractions.js'
 
 export const interaction: CommandCustomInteraction = {
   name: 'pause',
-  aliases: ['ps', 'resume'],
   djOnly: true,
-  premium: false,
-  adminOnly: false,
+  data: new SlashCommandBuilder()
+    .setName('pause')
+    .setDescription('Пауза/снятие с паузы')
+    .setDMPermission(false),
   execute: async ({ guild, voice, client, respond }) => {
     const player = client.playerManager.get(guild.id)
     if (!player) {
