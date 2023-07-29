@@ -21,11 +21,19 @@ export default class VKLoader implements BaseLoader {
   }
 
   public get displayName() {
-    return 'VK'
+    return 'ВКонтакте'
   }
 
   public get color() {
-    return 0x5181b8
+    return 0x0076fe
+  }
+
+  public get iconURL() {
+    return 'https://raw.githubusercontent.com/nik9play/vkmusicbot-resources/main/VK.png'
+  }
+
+  public get emoji() {
+    return '<:vkicon:1134502342914478212>'
   }
 
   private url: string
@@ -42,14 +50,18 @@ export default class VKLoader implements BaseLoader {
     'Ошибка запроса к серверам бота. Обратитесь за поддержкой в [группу ВК](https://vk.com/vkmusicbotds) или на [сервер Discord](https://discord.com/invite/3ts2znePu7).'
 
   private playlistRegex =
-    /https?:\/\/.*(audio_playlist|\/music\/(playlist|album)\/)(?<owner_id>-?\d+)[_|/](?<id>\d+)([_|/](?<access_key>[a-zA-Z0-9]+))?/
+    /https?:\/\/.*(audio_playlist|\/music\/(playlist|album)\/)(?<owner_id>-?\d+)[_|/](?<id>\d+)((_|\/|&access_key=)(?<access_key>[a-zA-Z0-9]+))?/
 
-  private trackRegex = /(?:^|^https?:\/\/.*\/audio)(?<owner_id>-?\d+)_(?<id>\d+)(?:_(?<access_key>[a-zA-Z0-9]+))?$/
-  private userGroupRegex = /^>(?:(?<group_id>-[0-9]+)|(?<user_id>[0-9]+)|(?<screen_name>[A-Za-z0-9.]+))$/
+  private trackRegex =
+    /(?:^|^https?:\/\/.*\/audio)(?<owner_id>-?\d+)_(?<id>\d+)(?:_(?<access_key>[a-zA-Z0-9]+))?$/
+  private userGroupRegex =
+    /^>(?:(?<group_id>-[0-9]+)|(?<user_id>[0-9]+)|(?<screen_name>[A-Za-z0-9.]+))$/
   private userGroupNumberUrlRegex = /^https:\/\/vk\.com\/(audios?(?<owner_id>-?\d+))$/
   private userGroupTextUrlRegex = /^https:\/\/vk\.com\/(?<screen_name>[a-zA-Z0-9._]+)$/
 
-  private prepareParams(params: Record<string, string | number | undefined | null>): Record<string, string | number> {
+  private prepareParams(
+    params: Record<string, string | number | undefined | null>
+  ): Record<string, string | number> {
     return Object.fromEntries(
       Object.entries(params).filter(([, value]) => value !== null && value !== undefined)
     ) as Record<string, string | number>
@@ -64,7 +76,7 @@ export default class VKLoader implements BaseLoader {
     const response = await fetch(`${this.url}/api/raw/${path}`, {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${process.env.VK_PROXY_TOKEN}`
+        Authorization: `Bearer ${this.token}`
       },
       body: JSON.stringify(body)
     })
@@ -76,7 +88,11 @@ export default class VKLoader implements BaseLoader {
 
   private getErrorOrThrowCaptcha(error: VKErrorResponse) {
     if (error.code === VKErrorCode.CAPTCHA) {
-      throw new CaptchaLoaderError(error.captchaSid as number, error.captchaUrl as string, error.captchaIndex)
+      throw new CaptchaLoaderError(
+        error.captchaSid as number,
+        error.captchaUrl as string,
+        error.captchaIndex
+      )
     }
 
     return error
@@ -200,7 +216,9 @@ export default class VKLoader implements BaseLoader {
       const embed = new EmbedBuilder()
         .setTitle(Utils.escapeFormat(response.response.playlist.title).slice(0, 100))
         .setURL(
-          `https://vk.com/music/playlist/${response.response.playlist.owner_id}_${response.response.playlist.id}${
+          `https://vk.com/music/playlist/${response.response.playlist.owner_id}_${
+            response.response.playlist.id
+          }${
             response.response.playlist.access_key ? '_' + response.response.playlist.access_key : ''
           }`
         )
@@ -232,9 +250,12 @@ export default class VKLoader implements BaseLoader {
     let userId: string | null = null
 
     const assignUserAndGroupIds = async (screen_name: string) => {
-      const response = await this.makeRequest<{ object_id: number; type: string }>('utils.resolveScreenName', {
-        screen_name: screen_name
-      })
+      const response = await this.makeRequest<{ object_id: number; type: string }>(
+        'utils.resolveScreenName',
+        {
+          screen_name: screen_name
+        }
+      )
 
       if (isVKErrorResponse(response)) {
         this.getErrorOrThrowCaptcha(response)
@@ -374,7 +395,9 @@ export default class VKLoader implements BaseLoader {
 
       const embed = new EmbedBuilder()
         .setTitle(
-          Utils.escapeFormat(`${response.response.owner.first_name} ${response.response.owner.last_name}`).slice(0, 100)
+          Utils.escapeFormat(
+            `${response.response.owner.first_name} ${response.response.owner.last_name}`
+          ).slice(0, 100)
         )
         .setURL(`https://vk.com/id${response.response.owner.id}`)
         .setColor(this.color)

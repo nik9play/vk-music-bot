@@ -32,6 +32,9 @@ export default abstract class BaseLoader {
   public abstract get name(): string
   public abstract get color(): number
   public abstract get displayName(): string
+  public abstract get iconURL(): string
+  public abstract get emoji(): string
+
   public client: VkMusicBotClient
 
   constructor(client: VkMusicBotClient) {

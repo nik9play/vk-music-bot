@@ -18,10 +18,20 @@ export default class YandexMusicLoader implements BaseLoader {
     return 'Яндекс Музыка'
   }
 
+  public get iconURL() {
+    return 'https://raw.githubusercontent.com/nik9play/vkmusicbot-resources/main/YA.png'
+  }
+
+  public get emoji() {
+    return '<:yandexicon:1134502346328637480>'
+  }
+
   public client: VkMusicBotClient
 
-  private urlRegex = /(https?:\/\/)?music\.yandex\.(ru|com)\/(artist|album)\/([0-9]+)\/?((track\/)([0-9]+)\/?)?/
-  private urlPlaylistRegex = /(https?:\/\/)?music\.yandex\.(ru|com)\/users\/([0-9A-Za-z@.-]+)\/playlists\/([0-9]+)\/?/
+  private urlRegex =
+    /(https?:\/\/)?music\.yandex\.(ru|com)\/(artist|album)\/([0-9]+)\/?((track\/)([0-9]+)\/?)?/
+  private urlPlaylistRegex =
+    /(https?:\/\/)?music\.yandex\.(ru|com)\/users\/([0-9A-Za-z@.-]+)\/playlists\/([0-9]+)\/?/
 
   public checkQuery(query: string): boolean {
     return this.urlRegex.test(query) || this.urlPlaylistRegex.test(query)
@@ -57,7 +67,8 @@ export default class YandexMusicLoader implements BaseLoader {
     const resolvedTracks = await node?.rest.resolve(query)
     logger.debug({ resolvedTracks })
     if (!resolvedTracks) throw new LoaderError('Не удалось ничего найти по запросу.')
-    if (resolvedTracks.tracks.length === 0) throw new LoaderError('Не удалось ничего найти по запросу.')
+    if (resolvedTracks.tracks.length === 0)
+      throw new LoaderError('Не удалось ничего найти по запросу.')
 
     const embed = new EmbedBuilder().setColor(this.color)
 
@@ -74,14 +85,15 @@ export default class YandexMusicLoader implements BaseLoader {
           .setAuthor({ name: 'Трек добавлен!' })
           .setTitle(resolvedTracks.tracks[0].info.title)
           .setDescription(resolvedTracks.tracks[0].info.author)
+
         if (resolvedTracks.tracks[0].info.uri) embed.setURL(resolvedTracks.tracks[0].info.uri)
         break
       case 'PLAYLIST_LOADED':
         embed
           .setAuthor({ name: 'Добавлены треки из плейлиста' })
           .setFields([
-            { name: 'Добавлено треков', value: tracks.length.toString() },
-            { name: 'Всего треков', value: resolvedTracks.tracks.length.toString() }
+            { name: 'Добавлено треков', value: tracks.length.toString(), inline: true },
+            { name: 'Всего треков', value: resolvedTracks.tracks.length.toString(), inline: true }
           ])
           .setURL(query)
 
