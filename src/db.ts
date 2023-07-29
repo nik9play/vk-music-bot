@@ -3,7 +3,7 @@ import Redis from 'ioredis'
 import mongoose, { Schema, model, connect } from 'mongoose'
 import logger from './logger.js'
 
-export const redis = new Redis(process.env.REDIS_URL)
+export const redis = new Redis(process.env.REDIS_URL, { lazyConnect: true })
 
 type ServerConfigSchemaModel = {
   guildId: string
@@ -48,7 +48,7 @@ redis.on('connect', () => {
 //   'prefix' | 'premium' | 'announcements' | 'djMode' | 'djRoleName'
 // >
 
-type ServerConfigType = Required<ServerConfigSchemaModel>
+export type ServerConfigType = Required<ServerConfigSchemaModel>
 
 const defaultConfig = {
   premium: false,
@@ -90,7 +90,10 @@ export async function getConfig(guildId: string): Promise<ServerConfigType> {
   }
 }
 
-export async function updateConfig(guildId: string, data: Partial<ServerConfigSchemaModel>): Promise<ServerConfigType> {
+export async function updateConfig(
+  guildId: string,
+  data: Partial<ServerConfigSchemaModel>
+): Promise<ServerConfigType> {
   const config = await ServerConfig.findOneAndUpdate<ServerConfigSchemaModel>(
     { guildId },
     { $set: data },
