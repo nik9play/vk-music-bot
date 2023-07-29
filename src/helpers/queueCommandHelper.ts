@@ -7,7 +7,7 @@ import {
   ButtonStyle
 } from 'discord.js'
 import BotPlayer from '../modules/botPlayer.js'
-import Utils from '../utils.js'
+import Utils, { Emojis } from '../utils.js'
 
 export function generateQueueResponse(
   page: number,
@@ -44,7 +44,12 @@ export function generateQueueResponse(
   else {
     embed.setDescription(
       tracks
-        .map((track, i) => `${start + ++i}. ${Utils.escapeFormat(track.author)} — ${Utils.escapeFormat(track.title)}`)
+        .map(
+          (track, i) =>
+            `${start + ++i}. ${Utils.escapeFormat(track.author)} — ${Utils.escapeFormat(
+              track.title
+            )}`
+        )
         .join('\n')
     )
   }
@@ -59,18 +64,18 @@ export function generateQueueResponse(
     new ActionRowBuilder<ButtonBuilder>().addComponents([
       new ButtonBuilder()
         .setCustomId(`queue,${page - 1}`)
-        .setEmoji('<:chevron_left:1073665636741414922>')
+        .setEmoji(Emojis.ChevronLeft)
         .setStyle(ButtonStyle.Primary)
         .setDisabled(page - 1 <= 0),
       new ButtonBuilder()
         .setCustomId(`queue,${page + 1}`)
-        .setEmoji('<:chevron_right:1073665639786487818>')
+        .setEmoji(Emojis.ChevronRight)
         .setStyle(ButtonStyle.Primary)
         .setDisabled(page + 1 > maxPages),
       new ButtonBuilder()
         .setCustomId('deleteMessage')
         .setStyle(ButtonStyle.Danger)
-        .setEmoji('<:trash_btn:1073668424531709992>')
+        .setEmoji(Emojis.TrashBin)
     ])
   ]
 

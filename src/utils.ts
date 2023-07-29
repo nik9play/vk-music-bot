@@ -21,6 +21,23 @@ import { CommandExecuteParams } from './interactions/commandInteractions.js'
 import { searchCommandHandler } from './helpers/searchCommandHelper.js'
 import { CaptchaInfo } from './loaders/baseLoader.js'
 
+export enum Emojis {
+  Yes = '<:yes2:835498559805063169>',
+  No = '<:no2:835498572916195368>',
+  YesWhite = '<:yes3:1134839484052148315>',
+  NoWhite = '<:no3:1134839481116147763>',
+  Play = '<:play_btn:1052960565674393640>',
+  Pause = '<:pause_btn:1052960594065641502>',
+  Skip = '<:skip:1052960924996223037>',
+  Stop = '<:stop_btn:1052960619940302868>',
+  Queue = '<:queue:1052960903047426099>',
+  Add = '<:add_queue:1103043247883956324>',
+  Leave = '<:leave:1103044077978669156>',
+  ChevronLeft = '<:chevron_left:1073665636741414922>',
+  ChevronRight = '<:chevron_right:1073665639786487818>',
+  TrashBin = '<:trash_btn:1073668424531709992>'
+}
+
 export interface ArgType {
   type: 'group' | 'playlist' | 'user' | 'track' | 'unknown'
   query?: string
@@ -50,13 +67,17 @@ export enum ErrorMessageType {
 export default class Utils {
   public static declOfNum(number: number, titles: string[]): string {
     const cases = [2, 0, 1, 1, 1, 2]
-    return titles[number % 100 > 4 && number % 100 < 20 ? 2 : cases[number % 10 < 5 ? number % 10 : 5]]
+    return titles[
+      number % 100 > 4 && number % 100 < 20 ? 2 : cases[number % 10 < 5 ? number % 10 : 5]
+    ]
   }
 
   public static escapeFormat(text: string | undefined): string {
     if (!text) return '-'
     //return text.replace(/([*_`~\\])/g, '\\$1')
-    return text.replace(/([_*~`|\\<>:!])/g, '\\$1').replace(/@(everyone|here|[!&]?[0-9]{17,21})/g, '@\u200b$1')
+    return text
+      .replace(/([_*~`|\\<>:!])/g, '\\$1')
+      .replace(/@(everyone|here|[!&]?[0-9]{17,21})/g, '@\u200b$1')
   }
 
   public static escapeQuery(text: string) {
@@ -121,7 +142,7 @@ export default class Utils {
 
     switch (type) {
       case ErrorMessageType.Error:
-        title = '<:no2:835498572916195368> **Ошибка!**\n'
+        title = `${Emojis.No} **Ошибка!**\n`
         color = 0xed4245
         break
       case ErrorMessageType.Warning:
@@ -205,7 +226,8 @@ export default class Utils {
 
       if (timeout)
         setTimeout(async () => {
-          if (message.deletable) await message.delete().catch((err) => logger.error({ err }, "Can't delete message"))
+          if (message.deletable)
+            await message.delete().catch((err) => logger.error({ err }, "Can't delete message"))
         }, timeout)
 
       return message
@@ -216,7 +238,10 @@ export default class Utils {
 
   public static forceLeave(guild: Guild) {
     logger.info({ guildId: guild.id, shardId: guild.shardId }, 'Force leaving channel...')
-    guild.shard.send({ op: 4, d: { guild_id: guild.id, channel_id: null, self_mute: false, self_deaf: false } }, false)
+    guild.shard.send(
+      { op: 4, d: { guild_id: guild.id, channel_id: null, self_mute: false, self_deaf: false } },
+      false
+    )
   }
 
   // public static async checkPlayerState(

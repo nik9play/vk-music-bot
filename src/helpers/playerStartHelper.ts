@@ -7,7 +7,7 @@ import {
   EmbedBuilder
 } from 'discord.js'
 
-import Utils from '../utils.js'
+import Utils, { Emojis } from '../utils.js'
 import { VkMusicBotClient } from '../client.js'
 import logger from '../logger.js'
 import BotPlayer from '../modules/botPlayer.js'
@@ -43,22 +43,22 @@ export function generatePlayerStartMessage(player: BotPlayer, track: BotTrack): 
   const row = new ActionRowBuilder<ButtonBuilder>().addComponents([
     new ButtonBuilder()
       .setCustomId(`menu,${MenuButtonType.Pause}`)
-      .setEmoji(player.player.paused ? '<:play_btn:1052960565674393640>' : '<:pause_btn:1052960594065641502>')
+      .setEmoji(player.player.paused ? Emojis.Play : Emojis.Pause)
       .setStyle(player.player.paused ? ButtonStyle.Primary : ButtonStyle.Secondary)
       .setDisabled(!player.current),
     new ButtonBuilder()
       .setCustomId(`menu,${MenuButtonType.Skip}`)
-      .setEmoji('<:skip:1052960924996223037>')
+      .setEmoji(Emojis.Skip)
       .setStyle(ButtonStyle.Secondary)
       .setDisabled(!player.current),
     new ButtonBuilder()
       .setCustomId(`menu,${MenuButtonType.Stop}`)
-      .setEmoji('<:stop_btn:1052960619940302868>')
+      .setEmoji(Emojis.Stop)
       .setStyle(ButtonStyle.Secondary)
       .setDisabled(!player.current),
     new ButtonBuilder()
       .setCustomId(`menu,${MenuButtonType.Queue}`)
-      .setEmoji('<:queue:1052960903047426099>')
+      .setEmoji(Emojis.Queue)
       .setStyle(ButtonStyle.Secondary),
     //.setDisabled(!player.queue),
     //new MessageButton().setCustomId('menu_update').setEmoji('🔃').setStyle(ButtonStyle.Primary),
@@ -72,13 +72,25 @@ export function generatePlayerStartMessage(player: BotPlayer, track: BotTrack): 
     new ButtonBuilder()
       .setCustomId('openTrackRequestModal')
       .setStyle(ButtonStyle.Success)
-      .setEmoji('<:add_queue:1103043247883956324>'),
-    new ButtonBuilder().setDisabled(true).setCustomId('empty_btn1').setStyle(ButtonStyle.Secondary).setLabel('\u2800'),
-    new ButtonBuilder().setDisabled(true).setCustomId('empty_btn2').setStyle(ButtonStyle.Secondary).setLabel('\u2800'),
-    new ButtonBuilder().setDisabled(true).setCustomId('empty_btn3').setStyle(ButtonStyle.Secondary).setLabel('\u2800'),
+      .setEmoji(Emojis.Add),
+    new ButtonBuilder()
+      .setDisabled(true)
+      .setCustomId('empty_btn1')
+      .setStyle(ButtonStyle.Secondary)
+      .setLabel('\u2800'),
+    new ButtonBuilder()
+      .setDisabled(true)
+      .setCustomId('empty_btn2')
+      .setStyle(ButtonStyle.Secondary)
+      .setLabel('\u2800'),
+    new ButtonBuilder()
+      .setDisabled(true)
+      .setCustomId('empty_btn3')
+      .setStyle(ButtonStyle.Secondary)
+      .setLabel('\u2800'),
     new ButtonBuilder()
       .setCustomId(`menu,${MenuButtonType.Leave}`)
-      .setEmoji('<:leave:1103044077978669156>')
+      .setEmoji(Emojis.Leave)
       .setStyle(ButtonStyle.Danger)
   ])
 
@@ -91,9 +103,11 @@ export function generatePlayerStartMessage(player: BotPlayer, track: BotTrack): 
 
   const progressBarText = `${
     filledCount || halfCount ? progressEmojis.startFilled : progressEmojis.startEmpty
-  }${progressEmojis.mid1.repeat(filledCount)}${progressEmojis.mid05.repeat(halfCount)}${progressEmojis.mid0.repeat(
-    emptyCount
-  )}${filledCount === 10 ? progressEmojis.endFilled : progressEmojis.endEmpty}`
+  }${progressEmojis.mid1.repeat(filledCount)}${progressEmojis.mid05.repeat(
+    halfCount
+  )}${progressEmojis.mid0.repeat(emptyCount)}${
+    filledCount === 10 ? progressEmojis.endFilled : progressEmojis.endEmpty
+  }`
 
   const loader = player.client.loaders.get(track.sourceNameCode) as BaseLoader
 
@@ -114,14 +128,15 @@ export function generatePlayerStartMessage(player: BotPlayer, track: BotTrack): 
         .setThumbnail(track.thumb ?? null)
         .setDescription(
           `${Utils.escapeFormat(track.author).slice(0, 100)}\n\n` +
-            `${Utils.formatTime(player.player.position)} ${progressBarText} ${Utils.formatTime(fixedDuration)}`
+            `${Utils.formatTime(player.player.position)} ${progressBarText} ${Utils.formatTime(
+              fixedDuration
+            )}`
         )
-        .addFields([
-          {
-            name: 'Источник',
-            value: loader.displayName
-          }
-        ])
+
+        .setFooter({
+          text: loader.displayName,
+          iconURL: loader.iconURL
+        })
         .setURL(track.uri ?? null)
     ],
     components: [row, row2]
