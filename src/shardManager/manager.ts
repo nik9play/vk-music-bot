@@ -51,7 +51,8 @@ const options: IndomitableOptions = {
           // (!!member.voice.channelId &&
           //   member.voice.channelId !== member.guild.members.me?.voice.channelId &&
           //   !member.user.bot)
-          (member.user.bot && member.id !== member.client.user.id) || (!member.voice.channelId && !member.user.bot)
+          (member.user.bot && member.id !== member.client.user.id) ||
+          (!member.voice.channelId && !member.user.bot)
       },
       users: {
         interval: 1800,
@@ -62,8 +63,18 @@ const options: IndomitableOptions = {
         filter: () => (voice) => !voice.channelId && voice.id !== voice.client.user.id
       }
     },
-    partials: [Partials.GuildMember, Partials.Message, Partials.ThreadMember, Partials.User, Partials.Channel],
-    intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildVoiceStates, GatewayIntentBits.GuildMessages],
+    partials: [
+      Partials.GuildMember,
+      Partials.Message,
+      Partials.ThreadMember,
+      Partials.User,
+      Partials.Channel
+    ],
+    intents: [
+      GatewayIntentBits.Guilds,
+      GatewayIntentBits.GuildVoiceStates,
+      GatewayIntentBits.GuildMessages
+    ],
     rest: {
       api: process.env.DISCORD_PROXY_URL
     }
@@ -93,7 +104,7 @@ export const manager = new Indomitable(options)
     logger.error({ worker_id: event.clusterId, shard_id: event.shardId }, 'Shard disconnect')
   })
   .on('shardReconnect', (event) => {
-    logger.error({ worker_id: event.clusterId, shard_id: event.shardId }, 'Shard reconnect')
+    logger.info({ worker_id: event.clusterId, shard_id: event.shardId }, 'Shard reconnect')
   })
   .on('debug', (event) => {
     logger.debug({ event }, 'Debug sharder')
@@ -121,25 +132,31 @@ export const manager = new Indomitable(options)
 let clientId: string
 
 async function sendStats() {
-  const clustersInfo = (await manager.broadcast({ content: { op: 'clustersInfo' }, repliable: true }).catch((err) => {
-    logger.error({ err }, "Can't get clustersInfo.")
-    return
-  })) as ClusterInfo[] | undefined
+  const clustersInfo = (await manager
+    .broadcast({ content: { op: 'clustersInfo' }, repliable: true })
+    .catch((err) => {
+      logger.error({ err }, "Can't get clustersInfo.")
+      return
+    })) as ClusterInfo[] | undefined
 
   if (!clustersInfo) return
 
   const guildCount: number = clustersInfo.reduce((acc, info) => acc + info.guilds, 0)
 
   await manager
-    .broadcast({ content: { op: 'setPresence', data: `/help | ${(guildCount / 1000).toFixed(1)}k серверов` } })
+    .broadcast({
+      content: { op: 'setPresence', data: `/help | ${(guildCount / 1000).toFixed(1)}k серверов` }
+    })
     .catch((err) => {
       logger.error({ err }, "Can't set presence.")
     })
 
-  const lavalinkInfo = (await manager.send(0, { content: { op: 'getLavalinkNodes' }, repliable: true }).catch((err) => {
-    logger.error({ err }, "Can't get lavalink nodes with api.")
-    return { success: false, error: err.message }
-  })) as NodeInfo[] | undefined
+  const lavalinkInfo = (await manager
+    .send(0, { content: { op: 'getLavalinkNodes' }, repliable: true })
+    .catch((err) => {
+      logger.error({ err }, "Can't get lavalink nodes with api.")
+      return { success: false, error: err.message }
+    })) as NodeInfo[] | undefined
 
   if (!lavalinkInfo) return
 
@@ -160,6 +177,7 @@ async function sendStats() {
         .floatField('ping', el.ping)
     ),
     new Point('bot')
+      .timestamp(new Date())
       .intField('guilds', guildCount)
       .intField('shards', manager.shardCount)
       .intField('clusters', manager.clusterCount)
@@ -192,10 +210,12 @@ async function sendStats() {
   }
 
   if (!clientId)
-    clientId = (await manager?.send(0, { content: { op: 'clientId' }, repliable: true }).catch((err) => {
-      logger.error({ err }, "Can't get client id.")
-      return
-    })) as string
+    clientId = (await manager
+      ?.send(0, { content: { op: 'clientId' }, repliable: true })
+      .catch((err) => {
+        logger.error({ err }, "Can't get client id.")
+        return
+      })) as string
 
   // SDC
   try {
@@ -226,7 +246,7 @@ async function sendStats() {
 
   // Boticord
   try {
-    const res = await fetch(`https://api.boticord.top/v2/stats`, {
+    const res = await fetch(`https://api.boticord.top/v3/bots/${clientId}/stats`, {
       method: 'POST',
       body: JSON.stringify({
         servers: guildCount,
@@ -234,7 +254,7 @@ async function sendStats() {
       }),
       headers: {
         'Content-Type': 'application/json',
-        Authorization: 'Bot ' + process.env.BOTICORD_TOKEN
+        Authorization: process.env.BOTICORD_TOKEN
       }
     })
     const data = (await res.json()) as any
