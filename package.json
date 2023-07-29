@@ -12,7 +12,8 @@
     "start": "node --inspect=0.0.0.0 dist/index.js",
     "build": "tsc",
     "dev": "tsc && NODE_ENV=development node --enable-source-maps --inspect=0.0.0.0 -r dotenv/config ./dist/index.js",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "register-commands": "tsc && NODE_ENV=development node --enable-source-maps -r dotenv/config dist/scripts/slashCommandsUtils.js"
   },
   "dependencies": {
     "@influxdata/influxdb-client": "^1.33.2",
