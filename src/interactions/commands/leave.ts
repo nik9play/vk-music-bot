@@ -10,13 +10,11 @@ export const interaction: CommandCustomInteraction = {
     .setName('leave')
     .setDescription('Выход из голосового канала')
     .setDMPermission(false),
-  execute: async ({ client, respond, guild }) => {
+  execute: async ({ client, respond, guild, voice }) => {
     const player = client.playerManager.get(guild.id)
 
-    if (!player) {
-      await Utils.sendNoPlayerMessage(respond)
-      return
-    }
+    if (!Utils.checkPlayer(respond, player)) return
+    if (!Utils.checkSameVoiceChannel(respond, voice)) return
 
     Utils.clearExitTimeout(guild.id, client)
 

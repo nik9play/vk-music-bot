@@ -14,30 +14,16 @@ export async function playCommandHandler(
 ) {
   const { guild, voice, text, client, captcha, respond, send } = params
 
-  if (!voice) {
-    respond({
-      embeds: [Utils.generateErrorMessage('Необходимо находиться в голосовом канале.')],
-      ephemeral: true
-    })
-    return
-  }
-  if (!guild.members.me) return
-
-  if (!Utils.checkVoicePermissions(voice)) {
-    respond({
-      embeds: [Utils.generateErrorMessage('Мне нужны права, чтобы войти в канал.')],
-      ephemeral: true
-    })
-    return
-  }
+  if (!Utils.checkSameVoiceChannel(respond, voice)) return
+  if (!Utils.checkVoicePermissions(respond, voice)) return
 
   const node = client.shoukaku.getNode('auto')
 
   if (!node) {
-    respond({
+    await respond({
       embeds: [
         Utils.generateErrorMessage(
-          'Нет доступных серверов для воспроизведения. Попробуйте еще раз через несколько минут, если не сработает, обратитесь за ' +
+          'Нет доступных серверов для воспроизведения. Попробуйте ещё раз через несколько минут. Если не сработает, обратитесь за ' +
             'поддержкой в [группу ВК](https://vk.com/vkmusicbotds) или [сервер Discord](https://discord.com/invite/3ts2znePu7).'
         )
       ],
@@ -61,7 +47,12 @@ export async function playCommandHandler(
   }
 
   try {
-    const [tracks, embed, wrongTracks] = await loader.resolveTracks(queryParam, countParam, offsetParam, captcha)
+    const [tracks, embed, wrongTracks] = await loader.resolveTracks(
+      queryParam,
+      countParam,
+      offsetParam,
+      captcha
+    )
 
     const player = await client.playerManager.handle(guild, voice.id, text.id, node, tracks)
     if (player instanceof BotPlayer) {

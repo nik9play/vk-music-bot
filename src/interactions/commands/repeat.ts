@@ -27,15 +27,10 @@ export const interaction: CommandCustomInteraction = {
     .setDMPermission(false),
   execute: async function ({ guild, voice, client, interaction, respond }) {
     const player = client.playerManager.get(guild.id)
-    if (!player) {
-      await Utils.sendNoPlayerMessage(respond)
-      return
-    }
 
-    if (!voice) {
-      await Utils.sendNoVoiceChannelMessage(respond)
-      return
-    }
+    if (!Utils.checkPlayer(respond, player)) return
+    if (!Utils.checkNodeState(respond, player)) return
+    if (!Utils.checkSameVoiceChannel(respond, voice)) return
 
     const repeatParam = interaction.options.getString('режим')
 

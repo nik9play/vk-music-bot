@@ -1,25 +1,14 @@
 import {
-  InteractionReplyOptions,
-  InteractionUpdateOptions,
   ActionRowBuilder,
   ButtonBuilder,
   EmbedBuilder,
-  ButtonStyle
+  ButtonStyle,
+  BaseMessageOptions
 } from 'discord.js'
 import BotPlayer from '../modules/botPlayer.js'
 import Utils, { Emojis } from '../utils.js'
 
-export function generateQueueResponse(
-  page: number,
-  player: BotPlayer | undefined
-): InteractionReplyOptions | InteractionUpdateOptions {
-  if (!player)
-    return {
-      embeds: [Utils.generateErrorMessage('Сейчас ничего не играет.')],
-      ephemeral: true,
-      components: []
-    }
-
+export function generateQueueResponse(page: number, player: BotPlayer): BaseMessageOptions {
   const queue = player.queue
   const embed = new EmbedBuilder().setAuthor({ name: 'Треки в очереди' }).setColor(0x5181b8)
 

@@ -45,7 +45,10 @@ export const interaction: ButtonCustomInteraction = {
       }
     }
 
-    await Utils.checkNodeState(player, respond)
+    if (!Utils.checkPlayer(respond, player)) return
+    if (!Utils.checkPlaying(respond, player.current)) return
+    if (!Utils.checkNodeState(respond, player)) return
+    if (!Utils.checkSameVoiceChannel(respond, voice)) return
 
     let action: 'update' | 'delete' = 'delete'
 
@@ -77,7 +80,8 @@ export const interaction: ButtonCustomInteraction = {
         } else {
           await player.player.setPaused(true)
 
-          if (player && !(await getConfig(player?.guildId)).enable247) Utils.setExitTimeout(player, client)
+          if (player && !(await getConfig(player?.guildId)).enable247)
+            Utils.setExitTimeout(player, client)
         }
 
         action = 'update'

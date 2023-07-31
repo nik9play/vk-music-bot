@@ -20,6 +20,7 @@ import { playCommandHandler } from './helpers/playCommandHelper.js'
 import { CommandExecuteParams } from './interactions/commandInteractions.js'
 import { searchCommandHandler } from './helpers/searchCommandHelper.js'
 import { CaptchaInfo } from './loaders/baseLoader.js'
+import BotTrack from './structures/botTrack.js'
 
 export enum Emojis {
   Yes = '<:yes2:835498559805063169>',
@@ -201,17 +202,6 @@ export default class Utils {
     return permissions?.has([PermissionsBitField.Flags.SendMessages])
   }
 
-  public static checkVoicePermissions(channel: VoiceBasedChannel): boolean {
-    if (channel.isDMBased() || !channel.guild.members.me) return false
-
-    const permissions = channel.permissionsFor(channel.guild.members.me)
-    return permissions?.has([
-      PermissionsBitField.Flags.Speak,
-      PermissionsBitField.Flags.Connect,
-      PermissionsBitField.Flags.ViewChannel
-    ])
-  }
-
   public static async sendMessageToChannel(
     channel: TextBasedChannel,
     content: MessageCreateOptions,
@@ -285,27 +275,59 @@ export default class Utils {
   public static async sendNoPlayerMessage(respond: RespondFunction) {
     await respond({
       embeds: [Utils.generateErrorMessage('Сейчас ничего не играет.')],
-      ephemeral: true
+      ephemeral: true,
+      components: []
     })
   }
 
   public static async sendNoVoiceChannelMessage(respond: RespondFunction) {
     await respond({
       embeds: [Utils.generateErrorMessage('Необходимо находиться в голосовом канале.')],
-      ephemeral: true
+      ephemeral: true,
+      components: []
     })
   }
 
   public static async sendNoQueueMessage(respond: RespondFunction) {
     await respond({
       embeds: [Utils.generateErrorMessage('Очередь пуста.')],
-      ephemeral: true
+      ephemeral: true,
+      components: []
     })
   }
 
-  public static async checkNodeState(player: BotPlayer, respond: RespondFunction) {
+  public static async sendWrongChannel(respond: RespondFunction) {
+    await respond({
+      embeds: [Utils.generateErrorMessage('Вы должны находиться в том же канале, что и бот.')],
+      ephemeral: true,
+      components: []
+    })
+  }
+
+  public static checkSameVoiceChannel(
+    respond: RespondFunction,
+    voice: VoiceBasedChannel | null | undefined
+  ): voice is VoiceBasedChannel {
+    if (!voice) {
+      this.sendNoVoiceChannelMessage(respond)
+      return false
+    }
+
+    const client = voice.client as VkMusicBotClient
+
+    if (
+      voice.id !== voice.guild.members.me?.voice.channelId &&
+      !!client.playerManager.get(voice.guildId)
+    ) {
+      this.sendWrongChannel(respond)
+      return false
+    }
+    return true
+  }
+
+  public static checkNodeState(respond: RespondFunction, player: BotPlayer): boolean {
     if (player.player.node.state === Constants.State.RECONNECTING) {
-      await respond({
+      respond({
         embeds: [
           Utils.generateErrorMessage(
             'Бот в данный момент пытается переподключиться к серверу воспроизведения. ' +
@@ -314,8 +336,74 @@ export default class Utils {
         ],
         ephemeral: true
       })
-      return
+      return false
     }
+    return true
+  }
+
+  public static checkVoicePermissions(
+    respond: RespondFunction,
+    voice: VoiceBasedChannel | undefined | null
+  ): voice is VoiceBasedChannel {
+    if (!voice) {
+      this.sendNoVoiceChannelMessage(respond)
+      return false
+    }
+
+    if (voice.isDMBased() || !voice.guild.members.me) return false
+
+    const permissions = voice.permissionsFor(voice.guild.members.me)
+    if (
+      !permissions?.has([
+        PermissionsBitField.Flags.Speak,
+        PermissionsBitField.Flags.Connect,
+        PermissionsBitField.Flags.ViewChannel
+      ])
+    ) {
+      respond({
+        embeds: [
+          Utils.generateErrorMessage(
+            'Мне нужны следующие права, чтобы войти в канал: `Просматривать канал`, `Подключаться`, `Говорить`.'
+          )
+        ],
+        ephemeral: true
+      })
+      return false
+    }
+
+    return true
+  }
+
+  public static checkPlayer(
+    respond: RespondFunction,
+    player: BotPlayer | undefined | null
+  ): player is BotPlayer {
+    if (!player) {
+      this.sendNoPlayerMessage(respond)
+      return false
+    }
+    return true
+  }
+
+  public static checkPlaying(
+    respond: RespondFunction,
+    track: BotTrack | undefined | null
+  ): track is BotTrack {
+    if (!track) {
+      this.sendNoQueueMessage(respond)
+      return false
+    }
+
+    return true
+  }
+
+  public static checkQueue(respond: RespondFunction, player: BotPlayer): boolean {
+    if (player.queue.length === 0) {
+      this.sendNoQueueMessage(respond)
+      return false
+    }
+
+    return true
   }
 
   public static generateTrackUrl(source_id: string, access_key?: string): string {

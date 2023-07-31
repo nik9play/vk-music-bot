@@ -12,18 +12,10 @@ export const interaction: CommandCustomInteraction = {
     .setDMPermission(false),
   execute: async ({ client, guild, respond, voice }) => {
     const player = client.playerManager.get(guild.id)
-    if (!player) {
-      await Utils.sendNoPlayerMessage(respond)
-      return
-    }
 
-    if (!voice) {
-      await Utils.sendNoVoiceChannelMessage(respond)
-      return
-    }
-    //if (channel.id !== player.voiceChannel) return message.reply("вы находитесь не в том голосовом канале.")
-
-    await Utils.checkNodeState(player, respond)
+    if (!Utils.checkPlayer(respond, player)) return
+    if (!Utils.checkNodeState(respond, player)) return
+    if (!Utils.checkSameVoiceChannel(respond, voice)) return
 
     await player.stop()
 

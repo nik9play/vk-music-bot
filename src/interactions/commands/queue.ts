@@ -1,6 +1,7 @@
 import { generateQueueResponse } from '../../helpers/queueCommandHelper.js'
 import { InteractionReplyOptions, SlashCommandBuilder } from 'discord.js'
 import { CommandCustomInteraction } from '../commandInteractions.js'
+import Utils from '../../utils.js'
 
 export const interaction: CommandCustomInteraction = {
   name: 'queue',
@@ -21,6 +22,8 @@ export const interaction: CommandCustomInteraction = {
     const player = client.playerManager.get(guild.id)
     const pageParam = interaction.options.getInteger('страница')
     const page = pageParam ?? 1
+
+    if (!Utils.checkPlayer(respond, player)) return
 
     await respond(generateQueueResponse(page, player) as InteractionReplyOptions)
   }

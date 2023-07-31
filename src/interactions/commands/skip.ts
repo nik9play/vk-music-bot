@@ -16,28 +16,11 @@ export const interaction: CommandCustomInteraction = {
     .setDMPermission(false),
   execute: async ({ client, guild, voice, respond, interaction }) => {
     const player = client.playerManager.get(guild.id)
-    if (!player) {
-      await respond({
-        embeds: [Utils.generateErrorMessage('Сейчас ничего не играет.')],
-        ephemeral: true
-      })
-      return
-    }
 
-    if (!voice) {
-      await respond({
-        embeds: [Utils.generateErrorMessage('Необходимо находиться в голосовом канале.')],
-        ephemeral: true
-      })
-      return
-    }
-
-    if (!player.current) {
-      await Utils.sendNoQueueMessage(respond)
-      return
-    }
-
-    await Utils.checkNodeState(player, respond)
+    if (!Utils.checkPlayer(respond, player)) return
+    if (!Utils.checkPlaying(respond, player.current)) return
+    if (!Utils.checkNodeState(respond, player)) return
+    if (!Utils.checkSameVoiceChannel(respond, voice)) return
 
     const { title, author } = player.current
 
