@@ -59,7 +59,7 @@ export class SelectMenuInteractionManager implements BaseInteractionManager {
 
     if (interaction?.customId === 'search') {
       const id = interaction.values[0].split(',')[1]
-
+      logger.debug({ id }, 'select menu search')
       const meta: Meta = {
         guildId: guild?.id,
         shardId: guild?.shardId
@@ -70,7 +70,7 @@ export class SelectMenuInteractionManager implements BaseInteractionManager {
       if (id) {
         if (!interaction.deferred) await interaction.deferReply()
 
-        const partialParams: Partial<CommandExecuteParams> = {
+        const partialParams: Omit<CommandExecuteParams, 'interaction'> = {
           guild,
           user,
           voice,
@@ -81,7 +81,7 @@ export class SelectMenuInteractionManager implements BaseInteractionManager {
           meta
         }
 
-        playCommandHandler(partialParams as CommandExecuteParams, id).catch((err: any) =>
+        playCommandHandler(partialParams, id).catch((err: any) =>
           logger.error({ err, ...meta }, 'Error executing select menu command')
         )
       }

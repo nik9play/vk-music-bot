@@ -6,7 +6,7 @@ import { CommandExecuteParams } from '../interactions/commandInteractions.js'
 import { CaptchaLoaderError, LoaderError } from '../loaders/baseLoader.js'
 
 export async function playCommandHandler(
-  params: CommandExecuteParams,
+  params: Omit<CommandExecuteParams, 'interaction'>,
   queryParam: string,
   countParam?: number | null,
   offsetParam?: number | null,

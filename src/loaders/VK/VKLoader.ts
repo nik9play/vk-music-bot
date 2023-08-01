@@ -54,9 +54,12 @@ export default class VKLoader implements BaseLoader {
 
   private trackRegex =
     /(?:^|^https?:\/\/.*\/audio)(?<owner_id>-?\d+)_(?<id>\d+)(?:_(?<access_key>[a-zA-Z0-9]+))?$/
+
   private userGroupRegex =
     /^>(?:(?<group_id>-[0-9]+)|(?<user_id>[0-9]+)|(?<screen_name>[A-Za-z0-9.]+))$/
+
   private userGroupNumberUrlRegex = /^https:\/\/vk\.com\/(audios?(?<owner_id>-?\d+))$/
+
   private userGroupTextUrlRegex = /^https:\/\/vk\.com\/(?<screen_name>[a-zA-Z0-9._]+)$/
 
   private prepareParams(
@@ -272,154 +275,6 @@ export default class VKLoader implements BaseLoader {
       }
     }
 
-    const userGroupMatch = query.match(this.userGroupRegex)
-
-    if (userGroupMatch && userGroupMatch.groups) {
-      groupId = userGroupMatch.groups['group_id']
-      userId = userGroupMatch.groups['user_id']
-
-      if (userGroupMatch.groups['screen_name']) {
-        await assignUserAndGroupIds(userGroupMatch.groups['screen_name'])
-      }
-
-      if (!groupId && !userId) {
-        throw new LoaderError('Не удалось ничего найти по запросу.')
-      }
-    }
-
-    const userGroupTextUrlRegex = query.match(this.userGroupTextUrlRegex)
-
-    if (userGroupTextUrlRegex && userGroupTextUrlRegex.groups) {
-      if (userGroupTextUrlRegex.groups['screen_name']) {
-        await assignUserAndGroupIds(userGroupTextUrlRegex.groups['screen_name'])
-      }
-
-      if (!groupId && !userId) {
-        throw new LoaderError('Не удалось ничего найти по запросу.')
-      }
-    }
-
-    const userGroupNumberUrlMatch = query.match(this.userGroupNumberUrlRegex)
-
-    if (userGroupNumberUrlMatch && userGroupNumberUrlMatch.groups) {
-      if (userGroupNumberUrlMatch.groups['owner_id'].startsWith('-')) {
-        groupId = userGroupNumberUrlMatch.groups['owner_id']
-      } else {
-        userId = userGroupNumberUrlMatch.groups['owner_id']
-      }
-    }
-
-    if (groupId) {
-      const response = await this.makeRequest<VKGroupResponse>('execute.getMusicPage', {
-        owner_id: groupId,
-        audio_count: countQuery,
-        audio_offset: offset,
-        need_owner: '1',
-        ...captchaInfo
-      })
-
-      if (isVKErrorResponse(response)) {
-        const error = this.getErrorOrThrowCaptcha(response)
-
-        switch (error.code) {
-          case VKErrorCode.ACCESS_DENIED:
-          case VKErrorCode.ACCESS_DENIED_ALBUM:
-          case VKErrorCode.ACCESS_DENIED_AUDIO:
-            throw new LoaderError('Нет доступа к аудио сообщества.')
-          case VKErrorCode.WRONG_USER_ID:
-            throw new LoaderError('Не удалось ничего найти по запросу.')
-          default:
-            throw new LoaderError('Неверный формат ссылки или запроса.')
-        }
-      }
-
-      if (response.response.audios.items.length === 0) {
-        throw new LoaderError('Аудио пусты.')
-      }
-
-      const tracks = response.response.audios.items.slice(0, count)
-
-      const embed = new EmbedBuilder()
-        .setTitle(Utils.escapeFormat(response.response.owner.name).slice(0, 100))
-        .setURL(`https://vk.com/club${response.response.owner.id}`)
-        // .setDescription(description)
-        .setColor(this.color)
-        .setAuthor({
-          name: 'Добавлены треки из сообщества'
-        })
-        .addFields([
-          {
-            name: 'Добавлено треков',
-            value: tracks.length.toString(),
-            inline: true
-          }
-        ])
-        .setFooter({
-          text: 'Чтобы добавить больше 50 треков, введите количество треков в аргумент "количество".'
-        })
-        .setThumbnail(response.response.owner.photo_200 ?? null)
-
-      const wrongTracks: string[] = []
-      return [this.convertToBotTracks(tracks, wrongTracks), embed, wrongTracks]
-    } else if (userId) {
-      const response = await this.makeRequest<VKUserResponse>('execute.getMusicPage', {
-        owner_id: userId,
-        audio_count: countQuery,
-        audio_offset: offset,
-        need_owner: '1',
-        ...captchaInfo
-      })
-
-      if (isVKErrorResponse(response)) {
-        const error = this.getErrorOrThrowCaptcha(response)
-
-        switch (error.code) {
-          case VKErrorCode.ACCESS_DENIED:
-          case VKErrorCode.ACCESS_DENIED_ALBUM:
-          case VKErrorCode.ACCESS_DENIED_AUDIO:
-            throw new LoaderError(
-              'Нет доступа к аудио пользователя. Профиль и доступ к аудиозаписям должен быть открыт в [настройках приватности](https://vk.com/settings?act=privacy).'
-            )
-          case VKErrorCode.WRONG_USER_ID:
-            throw new LoaderError('Не удалось ничего найти по запросу.')
-          default:
-            throw new LoaderError('Неверный формат ссылки или запроса.')
-        }
-      }
-
-      if (response.response.audios.items.length === 0) {
-        throw new LoaderError('Аудио пусты.')
-      }
-
-      const tracks = response.response.audios.items.slice(0, count)
-
-      const embed = new EmbedBuilder()
-        .setTitle(
-          Utils.escapeFormat(
-            `${response.response.owner.first_name} ${response.response.owner.last_name}`
-          ).slice(0, 100)
-        )
-        .setURL(`https://vk.com/id${response.response.owner.id}`)
-        .setColor(this.color)
-        .setAuthor({
-          name: 'Добавлены треки пользователя'
-        })
-        .addFields([
-          {
-            name: 'Добавлено треков',
-            value: tracks.length.toString(),
-            inline: true
-          }
-        ])
-        .setFooter({
-          text: 'Чтобы добавить больше 50 треков, введите количество треков в аргумент "количество".'
-        })
-        .setThumbnail(response.response.owner.photo_200 ?? null)
-
-      const wrongTracks: string[] = []
-      return [this.convertToBotTracks(tracks, wrongTracks), embed, wrongTracks]
-    }
-
     let oneTrack: VKTrack | null | undefined = null
 
     const trackMatch = query.match(this.trackRegex)
@@ -429,10 +284,17 @@ export default class VKLoader implements BaseLoader {
       const ownerId = trackMatch.groups['owner_id']
       const accessKey = trackMatch.groups['access_key']
 
+      logger.debug(
+        { g: trackMatch.groups },
+        'audio link' + `${ownerId}_${id}${accessKey ? '_' + accessKey : ''}`
+      )
+
       const response = await this.makeRequest<VKTrack[]>('audio.getById', {
         audios: `${ownerId}_${id}${accessKey ? '_' + accessKey : ''}`,
         ...captchaInfo
       })
+
+      logger.debug({ response })
 
       if (isVKErrorResponse(response)) {
         this.getErrorOrThrowCaptcha(response)
@@ -444,6 +306,155 @@ export default class VKLoader implements BaseLoader {
     }
 
     if (!oneTrack) {
+      const userGroupMatch = query.match(this.userGroupRegex)
+
+      if (userGroupMatch && userGroupMatch.groups) {
+        groupId = userGroupMatch.groups['group_id']
+        userId = userGroupMatch.groups['user_id']
+
+        if (userGroupMatch.groups['screen_name']) {
+          await assignUserAndGroupIds(userGroupMatch.groups['screen_name'])
+        }
+
+        if (!groupId && !userId) {
+          throw new LoaderError('Не удалось ничего найти по запросу.')
+        }
+      }
+
+      const userGroupTextUrlRegex = query.match(this.userGroupTextUrlRegex)
+
+      if (userGroupTextUrlRegex && userGroupTextUrlRegex.groups) {
+        if (userGroupTextUrlRegex.groups['screen_name']) {
+          await assignUserAndGroupIds(userGroupTextUrlRegex.groups['screen_name'])
+        }
+
+        if (!groupId && !userId) {
+          throw new LoaderError('Не удалось ничего найти по запросу.')
+        }
+      }
+
+      const userGroupNumberUrlMatch = query.match(this.userGroupNumberUrlRegex)
+
+      if (userGroupNumberUrlMatch && userGroupNumberUrlMatch.groups) {
+        if (userGroupNumberUrlMatch.groups['owner_id'].startsWith('-')) {
+          groupId = userGroupNumberUrlMatch.groups['owner_id']
+        } else {
+          userId = userGroupNumberUrlMatch.groups['owner_id']
+        }
+      }
+
+      if (groupId) {
+        const response = await this.makeRequest<VKGroupResponse>('execute.getMusicPage', {
+          owner_id: groupId,
+          audio_count: countQuery,
+          audio_offset: offset,
+          need_owner: '1',
+          ...captchaInfo
+        })
+
+        if (isVKErrorResponse(response)) {
+          const error = this.getErrorOrThrowCaptcha(response)
+
+          switch (error.code) {
+            case VKErrorCode.ACCESS_DENIED:
+            case VKErrorCode.ACCESS_DENIED_ALBUM:
+            case VKErrorCode.ACCESS_DENIED_AUDIO:
+              throw new LoaderError('Нет доступа к аудио сообщества.')
+            case VKErrorCode.WRONG_USER_ID:
+              throw new LoaderError('Не удалось ничего найти по запросу.')
+            default:
+              throw new LoaderError('Неверный формат ссылки или запроса.')
+          }
+        }
+
+        if (response.response.audios.items.length === 0) {
+          throw new LoaderError('Аудио пусты.')
+        }
+
+        const tracks = response.response.audios.items.slice(0, count)
+
+        const embed = new EmbedBuilder()
+          .setTitle(Utils.escapeFormat(response.response.owner.name).slice(0, 100))
+          .setURL(`https://vk.com/club${response.response.owner.id}`)
+          // .setDescription(description)
+          .setColor(this.color)
+          .setAuthor({
+            name: 'Добавлены треки из сообщества'
+          })
+          .addFields([
+            {
+              name: 'Добавлено треков',
+              value: tracks.length.toString(),
+              inline: true
+            }
+          ])
+          .setFooter({
+            text: 'Чтобы добавить больше 50 треков, введите количество треков в аргумент "количество".'
+          })
+          .setThumbnail(response.response.owner.photo_200 ?? null)
+
+        const wrongTracks: string[] = []
+        return [this.convertToBotTracks(tracks, wrongTracks), embed, wrongTracks]
+      } else if (userId) {
+        const response = await this.makeRequest<VKUserResponse>('execute.getMusicPage', {
+          owner_id: userId,
+          audio_count: countQuery,
+          audio_offset: offset,
+          need_owner: '1',
+          ...captchaInfo
+        })
+
+        if (isVKErrorResponse(response)) {
+          const error = this.getErrorOrThrowCaptcha(response)
+
+          switch (error.code) {
+            case VKErrorCode.ACCESS_DENIED:
+            case VKErrorCode.ACCESS_DENIED_ALBUM:
+            case VKErrorCode.ACCESS_DENIED_AUDIO:
+              throw new LoaderError(
+                'Нет доступа к аудио пользователя. Профиль и доступ к аудиозаписям должен быть открыт в [настройках приватности](https://vk.com/settings?act=privacy).'
+              )
+            case VKErrorCode.WRONG_USER_ID:
+              throw new LoaderError('Не удалось ничего найти по запросу.')
+            default:
+              throw new LoaderError('Неверный формат ссылки или запроса.')
+          }
+        }
+
+        if (response.response.audios.items.length === 0) {
+          throw new LoaderError('Аудио пусты.')
+        }
+
+        const tracks = response.response.audios.items.slice(0, count)
+
+        const embed = new EmbedBuilder()
+          .setTitle(
+            Utils.escapeFormat(
+              `${response.response.owner.first_name} ${response.response.owner.last_name}`
+            ).slice(0, 100)
+          )
+          .setURL(`https://vk.com/id${response.response.owner.id}`)
+          .setColor(this.color)
+          .setAuthor({
+            name: 'Добавлены треки пользователя'
+          })
+          .addFields([
+            {
+              name: 'Добавлено треков',
+              value: tracks.length.toString(),
+              inline: true
+            }
+          ])
+          .setFooter({
+            text: 'Чтобы добавить больше 50 треков, введите количество треков в аргумент "количество".'
+          })
+          .setThumbnail(response.response.owner.photo_200 ?? null)
+
+        const wrongTracks: string[] = []
+        return [this.convertToBotTracks(tracks, wrongTracks), embed, wrongTracks]
+      }
+
+      // попытка поиска трека по названию
       const response = await this.makeRequest<{ count: number; items: VKTrack[] }>('audio.search', {
         q: Utils.escapeQuery(query),
         count: 1,
@@ -457,9 +468,9 @@ export default class VKLoader implements BaseLoader {
       }
 
       oneTrack = response.items[0] as VKTrack | undefined
-    }
 
-    logger.info({ q: Utils.escapeQuery(query), oneTrack }, 'test query')
+      // logger.info({ q: Utils.escapeQuery(query), oneTrack }, 'test query')
+    }
 
     if (!oneTrack) {
       throw new LoaderError('Не удалось ничего найти по запросу.')
@@ -483,5 +494,33 @@ export default class VKLoader implements BaseLoader {
 
     const wrongTracks: string[] = []
     return [this.convertToBotTracks([oneTrack], wrongTracks), embed, wrongTracks]
+  }
+
+  public async resolveSearchResults(
+    query: string,
+    count: number,
+    captcha?: CaptchaInfo | undefined
+  ): Promise<BotTrack[]> {
+    const captchaInfo = {
+      captcha_sid: captcha?.sid,
+      captcha_key: captcha?.key,
+      captcha_index: captcha?.index
+    }
+
+    const response = await this.makeRequest<{ count: number; items: VKTrack[] }>('audio.search', {
+      q: Utils.escapeQuery(query),
+      count,
+      ...captchaInfo
+    })
+
+    if (isVKErrorResponse(response)) {
+      this.getErrorOrThrowCaptcha(response)
+
+      throw new LoaderError('Ничего не найдено по запросу.')
+    }
+
+    const tracks = response.items
+
+    return this.convertToBotTracks(tracks, [])
   }
 }

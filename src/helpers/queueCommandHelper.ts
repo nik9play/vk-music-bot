@@ -3,12 +3,16 @@ import {
   ButtonBuilder,
   EmbedBuilder,
   ButtonStyle,
-  BaseMessageOptions
+  InteractionReplyOptions,
+  InteractionUpdateOptions
 } from 'discord.js'
 import BotPlayer from '../modules/botPlayer.js'
 import Utils, { Emojis } from '../utils.js'
 
-export function generateQueueResponse(page: number, player: BotPlayer): BaseMessageOptions {
+export function generateQueueResponse(
+  page: number,
+  player: BotPlayer
+): InteractionReplyOptions & InteractionUpdateOptions {
   const queue = player.queue
   const embed = new EmbedBuilder().setAuthor({ name: 'Треки в очереди' }).setColor(0x5181b8)
 

@@ -13,10 +13,17 @@ export const interaction: CommandCustomInteraction = {
     .addStringOption((option) =>
       option.setName('запрос').setDescription('Поисковой запрос').setRequired(true)
     )
+    .addStringOption((option) =>
+      option
+        .setName('источник')
+        .setDescription('Источник для поиска треков')
+        .addChoices({ name: 'ВК', value: 'vk' }, { name: 'ЯМузыка', value: 'ya' })
+    )
     .setDMPermission(false),
   execute: async function (params) {
     const search = params.interaction.options.getString('запрос') as string
+    const source = params.interaction.options.getString('источник')
 
-    await searchCommandHandler(params, search)
+    await searchCommandHandler(params, search, source)
   }
 }

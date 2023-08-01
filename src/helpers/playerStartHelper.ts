@@ -1,10 +1,11 @@
 import {
   ActionRowBuilder,
-  BaseMessageOptions,
   ButtonBuilder,
   ButtonStyle,
   DiscordAPIError,
-  EmbedBuilder
+  EmbedBuilder,
+  InteractionReplyOptions,
+  InteractionUpdateOptions
 } from 'discord.js'
 
 import Utils, { Emojis } from '../utils.js'
@@ -39,7 +40,10 @@ const progressEmojis = {
   startEmpty: '<:progress_start_empty:1084261098783506472>'
 }
 
-export function generatePlayerStartMessage(player: BotPlayer, track: BotTrack): BaseMessageOptions {
+export function generatePlayerStartMessage(
+  player: BotPlayer,
+  track: BotTrack
+): InteractionReplyOptions & InteractionUpdateOptions {
   const row = new ActionRowBuilder<ButtonBuilder>().addComponents([
     new ButtonBuilder()
       .setCustomId(`menu,${MenuButtonType.Pause}`)

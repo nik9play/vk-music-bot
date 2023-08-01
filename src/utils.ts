@@ -1,10 +1,10 @@
 import {
+  BaseMessageOptions,
   EmbedBuilder,
   Guild,
   GuildTextBasedChannel,
   InteractionReplyOptions,
   Message,
-  MessageCreateOptions,
   PermissionsBitField,
   TextBasedChannel,
   VoiceBasedChannel
@@ -90,7 +90,7 @@ export default class Utils {
 
   public static async handleCaptchaError(
     captchaInfo: CaptchaInfo,
-    params: CommandExecuteParams,
+    params: Omit<CommandExecuteParams, 'interaction'>,
     autoSolve = true
   ): Promise<InteractionReplyOptions | null> {
     params.client.captcha.set(params.guild.id, captchaInfo)
@@ -204,7 +204,7 @@ export default class Utils {
 
   public static async sendMessageToChannel(
     channel: TextBasedChannel,
-    content: MessageCreateOptions,
+    content: BaseMessageOptions,
     timeout?: number
   ): Promise<Message | undefined> {
     if (channel.isDMBased() || !channel.guild.members.me) return

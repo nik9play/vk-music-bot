@@ -4,6 +4,7 @@ import { EmbedBuilder } from 'discord.js'
 import BotTrack from '../../structures/botTrack.js'
 import { Track } from 'shoukaku'
 import logger from '../../logger.js'
+import Utils from '../../utils.js'
 
 export default class YandexMusicLoader implements BaseLoader {
   public get name() {
@@ -83,10 +84,11 @@ export default class YandexMusicLoader implements BaseLoader {
       case 'TRACK_LOADED':
         embed
           .setAuthor({ name: 'Трек добавлен!' })
-          .setTitle(resolvedTracks.tracks[0].info.title)
-          .setDescription(resolvedTracks.tracks[0].info.author)
+          .setTitle(Utils.escapeFormat(resolvedTracks.tracks[0].info.title))
+          .setDescription(Utils.escapeFormat(resolvedTracks.tracks[0].info.author))
+          .setURL(resolvedTracks.tracks[0].info.uri ?? null)
 
-        if (resolvedTracks.tracks[0].info.uri) embed.setURL(resolvedTracks.tracks[0].info.uri)
+        tracks.length = 1
         break
       case 'PLAYLIST_LOADED':
         embed
@@ -96,11 +98,26 @@ export default class YandexMusicLoader implements BaseLoader {
             { name: 'Всего треков', value: resolvedTracks.tracks.length.toString(), inline: true }
           ])
           .setURL(query)
-
-        if (resolvedTracks.playlistInfo.name) embed.setTitle(resolvedTracks.playlistInfo.name)
+          .setTitle(Utils.escapeFormat(resolvedTracks.playlistInfo.name) ?? 'Без имени')
         break
     }
 
     return [tracks, embed, []]
+  }
+
+  public async resolveSearchResults(query: string, count: number): Promise<BotTrack[]> {
+    const node = this.client.shoukaku.getNode('auto')
+
+    if (!node) throw new LoaderError('Нет доступных нод.')
+
+    if (!this.checkQuery(query)) query = `ymsearch:${query}`
+
+    const resolvedTracks = await node?.rest.resolve(query)
+    logger.debug({ resolvedTracks })
+    if (!resolvedTracks) throw new LoaderError('Не удалось ничего найти по запросу.')
+    if (resolvedTracks.tracks.length === 0)
+      throw new LoaderError('Не удалось ничего найти по запросу.')
+
+    return this.convertToBotTracks(resolvedTracks.tracks, count, 0)
   }
 }
