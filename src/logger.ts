@@ -1,5 +1,6 @@
 import pino from 'pino'
 import cluster from 'cluster'
+import type { LokiOptions } from 'pino-loki'
 
 let transport
 
@@ -8,9 +9,15 @@ if (process.env.NODE_ENV === 'development') {
     target: 'pino-pretty'
   })
 } else {
-  transport = pino.destination({
-    minLength: 512,
-    sync: false
+  transport = pino.transport<LokiOptions>({
+    target: 'pino-loki',
+    options: {
+      labels: { application: 'vkmusicbot' },
+      batching: true,
+      interval: 5,
+      propsToLabels: ['msg', 'cluster_id', 'guild_id', 'shard_id'],
+      host: process.env.LOKI_URL
+    }
   })
 }
 

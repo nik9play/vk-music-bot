@@ -28,6 +28,7 @@
     "mongodb": "^5.7.0",
     "mongoose": "^7.4.0",
     "pino": "^8.14.1",
+    "pino-loki": "^2.1.3",
     "shoukaku": "github:Deivu/Shoukaku#e4138c3bfad3d64778a4e4c904f4e7bfc1144001",
     "undici": "^5.22.1",
     "utf-8-validate": "^6.0.3",

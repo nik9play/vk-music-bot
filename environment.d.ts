@@ -23,6 +23,7 @@ declare global {
       INDOMITABLE_CLUSTER_TOTAL: string
       INDOMITABLE_CLUSTER: string
       VK_PROXY_TOKEN: string
+      LOKI_URL: string
     }
   }
 }
