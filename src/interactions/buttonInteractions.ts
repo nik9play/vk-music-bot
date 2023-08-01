@@ -1,4 +1,4 @@
-import { ButtonInteraction, Collection, Events, Interaction } from 'discord.js'
+import { ButtonInteraction, Collection, Events, Interaction, PermissionsBitField } from 'discord.js'
 import BaseInteractionManager, {
   BaseCustomInteraction,
   BaseExecuteParams,
@@ -6,12 +6,16 @@ import BaseInteractionManager, {
   getSendFunction
 } from './baseInteractionManager.js'
 import { VkMusicBotClient } from '../client.js'
-import { Meta } from '../utils.js'
+import Utils, { Meta } from '../utils.js'
 import { glob } from 'glob'
 import logger from '../logger.js'
+import { getConfig } from '../db.js'
 
 export interface ButtonCustomInteraction extends BaseCustomInteraction {
   name: string
+  adminOnly?: boolean
+  djOnly?: boolean
+  premium?: boolean
   execute(params: ButtonExecuteParams): Promise<void>
 }
 
@@ -55,6 +59,8 @@ export class ButtonInteractionManager implements BaseInteractionManager {
 
     if (!text) return
 
+    const config = await getConfig(guild.id)
+
     const meta: Meta = {
       guildId: guild?.id,
       shardId: guild?.shardId
@@ -70,6 +76,41 @@ export class ButtonInteractionManager implements BaseInteractionManager {
     const send = getSendFunction(text, meta)
 
     const buttonInteraction = this.interactions.get(name)
+
+    if (
+      buttonInteraction?.adminOnly &&
+      !member.permissions.has(PermissionsBitField.Flags.ManageGuild)
+    ) {
+      await respond({
+        embeds: [
+          Utils.generateErrorMessage(
+            'Эту кнопку могут нажимать только пользователи с правом `Управление сервером`.'
+          )
+        ],
+        ephemeral: true
+      })
+      return
+    }
+
+    if (config.djMode && buttonInteraction?.djOnly) {
+      const djRole = config.djRoleName
+
+      if (
+        !member.permissions.has(PermissionsBitField.Flags.ManageGuild) &&
+        !member.roles.cache.some((role) => role.name === djRole)
+      ) {
+        await respond({
+          embeds: [
+            Utils.generateErrorMessage(
+              `Сейчас включен DJ режим, и вы не можете использовать эти кнопки, так как у вас нет роли \`${djRole}\`.`
+            )
+          ],
+          ephemeral: true
+        })
+        return
+      }
+    }
+
     await buttonInteraction
       ?.execute({
         guild,

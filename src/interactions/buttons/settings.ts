@@ -5,6 +5,7 @@ import { ButtonCustomInteraction } from '../buttonInteractions.js'
 
 export const interaction: ButtonCustomInteraction = {
   name: 'settings',
+  adminOnly: true,
   execute: async ({ customAction, client, guild, interaction }) => {
     const config = await getConfig(guild.id)
 
@@ -14,6 +15,9 @@ export const interaction: ButtonCustomInteraction = {
         break
       case 'announcements':
         await updateConfig(guild.id, { announcements: !config.announcements })
+        break
+      case '247':
+        if (config.premium) await updateConfig(guild.id, { enable247: !config.enable247 })
         break
       case 'loader':
         {

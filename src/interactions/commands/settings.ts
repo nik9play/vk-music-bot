@@ -3,6 +3,7 @@ import { getConfig, updateConfig } from '../../db.js'
 import Utils, { ErrorMessageType } from '../../utils.js'
 import { CommandCustomInteraction } from '../commandInteractions.js'
 import { generateSettingsShowResponse } from '../../helpers/settingsCommandHelper.js'
+import BaseLoader from '../../loaders/baseLoader.js'
 
 export const interaction: CommandCustomInteraction = {
   name: 'settings',
@@ -31,6 +32,22 @@ export const interaction: CommandCustomInteraction = {
         .setDescription('Настройка поведения оповещений')
         .addBooleanOption((option) =>
           option.setName('включены').setDescription('Состояние оповещений').setRequired(true)
+        )
+    )
+    .addSubcommand((subcommand) =>
+      subcommand
+        .setName('default-source')
+        .setDescription('Установка источника поиска треков по умолчанию')
+        .addStringOption(
+          (option) =>
+            option
+              .setName('источник')
+              .setDescription('Источник поиска треков')
+              .setRequired(true)
+              .addChoices(
+                { name: 'ВКонтакте', value: 'vk' },
+                { name: 'Яндекс Музыка', value: 'ya' }
+              ) // TODO: сделать динамическое получения списка источников
         )
     )
     .addSubcommand((subcommand) =>
@@ -124,6 +141,22 @@ export const interaction: CommandCustomInteraction = {
           embeds: [
             Utils.generateErrorMessage(
               'Оповещения ' + (enable ? 'включены.' : 'выключены.'),
+              ErrorMessageType.NoTitle
+            )
+          ]
+        },
+        10_000
+      )
+    } else if (type === 'default-source') {
+      const source = interaction.options.getString('источник', true)
+      const loader = client.loaders.get(source) as BaseLoader
+
+      await updateConfig(guild.id, { defaultSource: source })
+      await respond(
+        {
+          embeds: [
+            Utils.generateErrorMessage(
+              `Источник по умолчанию теперь ${loader.emoji} **${loader.displayName}**`,
               ErrorMessageType.NoTitle
             )
           ]

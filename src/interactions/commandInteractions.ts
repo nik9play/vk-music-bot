@@ -109,7 +109,7 @@ export class CommandInteractionManager implements BaseInteractionManager {
     // проверка на dj роль
     const config = await getConfig(guild.id)
 
-    if (config.djMode) {
+    if (config.djMode && command.djOnly) {
       const djRole = config.djRoleName
 
       if (
@@ -140,6 +140,38 @@ export class CommandInteractionManager implements BaseInteractionManager {
       })
       return
     }
+
+    // проверка условий
+    // if (command.conditions) {
+    //   if (command.conditions.includes(ExecuteConditions.Player)) {
+    //     if (!player) {
+    //       await Utils.sendNoPlayerMessage(respond)
+    //       return
+    //     }
+    //   }
+
+    //   if (command.conditions.includes(ExecuteConditions.VoicePermissions)) {
+    //     if (!voice) {
+    //       await Utils.sendNoVoiceChannelMessage(respond)
+    //       return
+    //     }
+
+    //     if (!Utils.checkVoicePermissions(voice)) {
+    //       await respond({
+    //         embeds: [Utils.generateErrorMessage('Мне нужны права, чтобы войти в канал.')],
+    //         ephemeral: true
+    //       })
+    //       return
+    //     }
+    //   }
+
+    //   if (command.conditions.includes(ExecuteConditions.SameVoiceChannel)) {
+    //     if (voice?.id !== guild.members.me?.voice.id) {
+    //       await Utils.sendWrongChannel(respond)
+    //       return
+    //     }
+    //   }
+    // }
 
     // const args: string[] =
     //   interaction.options.data.map((el): string => {
