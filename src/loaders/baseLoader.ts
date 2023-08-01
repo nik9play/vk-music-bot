@@ -49,4 +49,10 @@ export default abstract class BaseLoader {
     offset?: number | null,
     captcha?: CaptchaInfo
   ): Promise<[BotTrack[], EmbedBuilder, string[]]>
+
+  public abstract resolveSearchResults(
+    query: string,
+    count: number,
+    captcha?: CaptchaInfo
+  ): Promise<BotTrack[]>
 }

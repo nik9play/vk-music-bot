@@ -12,6 +12,7 @@ import { getConfig } from '../../db.js'
 
 export const interaction: ButtonCustomInteraction = {
   name: 'openTrackRequestModal',
+  djOnly: true,
   execute: async ({ interaction, voice, respond, guild }) => {
     if (!voice) {
       await Utils.sendNoVoiceChannelMessage(respond)

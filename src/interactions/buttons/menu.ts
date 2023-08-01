@@ -11,6 +11,7 @@ import { ButtonCustomInteraction } from '../buttonInteractions.js'
 
 export const interaction: ButtonCustomInteraction = {
   name: 'menu',
+  djOnly: true,
   execute: async ({ interaction, respond, client, guild, customAction, voice }) => {
     const player = client.playerManager.get(guild.id)
 

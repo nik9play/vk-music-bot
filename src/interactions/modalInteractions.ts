@@ -89,9 +89,12 @@ export class ModalInteractionManager implements BaseInteractionManager {
         meta
       }
 
-      playCommandHandler(partialParams as CommandExecuteParams, requestText, count, offset).catch((err: any) =>
-        logger.error({ err, ...meta }, 'Error executing modal command')
-      )
+      await playCommandHandler(
+        partialParams as CommandExecuteParams,
+        requestText,
+        count,
+        offset
+      ).catch((err: any) => logger.error({ err, ...meta }, 'Error executing modal command'))
     }
   }
 }

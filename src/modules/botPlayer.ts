@@ -1,7 +1,10 @@
 import { Constants, Player, UpdatePlayerOptions } from 'shoukaku'
 import { VkMusicBotClient } from '../client.js'
 import { getConfig } from '../db.js'
-import { deletePreviousTrackStartMessage, generatePlayerStartMessage } from '../helpers/playerStartHelper.js'
+import {
+  deletePreviousTrackStartMessage,
+  generatePlayerStartMessage
+} from '../helpers/playerStartHelper.js'
 import logger from '../logger.js'
 import BotTrack from '../structures/botTrack.js'
 import Utils, { ErrorMessageType } from '../utils.js'
@@ -66,7 +69,10 @@ export default class BotPlayer {
 
             // const message = await channel.send(generatePlayerStartMessage(this, this.current))
 
-            const message = await Utils.sendMessageToChannel(channel, generatePlayerStartMessage(this, this.current))
+            const message = await Utils.sendMessageToChannel(
+              channel,
+              generatePlayerStartMessage(this, this.current)
+            )
             if (message) client.latestMenus.set(this.guildId, message)
           } catch (err) {
             logger.error({ err }, "Can't send player start message")
@@ -79,7 +85,11 @@ export default class BotPlayer {
         if (this.repeat === 'queue' && this.current) this.queue.push(this.current)
         await deletePreviousTrackStartMessage(client, this.guildId)
         await this.play()
-        if (this.queue.length === 0 && !this.current && !(await getConfig(this.guildId)).enable247) {
+        if (
+          this.queue.length === 0 &&
+          !this.current &&
+          !(await getConfig(this.guildId)).enable247
+        ) {
           Utils.setExitTimeout(this, this.client)
         }
       })
@@ -88,7 +98,11 @@ export default class BotPlayer {
         if (this.repeat === 'track' && this.current) this.queue.unshift(this.current)
         if (this.repeat === 'queue' && this.current) this.queue.push(this.current)
         await this.play()
-        if (this.queue.length === 0 && !this.current && !(await getConfig(this.guildId)).enable247) {
+        if (
+          this.queue.length === 0 &&
+          !this.current &&
+          !(await getConfig(this.guildId)).enable247
+        ) {
           Utils.setExitTimeout(this, this.client)
         }
       })
@@ -115,7 +129,10 @@ export default class BotPlayer {
                 }
               }
 
-              logger.error({ err: err.message, guildId: message.guildId }, "Can't edit player start message")
+              logger.error(
+                { err: err.message, guildId: message.guildId },
+                "Can't edit player start message"
+              )
             })
         }
       })
@@ -128,7 +145,12 @@ export default class BotPlayer {
         await Utils.sendMessageToChannel(
           channel,
           {
-            embeds: [Utils.generateErrorMessage('Бот успешно переподключился к серверу.', ErrorMessageType.Info)]
+            embeds: [
+              Utils.generateErrorMessage(
+                'Бот успешно переподключился к серверу.',
+                ErrorMessageType.Info
+              )
+            ]
           },
           20_000
         )
@@ -168,7 +190,10 @@ export default class BotPlayer {
 
   private disconnectHandlerEvent = async (name: string) => {
     if (this.player.node.name === name) {
-      await Promise.all([deletePreviousTrackStartMessage(this.client, this.guildId), this.destroy(false)])
+      await Promise.all([
+        deletePreviousTrackStartMessage(this.client, this.guildId),
+        this.destroy(false)
+      ])
     }
   }
 
@@ -201,7 +226,8 @@ export default class BotPlayer {
     Utils.clearExitTimeout(this.guildId, this.client)
     this.current = this.queue.shift()
     try {
-      if (this.current?.loadedTrack) await this.player.playTrack({ track: this.current.loadedTrack.encoded })
+      if (this.current?.loadedTrack)
+        await this.player.playTrack({ track: this.current.loadedTrack.encoded })
       if (this.current?.identifier) await this.playTrackFromIdentifier(this.current?.identifier)
     } catch {
       await this.play()
@@ -216,7 +242,10 @@ export default class BotPlayer {
     try {
       await this.player.connection.disconnect(destroyRemotePlayer)
     } catch (err) {
-      logger.error({ err }, 'Unable to destroy connection, trying to disconnect without destroying remote player')
+      logger.error(
+        { err },
+        'Unable to destroy connection, trying to disconnect without destroying remote player'
+      )
       if (destroyRemotePlayer)
         try {
           await this.player.connection.disconnect(false)

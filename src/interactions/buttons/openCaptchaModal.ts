@@ -1,10 +1,14 @@
-import { ActionRowBuilder, ModalActionRowComponentBuilder, TextInputBuilder } from '@discordjs/builders'
+import {
+  ActionRowBuilder,
+  ModalActionRowComponentBuilder,
+  TextInputBuilder
+} from '@discordjs/builders'
 import { ModalBuilder, TextInputStyle } from 'discord.js'
 import { ButtonCustomInteraction } from '../buttonInteractions.js'
-import logger from '../../logger.js'
 
 export const interaction: ButtonCustomInteraction = {
   name: 'openCaptchaModel',
+
   execute: async ({ interaction }) => {
     const components = new ActionRowBuilder<ModalActionRowComponentBuilder>().addComponents(
       new TextInputBuilder()
@@ -16,8 +20,11 @@ export const interaction: ButtonCustomInteraction = {
         .setRequired(true)
         .setPlaceholder('fgd')
     )
-    logger.debug(components.toJSON())
-    const modal = new ModalBuilder().setCustomId('captchaModal').setTitle('sdf').addComponents([components])
+    // logger.debug(components.toJSON())
+    const modal = new ModalBuilder()
+      .setCustomId('captchaModal')
+      .setTitle('sdf')
+      .addComponents([components])
 
     await interaction.showModal(modal)
   }

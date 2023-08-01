@@ -40,7 +40,9 @@ export interface BaseCustomInteraction {
 export function getRespondFunction(interaction: Interaction, meta: Meta) {
   return async (data: InteractionReplyOptions, timeout?: number): Promise<void> => {
     if (!interaction.isAutocomplete() && interaction.deferred) {
-      await interaction.editReply(data).catch((err) => logger.error({ err, ...meta }, "Can't edit reply"))
+      await interaction
+        .editReply(data)
+        .catch((err) => logger.error({ err, ...meta }, "Can't edit reply"))
       return
     }
 

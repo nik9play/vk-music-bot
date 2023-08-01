@@ -34,7 +34,7 @@ export const interaction: CommandCustomInteraction = {
     .addStringOption((option) =>
       option
         .setName('источник')
-        .setDescription('Источник для воспроизведения музыки')
+        .setDescription('Источник для поиска треков')
         .addChoices({ name: 'ВК', value: 'vk' }, { name: 'ЯМузыка', value: 'ya' })
     )
     .setDMPermission(false),

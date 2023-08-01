@@ -75,8 +75,10 @@ const options: IndomitableOptions = {
       GatewayIntentBits.GuildVoiceStates,
       GatewayIntentBits.GuildMessages
     ],
+
     rest: {
-      api: process.env.DISCORD_PROXY_URL
+      api: process.env.DISCORD_PROXY_URL,
+      timeout: 30_000
     }
   },
   autoRestart: true,

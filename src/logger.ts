@@ -18,11 +18,14 @@ const logger = pino(
   {
     level: process.env.NODE_ENV === 'development' ? 'debug' : 'info',
     formatters: {
-      log: (obj) => ({ cluster_id: cluster.isPrimary ? 'Master' : process.env.INDOMITABLE_CLUSTER, ...obj })
+      log: (obj) => ({
+        cluster_id: cluster.isPrimary ? 'Master' : process.env.INDOMITABLE_CLUSTER,
+        ...obj
+      })
     }
   },
   transport
 )
-logger.info('Logger initialized.')
+// logger.info('Logger initialized.')
 
 export default logger

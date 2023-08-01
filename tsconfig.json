@@ -13,6 +13,14 @@
     "strict": true,
     "skipLibCheck": true,
     "sourceMap": true
+    // "baseUrl": "./src"
+    // "paths": {
+    //   "@modules/*": ["modules/*"],
+    //   "@interactions/*": ["interactions/*"],
+    //   "@helpers/*": ["helpers/*"],
+    //   "@apis/*": ["apis/"],
+    //   "@events/*": ["events/*"]
+    // }
   },
   "exclude": ["dist", "node_modules"]
 }

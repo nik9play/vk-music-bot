@@ -39,8 +39,10 @@ export class IPCManager {
 
     const shardUtil = this.client.shard as ShardClientUtil | null
     shardUtil?.on('message', (msg) => {
-      console.log(msg)
-      this.handle(msg as IPCMessage).catch((err) => logger.error({ err }, 'Error handle ipc message'))
+      logger.debug({ msg }, 'MESSAGE IPC')
+      this.handle(msg as IPCMessage).catch((err) =>
+        logger.error({ err }, 'Error handle ipc message')
+      )
     })
   }
 
