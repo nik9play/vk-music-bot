@@ -1,23 +1,11 @@
 //import { PrismaClient, ServerConfig } from '@prisma/client'
 import Redis from 'ioredis'
-import mongoose, { Schema, model, connect } from 'mongoose'
+import mongoose, { Schema, model, connect, InferSchemaType } from 'mongoose'
 import logger from './logger.js'
 
 export const redis = new Redis(process.env.REDIS_URL, { lazyConnect: true })
 
-type ServerConfigSchemaModel = {
-  guildId: string
-  premium?: boolean
-  volume?: number
-  defaultSource?: string
-  announcements?: boolean
-  djMode?: boolean
-  djRoleName?: string
-  prefix?: string
-  enable247?: boolean
-}
-
-const serverConfigSchema = new Schema<ServerConfigSchemaModel>(
+const serverConfigSchema = new Schema(
   {
     guildId: { type: String, required: true, index: true },
     premium: Boolean,
@@ -32,7 +20,9 @@ const serverConfigSchema = new Schema<ServerConfigSchemaModel>(
   { versionKey: false }
 )
 
-export const ServerConfig = model<ServerConfigSchemaModel>('ServerConfig', serverConfigSchema)
+type ServerConfig = InferSchemaType<typeof serverConfigSchema>
+
+export const ServerConfigModel = model<ServerConfig>('ServerConfig', serverConfigSchema)
 
 export async function connectDb() {
   mongoose.set('strictQuery', false)
@@ -43,12 +33,7 @@ redis.on('connect', () => {
   logger.info('Redis connected.')
 })
 
-// type ServerConfigNonNull = Ensure<
-//   Omit<ServerConfig, 'id'>,
-//   'prefix' | 'premium' | 'announcements' | 'djMode' | 'djRoleName'
-// >
-
-export type ServerConfigType = Required<ServerConfigSchemaModel>
+export type ServerConfigStrong = Required<ServerConfig>
 
 const defaultConfig = {
   premium: false,
@@ -59,10 +44,10 @@ const defaultConfig = {
   djRoleName: 'DJ',
   prefix: '-v',
   enable247: false
-}
+} satisfies Omit<ServerConfig, 'guildId'>
 
-export async function getConfig(guildId: string): Promise<ServerConfigType> {
-  let config: ServerConfigSchemaModel | null = null
+export async function getConfig(guildId: string): Promise<ServerConfigStrong> {
+  let config: ServerConfig | null = null
 
   const configCache = await redis.get(`config/${guildId}`)
 
@@ -73,14 +58,14 @@ export async function getConfig(guildId: string): Promise<ServerConfigType> {
     } catch {
       await redis.del(`config/${guildId}`)
 
-      config = await ServerConfig.findOne<ServerConfigSchemaModel>({ guildId })
+      config = await ServerConfigModel.findOne<ServerConfig>({ guildId })
       logger.debug({ guildId }, 'Config mongo get')
     }
   } else {
-    config = await ServerConfig.findOne<ServerConfigSchemaModel>({ guildId })
+    config = await ServerConfigModel.findOne<ServerConfig>({ guildId })
     logger.debug({ guildId }, 'Config mongo get')
 
-    await redis.set(`config/${guildId}`, JSON.stringify(config))
+    await redis.set(`config/${guildId}`, JSON.stringify(config), 'EX', 24 * 60 * 60)
   }
 
   return {
@@ -92,15 +77,15 @@ export async function getConfig(guildId: string): Promise<ServerConfigType> {
 
 export async function updateConfig(
   guildId: string,
-  data: Partial<ServerConfigSchemaModel>
-): Promise<ServerConfigType> {
-  const config = await ServerConfig.findOneAndUpdate<ServerConfigSchemaModel>(
+  data: Partial<ServerConfig>
+): Promise<ServerConfigStrong> {
+  const config = await ServerConfigModel.findOneAndUpdate<ServerConfig>(
     { guildId },
     { $set: data },
     { upsert: true, new: true }
   )
 
-  await redis.set(`config/${guildId}`, JSON.stringify(config))
+  await redis.set(`config/${guildId}`, JSON.stringify(config), 'EX', 24 * 60 * 60)
 
   return {
     ...defaultConfig,
