@@ -27,11 +27,11 @@ export const interaction: CommandCustomInteraction = {
       params.captcha = captcha
 
       if (captcha.type === 'play') {
-        await playCommandHandler(params, captcha.query, captcha.count, captcha.offset)
+        await playCommandHandler(params, captcha.query, captcha.count, captcha.offset, 'vk')
       }
 
       if (captcha.type === 'search') {
-        await searchCommandHandler(params, captcha.query)
+        await searchCommandHandler(params, captcha.query, 'vk')
       }
     } else {
       await params.respond({
