@@ -18,7 +18,7 @@ async function registerSlashCommands(
       const module = await import(`../../${file}`)
       const command: CommandCustomInteraction = module.interaction
 
-      return command.data.toJSON()
+      return command
     })
   )
 
@@ -27,14 +27,12 @@ async function registerSlashCommands(
     try {
       logger.info(`Started refreshing ${commands.length} application (/) commands (DEV MODE).`)
 
-      // The put method is used to fully refresh all commands in the guild with the current set
       const data = (await rest.put(Routes.applicationGuildCommands(clientId, guildId), {
-        body: commands
+        body: commands.map((command) => command.data.toJSON())
       })) as any
 
       logger.info(`Successfully reloaded ${data.length} application (/) commands (DEV MODE).`)
     } catch (error) {
-      // And of course, make sure you catch and log any errors!
       logger.error(error)
     }
   }
@@ -43,14 +41,12 @@ async function registerSlashCommands(
     try {
       logger.info(`Started refreshing ${commands.length} application (/) commands.`)
 
-      // The put method is used to fully refresh all commands in the guild with the current set
       const data = (await rest.put(Routes.applicationCommands(clientId), {
-        body: commands
+        body: commands.filter((command) => !command.dev).map((command) => command.data.toJSON())
       })) as any
 
       logger.info(`Successfully reloaded ${data.length} application (/) commands.`)
     } catch (error) {
-      // And of course, make sure you catch and log any errors!
       logger.error(error)
     }
   }
