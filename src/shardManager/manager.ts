@@ -1,5 +1,6 @@
 import { GatewayIntentBits, Options, Partials } from 'discord.js'
 import { Indomitable, IndomitableOptions } from 'indomitable'
+import { IndomitableStrategy } from 'kearsarge'
 import { VkMusicBotClient } from '../client.js'
 import logger from '../logger.js'
 import cluster from 'cluster'
@@ -18,11 +19,12 @@ const options: IndomitableOptions = {
   // Discord.JS options
   clientOptions: {
     allowedMentions: { parse: ['roles', 'users'] },
+    ws: {
+      buildStrategy: (manager) => new IndomitableStrategy(manager)
+    },
     makeCache: Options.cacheWithLimits({
       ...Options.DefaultMakeCacheSettings,
       MessageManager: 0,
-
-      //ThreadManager: 20,
       PresenceManager: 0,
       GuildStickerManager: 0,
       GuildBanManager: 0,
@@ -31,10 +33,6 @@ const options: IndomitableOptions = {
       ReactionManager: 0,
       GuildScheduledEventManager: 0,
       AutoModerationRuleManager: 0,
-      // GuildMemberManager: {
-      //   maxSize: 1,
-      //   keepOverLimit: (member) => member.id === process.env.CLIENT_ID
-      // },
       UserManager: {
         maxSize: 1,
         keepOverLimit: (user) => user.id === user.client.user.id
@@ -47,11 +45,7 @@ const options: IndomitableOptions = {
         interval: 1800,
         filter: () => (member) =>
           // remove GuildMember from cache if it is not in voice channel
-          // (member.user.bot && member.id !== member.client.user.id) ||
-          // (!member.voice.channelId && !member.user.bot) ||
-          // (!!member.voice.channelId &&
-          //   member.voice.channelId !== member.guild.members.me?.voice.channelId &&
-          //   !member.user.bot)
+
           (member.user.bot && member.id !== member.client.user.id) ||
           (!member.voice.channelId && !member.user.bot)
       },
@@ -86,7 +80,6 @@ const options: IndomitableOptions = {
   spawnTimeout: 120_000,
   client: VkMusicBotClient as any,
   handleConcurrency: true,
-  waitForReady: false,
   token: process.env.DISCORD_TOKEN
 }
 
@@ -134,84 +127,10 @@ export const manager = new Indomitable(options)
 
 let clientId: string
 
-async function sendStats() {
-  const clustersInfo = (await manager
-    .broadcast({ content: { op: 'clustersInfo' }, repliable: true })
-    .catch((err) => {
-      logger.error({ err }, "Can't get clustersInfo.")
-      return
-    })) as ClusterInfo[] | undefined
+let lastClustersInfo: ClusterInfo[] | undefined
+let lastLavalinkInfo: NodeInfo[] | undefined
 
-  if (!clustersInfo) return
-
-  const guildCount: number = clustersInfo.reduce((acc, info) => acc + info.guilds, 0)
-
-  await manager
-    .broadcast({
-      content: { op: 'setPresence', data: `/help | ${(guildCount / 1000).toFixed(1)}k серверов` }
-    })
-    .catch((err) => {
-      logger.error({ err }, "Can't set presence.")
-    })
-
-  const lavalinkInfo = (await manager
-    .send(0, { content: { op: 'getLavalinkNodes' }, repliable: true })
-    .catch((err) => {
-      logger.error({ err }, "Can't get lavalink nodes with api.")
-      return { success: false, error: err.message }
-    })) as NodeInfo[] | undefined
-
-  if (!lavalinkInfo) return
-
-  Influx?.writePoints([
-    ...lavalinkInfo.map((el) =>
-      new Point('lavalink')
-        .timestamp(new Date())
-        .tag('name', el.name)
-        .intField('penalties', el.penalties)
-        .intField('players', el.stats?.players)
-        .intField('playingPlayers', el.stats?.playingPlayers)
-    ),
-    ...clustersInfo.map((el) =>
-      new Point('clusters')
-        .timestamp(new Date())
-        .tag('id', el.id)
-        .intField('guilds', el.guilds)
-        .floatField('ping', el.ping)
-    ),
-    new Point('bot')
-      .timestamp(new Date())
-      .intField('guilds', guildCount)
-      .intField('shards', manager.shardCount)
-      .intField('clusters', manager.clusterCount)
-  ])
-
-  try {
-    const res = await fetch('https://vk-api-v2.megaworld.space/metrics', {
-      method: 'POST',
-      body: JSON.stringify({
-        token: process.env.API_TOKEN,
-        metrics: {
-          servers: guildCount,
-          serverShards: clustersInfo.map((el) => el.guilds)
-          //lavalinkInfo
-        }
-      })
-    })
-    const data = (await res.json()) as any
-    if (!res.ok) {
-      logger.error(`Send metrics error (http error). ${res.status}`)
-      return
-    }
-    if (data.status === 'error') {
-      logger.error('Error sending stats (server error)')
-    } else {
-      logger.info('Stats sent.')
-    }
-  } catch {
-    logger.error('Send metrics error (request error).')
-  }
-
+async function sendBotStatistics() {
   if (!clientId)
     clientId = (await manager
       ?.send(0, { content: { op: 'clientId' }, repliable: true })
@@ -219,6 +138,75 @@ async function sendStats() {
         logger.error({ err }, "Can't get client id.")
         return
       })) as string
+
+  lastClustersInfo = (await manager
+    .broadcast({ content: { op: 'clustersInfo' }, repliable: true })
+    .catch((err) => {
+      logger.error({ err }, "Can't get clustersInfo.")
+      return
+    })) as ClusterInfo[] | undefined
+
+  if (!lastClustersInfo) return
+
+  const guildCount = lastClustersInfo.reduce((acc, info) => acc + info.guilds, 0)
+  const textCount = lastClustersInfo.reduce((acc, info) => acc + info.text, 0)
+  const voiceCount = lastClustersInfo.reduce((acc, info) => acc + info.voice, 0)
+  const memberCount = lastClustersInfo.reduce((acc, info) => acc + info.members, 0)
+  const botMemory = lastClustersInfo.reduce((acc, info) => acc + info.memory, 0)
+
+  // await manager
+  //   .broadcast({
+  //     content: { op: 'setPresence', data: `/help | ${(guildCount / 1000).toFixed(1)}k серверов` }
+  //   })
+  //   .catch((err) => {
+  //     logger.error({ err }, "Can't set presence.")
+  //   })
+
+  lastLavalinkInfo = (await manager
+    .send(0, { content: { op: 'getLavalinkNodes' }, repliable: true })
+    .catch((err) => {
+      logger.error({ err }, "Can't get lavalink nodes from IPC.")
+      return
+    })) as NodeInfo[] | undefined
+
+  if (!lastLavalinkInfo) return
+
+  Influx?.writePoints([
+    ...lastLavalinkInfo.map((el) =>
+      new Point('lavalink')
+        // .timestamp(new Date())
+        .tag('name', el.name)
+        .intField('penalties', el.penalties)
+        .intField('players', el.stats?.players)
+        .intField('playingPlayers', el.stats?.playingPlayers)
+    ),
+    ...lastClustersInfo.map((el) =>
+      new Point('clusters')
+        // .timestamp(new Date())
+        .tag('id', el.id)
+        .intField('guilds', el.guilds)
+        .intField('text', el.text)
+        .intField('voice', el.voice)
+        .intField('members', el.members)
+        .intField('memory', el.memory)
+        .floatField('ping', el.ping)
+    ),
+    new Point('bot')
+      // .timestamp(new Date())
+      .intField('guilds', guildCount)
+      .intField('text', textCount)
+      .intField('voice', voiceCount)
+      .intField('members', memberCount)
+      .intField('memory', botMemory)
+      .intField('shards', manager.shardCount)
+      .intField('clusters', manager.clusterCount)
+  ])
+}
+
+async function sendBotStatisticsBotList() {
+  if (!lastClustersInfo) return
+
+  const guildCount = lastClustersInfo.reduce((acc, info) => acc + info.guilds, 0)
 
   // SDC
   try {
@@ -277,7 +265,6 @@ async function sendStats() {
 
 async function startShardManager() {
   if (cluster.isPrimary) {
-    //;['beforeExit', 'SIGUSR1', 'SIGUSR2', 'SIGINT', 'SIGTERM'].map((event) => process.once(event, exit.bind(event)))
     logger.info('Started spawning clusters.')
     await startApiServer()
   }
@@ -286,29 +273,26 @@ async function startShardManager() {
 
   if (cluster.isPrimary) {
     logger.info('Finished spawning clusters.')
-    sendStats().catch((err) => logger.error({ err }, "Can't send stats at start."))
+
+    sendBotStatistics().catch((err) => logger.error({ err }, "Can't send stats at start."))
+    sendBotStatisticsBotList().catch((err) =>
+      logger.error({ err }, "Can't send stats to bot lists at start.")
+    )
+
     setInterval(
-      () => sendStats().catch((err) => logger.error({ err }, "Can't send stats at interval.")),
+      () =>
+        sendBotStatistics().catch((err) => logger.error({ err }, "Can't send stats at interval.")),
+      30_000
+    )
+
+    setInterval(
+      () =>
+        sendBotStatisticsBotList().catch((err) =>
+          logger.error({ err }, "Can't send stats to bot lists at interval.")
+        ),
       30 * 60 * 1000
     )
   }
 }
-
-// async function exit() {
-//   logger.info('exit')
-//   process.exit()
-// }
-
-// process.on('uncaughtException', (err, origin) => {
-//   logger.error({ err, origin }, 'uncaughtException')
-// })
-
-// process.on('unhandledRejection', (reason, promise) => {
-//   logger.error({ reason, promise }, 'unhandledRejection')
-// })
-
-cluster.on('exit', () => {
-  console.log('huita...')
-})
 
 export { startShardManager }
