@@ -14,21 +14,6 @@ export async function searchCommandHandler(
   if (!Utils.checkSameVoiceChannel(respond, voice)) return
   if (!Utils.checkVoicePermissions(respond, voice)) return
 
-  const node = client.shoukaku.getNode('auto')
-
-  if (!node) {
-    await respond({
-      embeds: [
-        Utils.generateErrorMessage(
-          'Нет доступных серверов для воспроизведения. Попробуйте ещё раз через несколько минут. Если не сработает, обратитесь за ' +
-            'поддержкой в [группу ВК](https://vk.com/vkmusicbotds) или [сервер Discord](https://discord.com/invite/3ts2znePu7).'
-        )
-      ],
-      ephemeral: true
-    })
-    return
-  }
-
   Utils.clearExitTimeout(guild.id, client)
 
   const config = await getConfig(guild.id)

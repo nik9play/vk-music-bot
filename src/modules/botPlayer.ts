@@ -136,9 +136,7 @@ export default class BotPlayer {
             })
         }
       })
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      //@ts-ignore
-      .on('resume', async () => {
+      .on('resumed', async () => {
         const channel = this.client.channels.cache.get(this.textChannelId)
         if (!channel?.isTextBased()) return
 
@@ -240,7 +238,7 @@ export default class BotPlayer {
 
     this.queue.length = 0
     try {
-      await this.player.connection.disconnect(destroyRemotePlayer)
+      await this.client.shoukaku.leaveVoiceChannel(this.guildId)
     } catch (err) {
       logger.error(
         { err },
@@ -248,9 +246,9 @@ export default class BotPlayer {
       )
       if (destroyRemotePlayer)
         try {
-          await this.player.connection.disconnect(false)
+          await this.player.destroyPlayer(true)
         } catch (err) {
-          logger.error({ err }, 'Unable to destroy connection')
+          logger.error({ err }, 'Unable to destroy remote connection, but it should be fine... ')
         }
     }
     this.client.playerManager.delete(this.guildId)

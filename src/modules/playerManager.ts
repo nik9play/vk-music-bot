@@ -1,5 +1,5 @@
 import { Guild, VoiceBasedChannel } from 'discord.js'
-import { Node, Player } from 'shoukaku'
+import { Player } from 'shoukaku'
 import { VkMusicBotClient } from '../client.js'
 import logger from '../logger.js'
 import BotTrack from '../structures/botTrack.js'
@@ -14,7 +14,7 @@ export default class PlayerManager extends Map<string, BotPlayer> {
     this.client = client
   }
 
-  async handle(guild: Guild, voiceChannelId: string, textChannelId: string, node: Node, tracks: BotTrack[]) {
+  async handle(guild: Guild, voiceChannelId: string, textChannelId: string, tracks: BotTrack[]) {
     if (tracks.length === 0) return null
 
     const existing = this.get(guild.id)
@@ -22,7 +22,9 @@ export default class PlayerManager extends Map<string, BotPlayer> {
       if (this.client.shoukaku.players.has(guild.id)) return 'Busy'
       let player: Player | null = null
 
-      const channel = guild.client.channels.cache.get(voiceChannelId) as VoiceBasedChannel | undefined
+      const channel = guild.client.channels.cache.get(voiceChannelId) as
+        | VoiceBasedChannel
+        | undefined
 
       const playerOptions = {
         guildId: guild.id,
@@ -34,7 +36,6 @@ export default class PlayerManager extends Map<string, BotPlayer> {
       const loggerInfo = {
         guildId: guild.id,
         shardId: guild.shardId,
-        nodeName: node.name,
         region: channel?.rtcRegion ?? 'auto'
       }
 
@@ -54,7 +55,7 @@ export default class PlayerManager extends Map<string, BotPlayer> {
           },
           'Bot voice info'
         )
-        player = await node.joinChannel(playerOptions)
+        player = await this.client.shoukaku.joinVoiceChannel(playerOptions)
         logger.info(
           {
             botVoiceStateVoiceId: guild.members.me?.voice.channelId,
@@ -70,7 +71,7 @@ export default class PlayerManager extends Map<string, BotPlayer> {
         try {
           Utils.forceLeave(guild)
           await Utils.delay(1000)
-          player = await node.joinChannel(playerOptions)
+          player = await this.client.shoukaku.joinVoiceChannel(playerOptions)
         } catch (err) {
           logger.error(loggerInfo, "Can't connect to voice channel a second time(((")
           throw err

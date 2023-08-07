@@ -33,7 +33,7 @@ export const interaction: CommandCustomInteraction = {
     if (volume > 100) volume = 100
     if (volume < 1) volume = 1
 
-    await player.player.setVolume(volume / 100.0)
+    await player.player.setGlobalVolume(volume * 10)
 
     await respond(
       {

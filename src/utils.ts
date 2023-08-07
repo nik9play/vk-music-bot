@@ -39,14 +39,6 @@ export enum Emojis {
   TrashBin = '<:trash_btn:1073668424531709992>'
 }
 
-export interface ArgType {
-  type: 'group' | 'playlist' | 'user' | 'track' | 'unknown'
-  query?: string
-  id?: string
-  owner_id?: string
-  access_key?: string
-}
-
 export interface Meta {
   guildId?: string
   shardId?: number
@@ -234,44 +226,6 @@ export default class Utils {
     )
   }
 
-  // public static async checkPlayerState(
-  //   respond: RespondFunction,
-  //   player?: BotPlayer,
-  //   voice?: VoiceBasedChannel | null,
-  //   checkPlayer = true,
-  //   checkVoice = true,
-  //   checkQueue = false
-  // ): Promise<boolean> {
-  //   if (checkPlayer)
-  //     if (!player) {
-  //       await respond({
-  //         embeds: [Utils.generateErrorMessage('Сейчас ничего не играет.')],
-  //         ephemeral: true
-  //       })
-  //       return false
-  //     }
-
-  //   if (checkVoice)
-  //     if (!voice) {
-  //       await respond({
-  //         embeds: [Utils.generateErrorMessage('Необходимо находиться в голосовом канале.')],
-  //         ephemeral: true
-  //       })
-  //       return false
-  //     }
-
-  //   if (checkQueue)
-  //     if (!player?.current) {
-  //       await respond({
-  //         embeds: [Utils.generateErrorMessage('Очередь пуста.')],
-  //         ephemeral: true
-  //       })
-  //       return false
-  //     }
-
-  //   return true
-  // }
-
   public static async sendNoPlayerMessage(respond: RespondFunction) {
     await respond({
       embeds: [Utils.generateErrorMessage('Сейчас ничего не играет.')],
@@ -331,7 +285,8 @@ export default class Utils {
         embeds: [
           Utils.generateErrorMessage(
             'Бот в данный момент пытается переподключиться к серверу воспроизведения. ' +
-              'В случае удачи бот в течение минуты продолжит воспроизведение.'
+              'В случае удачи бот в течение минуты продолжит воспроизведение. ' +
+              'Попробуйте повторить попытку позже.'
           )
         ],
         ephemeral: true

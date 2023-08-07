@@ -17,21 +17,6 @@ export async function playCommandHandler(
   if (!Utils.checkSameVoiceChannel(respond, voice)) return
   if (!Utils.checkVoicePermissions(respond, voice)) return
 
-  const node = client.shoukaku.getNode('auto')
-
-  if (!node) {
-    await respond({
-      embeds: [
-        Utils.generateErrorMessage(
-          'Нет доступных серверов для воспроизведения. Попробуйте ещё раз через несколько минут. Если не сработает, обратитесь за ' +
-            'поддержкой в [группу ВК](https://vk.com/vkmusicbotds) или [сервер Discord](https://discord.com/invite/3ts2znePu7).'
-        )
-      ],
-      ephemeral: true
-    })
-    return
-  }
-
   Utils.clearExitTimeout(guild.id, client)
 
   const config = await getConfig(guild.id)
@@ -54,7 +39,7 @@ export async function playCommandHandler(
       captcha
     )
 
-    const player = await client.playerManager.handle(guild, voice.id, text.id, node, tracks)
+    const player = await client.playerManager.handle(guild, voice.id, text.id, tracks)
     if (player instanceof BotPlayer) {
       player.play()
     }

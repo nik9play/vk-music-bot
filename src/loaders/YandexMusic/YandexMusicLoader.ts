@@ -59,7 +59,7 @@ export default class YandexMusicLoader implements BaseLoader {
     offset = offset ?? 1
     offset--
 
-    const node = this.client.shoukaku.getNode('auto')
+    const node = this.client.shoukaku.getIdealNode()
 
     if (!node) throw new LoaderError('Нет доступных нод.')
 
@@ -106,7 +106,7 @@ export default class YandexMusicLoader implements BaseLoader {
   }
 
   public async resolveSearchResults(query: string, count: number): Promise<BotTrack[]> {
-    const node = this.client.shoukaku.getNode('auto')
+    const node = this.client.shoukaku.getIdealNode()
 
     if (!node) throw new LoaderError('Нет доступных нод.')
 

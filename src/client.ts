@@ -43,6 +43,12 @@ export class VkMusicBotClient extends Client {
   public playerManager: PlayerManager
   public shoukaku: ShoukakuManager
 
+  private _gatewayEventCount = 0
+
+  public get gatewayEventCount() {
+    return this._gatewayEventCount
+  }
+
   public commandInteractionManager: CommandInteractionManager
   public buttonInteractionManager: ButtonInteractionManager
   public selectMenuInteractionManager: SelectMenuInteractionManager
@@ -116,6 +122,10 @@ export class VkMusicBotClient extends Client {
       //     logger.debug({ guildId: data.d.guild_id }, 'Removed latestMenusMessage')
       //   }
       // })
+
+      .on(Events.Raw, () => {
+        this._gatewayEventCount++
+      })
 
       .on(Events.MessageDelete, (message) => {
         logger.debug({ message })
