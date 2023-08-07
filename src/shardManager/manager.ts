@@ -17,6 +17,7 @@ const options: IndomitableOptions = {
   shardCount: parseInt(process.env.VK_TOTAL_SHARDS),
   // Discord.JS options
   clientOptions: {
+    allowedMentions: { parse: ['roles', 'users'] },
     makeCache: Options.cacheWithLimits({
       ...Options.DefaultMakeCacheSettings,
       MessageManager: 0,

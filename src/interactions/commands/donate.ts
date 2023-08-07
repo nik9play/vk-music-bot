@@ -32,7 +32,7 @@ export const interaction: CommandCustomInteraction = {
         'Если вы хотите задонатить на развитие бота, нажмите [сюда](https://vk.com/app6887721_-197274096)'
 
     const embed = {
-      color: 0x5181b8,
+      color: 0x0ea5e9,
       title: `Статус **Премиума**:  ${premium ? Emojis.Yes : Emojis.No}`,
       description: info
     }

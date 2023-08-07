@@ -12,7 +12,7 @@ export const interaction: CommandCustomInteraction = {
   execute: async function ({ respond }) {
     const embed = {
       title: '❔ Справка',
-      color: 0x5181b8,
+      color: 0x0ea5e9,
       fields: [
         {
           name: '⠀',

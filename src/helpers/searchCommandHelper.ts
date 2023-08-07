@@ -1,8 +1,6 @@
 import { getConfig } from '../db.js'
 import { CommandExecuteParams } from '../interactions/commandInteractions.js'
 import { CaptchaLoaderError, LoaderError } from '../loaders/baseLoader.js'
-
-import BotPlayer from '../modules/botPlayer.js'
 import Utils, { ErrorMessageType } from '../utils.js'
 import { ActionRowBuilder, EmbedBuilder, StringSelectMenuBuilder } from 'discord.js'
 
@@ -11,7 +9,7 @@ export async function searchCommandHandler(
   queryParam: string,
   sourceParam?: string | null
 ) {
-  const { guild, voice, text, client, captcha, respond } = params
+  const { guild, voice, client, captcha, respond } = params
 
   if (!Utils.checkSameVoiceChannel(respond, voice)) return
   if (!Utils.checkVoicePermissions(respond, voice)) return
@@ -41,11 +39,6 @@ export async function searchCommandHandler(
 
   try {
     const tracks = await loader.resolveSearchResults(queryParam, 10, captcha)
-
-    const player = await client.playerManager.handle(guild, voice.id, text.id, node, tracks)
-    if (player instanceof BotPlayer) {
-      player.play()
-    }
 
     const selectMenu = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
       new StringSelectMenuBuilder()

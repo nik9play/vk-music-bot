@@ -14,7 +14,7 @@ export function generateQueueResponse(
   player: BotPlayer
 ): InteractionReplyOptions & InteractionUpdateOptions {
   const queue = player.queue
-  const embed = new EmbedBuilder().setAuthor({ name: 'Треки в очереди' }).setColor(0x5181b8)
+  const embed = new EmbedBuilder().setAuthor({ name: 'Треки в очереди' }).setColor(0x0ea5e9)
 
   const multiple = 10
   page = page < 0 ? 1 : page
@@ -39,9 +39,9 @@ export function generateQueueResponse(
       tracks
         .map(
           (track, i) =>
-            `${start + ++i}. ${Utils.escapeFormat(track.author)} — ${Utils.escapeFormat(
-              track.title
-            )}`
+            `${start + ++i}. ${
+              player.client.loaders.get(track.sourceNameCode)?.emoji ?? ''
+            } ${Utils.escapeFormat(track.author)} — ${Utils.escapeFormat(track.title)}`
         )
         .join('\n')
     )
