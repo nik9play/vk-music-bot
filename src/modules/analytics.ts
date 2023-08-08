@@ -1,10 +1,11 @@
 import { InfluxDB } from '@influxdata/influxdb-client'
 import logger from '../logger.js'
+import { ENV } from './env.js'
 
-const influxURL = process.env.INFLUX_URL
-const influxToken = process.env.INFLUX_TOKEN
-const influxOrg = process.env.INFLUX_ORG
-const influxBucket = process.env.INFLUX_BUCKET
+const influxURL = ENV.INFLUX_URL
+const influxToken = ENV.INFLUX_TOKEN
+const influxOrg = ENV.INFLUX_ORG
+const influxBucket = ENV.INFLUX_BUCKET
 
 export const influxDB =
   influxURL && influxToken ? new InfluxDB({ url: influxURL, token: influxToken }) : undefined

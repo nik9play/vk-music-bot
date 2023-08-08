@@ -10,12 +10,13 @@ import { Influx } from '../modules/analytics.js'
 import { Point } from '@influxdata/influxdb-client'
 import { ClusterInfo } from '../events/ipc/clustersInfo.js'
 import { NodeInfo } from '../events/ipc/getLavalinkNodes.js'
+import { ENV } from '../modules/env.js'
 
 const options: IndomitableOptions = {
   // Processes to run
-  clusterCount: parseInt(process.env.VK_TOTAL_SHARDS) / parseInt(process.env.SHARDS_PER_CLUSTER),
+  clusterCount: ENV.VK_TOTAL_SHARDS / ENV.SHARDS_PER_CLUSTER,
   // Websocket shards to run
-  shardCount: parseInt(process.env.VK_TOTAL_SHARDS),
+  shardCount: ENV.VK_TOTAL_SHARDS,
   // Discord.JS options
   clientOptions: {
     allowedMentions: { parse: ['roles', 'users'] },
@@ -72,7 +73,7 @@ const options: IndomitableOptions = {
     ],
 
     rest: {
-      api: process.env.DISCORD_PROXY_URL,
+      api: ENV.DISCORD_PROXY_URL,
       timeout: 30_000
     }
   },
@@ -80,7 +81,7 @@ const options: IndomitableOptions = {
   spawnTimeout: 120_000,
   client: VkMusicBotClient as any,
   handleConcurrency: true,
-  token: process.env.DISCORD_TOKEN
+  token: ENV.DISCORD_TOKEN
 }
 
 export const manager = new Indomitable(options)
@@ -209,58 +210,60 @@ async function sendBotStatisticsBotList() {
   const guildCount = lastClustersInfo.reduce((acc, info) => acc + info.guilds, 0)
 
   // SDC
-  try {
-    const res = await fetch(`https://api.server-discord.com/v2/bots/${clientId}/stats`, {
-      method: 'POST',
-      body: JSON.stringify({
-        servers: guildCount,
-        shards: manager.shardCount
-      }),
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: 'SDC ' + process.env.SDC_TOKEN
+  if (ENV.SDC_TOKEN)
+    try {
+      const res = await fetch(`https://api.server-discord.com/v2/bots/${clientId}/stats`, {
+        method: 'POST',
+        body: JSON.stringify({
+          servers: guildCount,
+          shards: manager.shardCount
+        }),
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'SDC ' + ENV.SDC_TOKEN
+        }
+      })
+      const data = (await res.json()) as any
+      if (!res.ok) {
+        logger.error(`Send stats error (http error). ${res.status}`)
+        return
       }
-    })
-    const data = (await res.json()) as any
-    if (!res.ok) {
-      logger.error(`Send stats error (http error). ${res.status}`)
-      return
+      if (data.error) {
+        logger.error('Error sending stats (server error)')
+      } else {
+        logger.info('Stats sent.')
+      }
+    } catch {
+      logger.error('Error sending stats (connection error)')
     }
-    if (data.error) {
-      logger.error('Error sending stats (server error)')
-    } else {
-      logger.info('Stats sent.')
-    }
-  } catch {
-    logger.error('Error sending stats (connection error)')
-  }
 
   // Boticord
-  try {
-    const res = await fetch(`https://api.boticord.top/v3/bots/${clientId}/stats`, {
-      method: 'POST',
-      body: JSON.stringify({
-        servers: guildCount,
-        shards: manager.shardCount
-      }),
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: process.env.BOTICORD_TOKEN
+  if (ENV.BOTICORD_TOKEN)
+    try {
+      const res = await fetch(`https://api.boticord.top/v3/bots/${clientId}/stats`, {
+        method: 'POST',
+        body: JSON.stringify({
+          servers: guildCount,
+          shards: manager.shardCount
+        }),
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: ENV.BOTICORD_TOKEN
+        }
+      })
+      const data = (await res.json()) as any
+      if (!res.ok) {
+        logger.error(`Send stats error (http error). ${res.status}`)
+        return
       }
-    })
-    const data = (await res.json()) as any
-    if (!res.ok) {
-      logger.error(`Send stats error (http error). ${res.status}`)
-      return
+      if (data.error) {
+        logger.error({ err: data.error }, 'Error sending stats (server error)')
+      } else {
+        logger.info('Stats sent.')
+      }
+    } catch {
+      logger.error('Error sending stats (connection error)')
     }
-    if (data.error) {
-      logger.error({ err: data.error }, 'Error sending stats (server error)')
-    } else {
-      logger.info('Stats sent.')
-    }
-  } catch {
-    logger.error('Error sending stats (connection error)')
-  }
 }
 
 async function startShardManager() {

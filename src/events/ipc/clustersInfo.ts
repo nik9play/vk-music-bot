@@ -1,4 +1,5 @@
 import { VkMusicBotClient } from '../../client.js'
+import { ENV } from '../../modules/env.js'
 import { IPCMessage, IPCHandler } from '../ipcManager.js'
 import { NodeInfo } from './getLavalinkNodes.js'
 
@@ -27,7 +28,7 @@ export const ipcHandler: IPCHandler = {
     }
 
     msg.reply({
-      id: process.env.INDOMITABLE_CLUSTER,
+      id: ENV.INDOMITABLE_CLUSTER,
       ping: client.ws.ping,
       guilds: client.guilds.cache.size,
       text: client.channels.cache.filter((channel) => channel.isTextBased()).size,

@@ -13,6 +13,7 @@ import {
   PremiumUpdateType
 } from './schemas.js'
 import { connectDb, updateConfig } from '../../db.js'
+import { ENV } from '../../modules/env.js'
 
 const server = fastify()
 
@@ -46,10 +47,12 @@ server.get<{ Params: PlayersOptionsType }>(
 )
 
 server.get('/api/lavalink-nodes', async () => {
-  const list = (await manager.send(0, { content: { op: 'getLavalinkNodes' }, repliable: true }).catch((err: any) => {
-    logger.error({ err }, "Can't get lavalink nodes with api.")
-    return { success: false, error: err.message }
-  })) as any[]
+  const list = (await manager
+    .send(0, { content: { op: 'getLavalinkNodes' }, repliable: true })
+    .catch((err: any) => {
+      logger.error({ err }, "Can't get lavalink nodes with api.")
+      return { success: false, error: err.message }
+    })) as any[]
 
   return {
     success: true,
@@ -84,12 +87,16 @@ server.delete<{ Params: NodeDeleteType }>(
   }
 )
 
-server.post<{ Body: PremiumUpdateType }>('/api/premium', { schema: { body: PremiumUpdate } }, async (req) => {
-  await updateConfig(req.body.guildId, { premium: req.body.premium })
-  return { success: true }
-})
+server.post<{ Body: PremiumUpdateType }>(
+  '/api/premium',
+  { schema: { body: PremiumUpdate } },
+  async (req) => {
+    await updateConfig(req.body.guildId, { premium: req.body.premium })
+    return { success: true }
+  }
+)
 
-const port = parseInt(process.env.PORT ?? '5000')
+const port = ENV.PORT
 
 async function startApiServer() {
   await connectDb()

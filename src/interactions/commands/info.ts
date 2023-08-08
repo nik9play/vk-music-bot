@@ -1,6 +1,7 @@
 // import { ShardClientUtil } from 'indomitable'
 import { SlashCommandBuilder } from 'discord.js'
 import { CommandCustomInteraction } from '../commandInteractions.js'
+import { ENV } from '../../modules/env.js'
 
 export const interaction: CommandCustomInteraction = {
   name: 'info',
@@ -69,12 +70,12 @@ export const interaction: CommandCustomInteraction = {
         // },
         {
           name: 'Кол-во кластеров',
-          value: `\`\`\`js\n${process.env.INDOMITABLE_CLUSTER_TOTAL}\`\`\``,
+          value: `\`\`\`js\n${ENV.INDOMITABLE_CLUSTER_TOTAL}\`\`\``,
           inline: true
         },
         {
           name: 'Номер кластера',
-          value: `\`\`\`js\n${process.env.INDOMITABLE_CLUSTER}\`\`\``,
+          value: `\`\`\`js\n${ENV.INDOMITABLE_CLUSTER}\`\`\``,
           inline: true
         },
         {

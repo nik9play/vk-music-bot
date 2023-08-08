@@ -1,8 +1,9 @@
 import { Connectors, NodeOption, Shoukaku, ShoukakuOptions } from 'shoukaku'
 import { VkMusicBotClient } from '../client.js'
 import logger from '../logger.js'
+import { ENV } from './env.js'
 
-const LavalinkServersString = process.env.LAVALINK_NODES
+const LavalinkServersString = ENV.LAVALINK_NODES
 
 if (LavalinkServersString == null) throw new Error('Node env is null.')
 
@@ -42,7 +43,9 @@ export default class ShoukakuManager extends Shoukaku {
     )
     this.on('error', (name, error) => logger.error({ name, error }, 'Shoukaku Error'))
     this.on('close', (name, code, reason) =>
-      logger.info(`Shoukaku Lavalink Node: ${name} closed with code: ${code} reason: ${reason || 'No reason'}`)
+      logger.info(
+        `Shoukaku Lavalink Node: ${name} closed with code: ${code} reason: ${reason || 'No reason'}`
+      )
     )
     this.on('disconnect', (name, _, moved) =>
       logger.info(

@@ -2,8 +2,9 @@ import { glob } from 'glob'
 import { CommandCustomInteraction } from '../interactions/commandInteractions.js'
 import { REST, Routes } from 'discord.js'
 import logger from '../logger.js'
+import { ENV } from '../modules/env.js'
 
-const rest = new REST().setToken(process.env.DISCORD_TOKEN)
+const rest = new REST().setToken(ENV.DISCORD_TOKEN)
 
 async function registerSlashCommands(
   global: boolean = false,

@@ -2,8 +2,9 @@
 import Redis from 'ioredis'
 import mongoose, { Schema, model, connect, InferSchemaType } from 'mongoose'
 import logger from './logger.js'
+import { ENV } from './modules/env.js'
 
-export const redis = new Redis(process.env.REDIS_URL, { lazyConnect: true })
+export const redis = new Redis(ENV.REDIS_URL, { lazyConnect: true })
 
 const serverConfigSchema = new Schema(
   {
@@ -26,7 +27,7 @@ export const ServerConfigModel = model<ServerConfig>('ServerConfig', serverConfi
 
 export async function connectDb() {
   mongoose.set('strictQuery', false)
-  await connect(process.env.MONGO_URL)
+  await connect(ENV.MONGO_URL)
 }
 
 redis.on('connect', () => {

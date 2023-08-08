@@ -56,7 +56,6 @@ export class VkMusicBotClient extends Client {
   public ipcManager: IPCManager
 
   constructor(options: ClientOptions) {
-    if (!process.env.MONGO_URL || !process.env.REDIS_URL) throw new Error('Env not set')
     super(options)
 
     this.playerManager = new PlayerManager(this)

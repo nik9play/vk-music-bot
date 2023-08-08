@@ -1,10 +1,11 @@
 import pino from 'pino'
 import cluster from 'cluster'
 import type { LokiOptions } from 'pino-loki'
+import { ENV } from './modules/env.js'
 
 let transport
 
-if (process.env.NODE_ENV === 'development') {
+if (ENV.NODE_ENV === 'development') {
   transport = pino.transport({
     target: 'pino-pretty'
   })
@@ -16,17 +17,17 @@ if (process.env.NODE_ENV === 'development') {
       batching: true,
       interval: 5,
       propsToLabels: ['msg', 'cluster_id', 'guild_id', 'shard_id'],
-      host: process.env.LOKI_URL
+      host: ENV.LOKI_URL
     }
   })
 }
 
 const logger = pino(
   {
-    level: process.env.NODE_ENV === 'development' ? 'debug' : 'info',
+    level: ENV.NODE_ENV === 'development' ? 'debug' : 'info',
     formatters: {
       log: (obj) => ({
-        cluster_id: cluster.isPrimary ? 'Master' : process.env.INDOMITABLE_CLUSTER,
+        cluster_id: cluster.isPrimary ? 'Master' : ENV.INDOMITABLE_CLUSTER,
         ...obj
       })
     }
