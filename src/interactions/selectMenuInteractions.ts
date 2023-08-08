@@ -47,8 +47,8 @@ export class SelectMenuInteractionManager implements BaseInteractionManager {
     const voice = member?.voice?.channel
 
     const meta: Meta = {
-      guildId: guild?.id,
-      shardId: guild?.shardId
+      guild_id: guild?.id,
+      shard_id: guild?.shardId
     }
 
     if (!text) return
@@ -61,8 +61,8 @@ export class SelectMenuInteractionManager implements BaseInteractionManager {
       const id = interaction.values[0].split(',')[1]
       logger.debug({ id }, 'select menu search')
       const meta: Meta = {
-        guildId: guild?.id,
-        shardId: guild?.shardId
+        guild_id: guild?.id,
+        shard_id: guild?.shardId
       }
 
       logger.info({ ...meta }, 'Search result selected')

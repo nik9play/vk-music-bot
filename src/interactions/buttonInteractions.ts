@@ -62,8 +62,8 @@ export class ButtonInteractionManager implements BaseInteractionManager {
     const config = await getConfig(guild.id)
 
     const meta: Meta = {
-      guildId: guild?.id,
-      shardId: guild?.shardId
+      guild_id: guild?.id,
+      shard_id: guild?.shardId
     }
 
     const customId = interaction.customId.split(',')

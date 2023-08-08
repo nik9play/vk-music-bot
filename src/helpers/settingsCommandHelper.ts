@@ -2,6 +2,7 @@ import {
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
+  EmbedBuilder,
   InteractionReplyOptions,
   InteractionUpdateOptions
 } from 'discord.js'
@@ -28,10 +29,10 @@ export async function generateSettingsShowResponse(
   const { djMode, djRoleName, announcements, enable247 } = config
   const loader = client.loaders.get(config.defaultSource) as BaseLoader
 
-  const embed = {
-    title: '⚙ Настройки',
-    color: 0x0ea5e9,
-    fields: [
+  const embed = new EmbedBuilder()
+    .setTitle('⚙ Настройки')
+    .setColor(0x0ea5e9)
+    .addFields([
       // {
       //   name: `prefix: ${Utils.escapeFormat(await client.db.getPrefix(guild.id))}`,
       //   value: 'Настройка префикса.'
@@ -57,8 +58,7 @@ export async function generateSettingsShowResponse(
         name: `default-source: ${loader.emoji} ${loader.displayName}`,
         value: 'Установка источника для поиска музыки по умолчанию.'
       }
-    ]
-  }
+    ])
 
   const components = [
     new ActionRowBuilder<ButtonBuilder>().addComponents(

@@ -73,8 +73,8 @@ export class CommandInteractionManager implements BaseInteractionManager {
     if (!text) return
 
     const meta: Meta = {
-      guildId: guild?.id,
-      shardId: guild?.shardId
+      guild_id: guild?.id,
+      shard_id: guild?.shardId
     }
 
     const respond = getRespondFunction(interaction, meta)
@@ -191,16 +191,14 @@ export class CommandInteractionManager implements BaseInteractionManager {
       const captcha = this.client.captcha.get(guild.id)
 
       if (captcha) {
-        const embed = {
-          description:
+        const embed = new EmbedBuilder()
+          .setDescription(
             'Ошибка! Требуется капча. Введите команду </captcha:906533763033464832>, а после введите код с картинки. ' +
-            `Если картинки не видно, перейдите по [ссылке](${captcha?.url})` +
-            '\nЕсли хотите видеть капчу реже, приобретите **Премиум**. Подробности: </donate:906533685979918396>',
-          color: 0x0ea5e9,
-          image: {
-            url: captcha.url + Utils.generateRandomCaptchaString()
-          }
-        }
+              `Если картинки не видно, перейдите по [ссылке](${captcha?.url})` +
+              '\nЕсли хотите видеть капчу реже, приобретите **Премиум**. Подробности: </donate:906533685979918396>'
+          )
+          .setColor(0x0ea5e9)
+          .setImage(captcha.url + Utils.generateRandomCaptchaString())
 
         await respond({ embeds: [embed], ephemeral: true })
         return

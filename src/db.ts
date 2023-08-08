@@ -45,7 +45,7 @@ const defaultConfig = {
   djRoleName: 'DJ',
   prefix: '-v',
   enable247: false
-} satisfies Omit<ServerConfig, 'guildId'>
+} as const satisfies Omit<ServerConfig, 'guildId'>
 
 export async function getConfig(guildId: string): Promise<ServerConfigStrong> {
   let config: ServerConfig | null = null
@@ -73,7 +73,7 @@ export async function getConfig(guildId: string): Promise<ServerConfigStrong> {
     guildId,
     ...defaultConfig,
     ...config
-  }
+  } as const
 }
 
 export async function updateConfig(
@@ -91,5 +91,5 @@ export async function updateConfig(
   return {
     ...defaultConfig,
     ...config
-  }
+  } as const
 }

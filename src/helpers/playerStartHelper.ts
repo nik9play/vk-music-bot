@@ -28,7 +28,7 @@ const repeatEmojis = {
   none: '<:repeat_no:1052960708641431642>',
   queue: '<:repeat_queue:1052960645907226704>',
   track: '<:repeat_one_btn:1052960682666102815>'
-}
+} as const
 
 const progressEmojis = {
   mid0: '<:progress_mid_0:1084166897790103695>',
@@ -38,7 +38,7 @@ const progressEmojis = {
   endEmpty: '<:progress_end_empty:1084261097550381118>',
   startFilled: '<:progress_start_filled:1084261095516164177>',
   startEmpty: '<:progress_start_empty:1084261098783506472>'
-}
+} as const
 
 export function generatePlayerStartMessage(
   player: BotPlayer,

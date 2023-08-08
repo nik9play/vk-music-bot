@@ -15,7 +15,6 @@ import BotPlayer from './modules/botPlayer.js'
 import { Constants } from 'shoukaku'
 import { RespondFunction } from './interactions/baseInteractionManager.js'
 import { getConfig } from './db.js'
-import VK from './apis/VK.js'
 import { playCommandHandler } from './helpers/playCommandHelper.js'
 import { CommandExecuteParams } from './interactions/commandInteractions.js'
 import { searchCommandHandler } from './helpers/searchCommandHelper.js'
@@ -40,8 +39,8 @@ export enum Emojis {
 }
 
 export interface Meta {
-  guildId?: string
-  shardId?: number
+  guild_id?: string
+  shard_id?: number
 }
 
 export interface PlaylistURL {
@@ -59,7 +58,7 @@ export enum ErrorMessageType {
 
 export default class Utils {
   public static declOfNum(number: number, titles: string[]): string {
-    const cases = [2, 0, 1, 1, 1, 2]
+    const cases = [2, 0, 1, 1, 1, 2] as const
     return titles[
       number % 100 > 4 && number % 100 < 20 ? 2 : cases[number % 10 < 5 ? number % 10 : 5]
     ]
@@ -80,6 +79,25 @@ export default class Utils {
       .trim()
   }
 
+  public static async solveCaptcha(url: string): Promise<string | null> {
+    try {
+      const res = await fetch(
+        `${process.env.CAPTCHA_SOLVER_URL}solve/?url=${encodeURIComponent(url)}`
+      )
+      const body = (await res.json()) as any
+      if (!res.ok || !body?.success || !body?.answer) {
+        logger.error({ body, url }, 'Captcha solve error')
+        return null
+      }
+
+      logger.debug({ body: res.body }, 'Get captcha answer')
+      return body.answer
+    } catch (err) {
+      logger.error({ err }, "Can't connect to captcha solver.")
+      return null
+    }
+  }
+
   public static async handleCaptchaError(
     captchaInfo: CaptchaInfo,
     params: Omit<CommandExecuteParams, 'interaction'>,
@@ -89,7 +107,7 @@ export default class Utils {
     const captcha = captchaInfo
 
     if (autoSolve && (await getConfig(params.guild.id)).premium) {
-      const captchaSolveResponse = await VK.solveCaptcha(captcha.url)
+      const captchaSolveResponse = await this.solveCaptcha(captcha.url)
 
       if (captchaSolveResponse) {
         logger.info({ url: captcha.url, captchaSolveResponse }, 'Captcha solved')
