@@ -14,6 +14,7 @@ import {
 import Utils from '../../utils.js'
 import { VkMusicBotClient } from '../../client.js'
 import logger from '../../logger.js'
+import { ENV } from '../../modules/env.js'
 
 export default class VKLoader implements BaseLoader {
   public get name() {
@@ -42,8 +43,8 @@ export default class VKLoader implements BaseLoader {
 
   constructor(client: VkMusicBotClient) {
     this.client = client
-    this.url = process.env.VK_PROXY_URL as string
-    this.token = process.env.VK_PROXY_TOKEN as string
+    this.url = ENV.VK_PROXY_URL
+    this.token = ENV.VK_PROXY_TOKEN
   }
 
   private requestErrorMessage =
@@ -58,7 +59,7 @@ export default class VKLoader implements BaseLoader {
   private userGroupRegex =
     /^>(?:(?<group_id>-[0-9]+)|(?<user_id>[0-9]+)|(?<screen_name>[A-Za-z0-9.]+))$/
 
-  private userGroupNumberUrlRegex = /^https:\/\/vk\.com\/(audios?(?<owner_id>-?\d+))$/
+  private userGroupNumberUrlRegex = /^https:\/\/vk\.com\/(audios(?<owner_id>-?\d+))$/
 
   private userGroupTextUrlRegex = /^https:\/\/vk\.com\/(?<screen_name>[a-zA-Z0-9._]+)$/
 
@@ -321,6 +322,16 @@ export default class VKLoader implements BaseLoader {
         }
       }
 
+      const userGroupNumberUrlMatch = query.match(this.userGroupNumberUrlRegex)
+
+      if (userGroupNumberUrlMatch && userGroupNumberUrlMatch.groups) {
+        if (userGroupNumberUrlMatch.groups['owner_id'].startsWith('-')) {
+          groupId = userGroupNumberUrlMatch.groups['owner_id']
+        } else {
+          userId = userGroupNumberUrlMatch.groups['owner_id']
+        }
+      }
+
       const userGroupTextUrlRegex = query.match(this.userGroupTextUrlRegex)
 
       if (userGroupTextUrlRegex && userGroupTextUrlRegex.groups) {
@@ -330,16 +341,6 @@ export default class VKLoader implements BaseLoader {
 
         if (!groupId && !userId) {
           throw new LoaderError('Не удалось ничего найти по запросу.')
-        }
-      }
-
-      const userGroupNumberUrlMatch = query.match(this.userGroupNumberUrlRegex)
-
-      if (userGroupNumberUrlMatch && userGroupNumberUrlMatch.groups) {
-        if (userGroupNumberUrlMatch.groups['owner_id'].startsWith('-')) {
-          groupId = userGroupNumberUrlMatch.groups['owner_id']
-        } else {
-          userId = userGroupNumberUrlMatch.groups['owner_id']
         }
       }
 
