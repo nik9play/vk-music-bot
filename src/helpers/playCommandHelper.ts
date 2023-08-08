@@ -12,7 +12,7 @@ export async function playCommandHandler(
   offsetParam?: number | null,
   sourceParam?: string | null
 ) {
-  const { guild, voice, text, client, captcha, respond, send } = params
+  const { guild, voice, text, client, captcha, respond } = params
 
   if (!Utils.checkSameVoiceChannel(respond, voice)) return
   if (!Utils.checkVoicePermissions(respond, voice)) return
@@ -44,7 +44,7 @@ export async function playCommandHandler(
       player.play()
     }
 
-    await respond({ embeds: [embed] })
+    const embeds = [embed]
 
     if (wrongTracks.length > 0) {
       let desc = wrongTracks
@@ -64,36 +64,28 @@ export async function playCommandHandler(
           : ''
       }`
 
-      await send(
-        {
-          embeds: [
-            new EmbedBuilder()
-              .setColor(loader.color)
-              .setAuthor({
-                name: 'Следующие треки не могут быть добавлены из-за решения автора или представителя, либо они длиннее 30 минут.'
-              })
-              .setDescription(desc)
-          ]
-        },
-        30_000
-      )
+      const wrongTracksEmbed = new EmbedBuilder()
+        .setColor(loader.color)
+        .setAuthor({
+          name: 'Следующие треки не могут быть добавлены из-за решения автора или представителя, либо они длиннее 30 минут.'
+        })
+        .setDescription(desc)
+
+      embeds.push(wrongTracksEmbed)
     }
 
-    if (!config.premium) {
-      if (player instanceof BotPlayer)
-        if (player.queue.length > 200) {
-          player.queue.length = 200
-          await send({
-            embeds: [
-              Utils.generateErrorMessage(
-                'В очереди было больше 200 треков, поэтому лишние треки были удалены. ' +
-                  'Хотите больше треков? Приобретите Премиум, подробности: </donate:906533685979918396>.',
-                ErrorMessageType.Warning
-              )
-            ]
-          })
-        }
+    if (!config.premium && player instanceof BotPlayer && player.queue.length > 200) {
+      player.queue.length = 200
+      const premiumEmbed = Utils.generateErrorMessage(
+        'В очереди было больше 200 треков, поэтому лишние треки были удалены. ' +
+          'Хотите больше треков? Приобретите Премиум, подробности: </donate:906533685979918396>.',
+        ErrorMessageType.Warning
+      )
+
+      embeds.push(premiumEmbed)
     }
+
+    await respond({ embeds })
   } catch (err) {
     if (err instanceof CaptchaLoaderError) {
       const captchaResponse = await Utils.handleCaptchaError(
