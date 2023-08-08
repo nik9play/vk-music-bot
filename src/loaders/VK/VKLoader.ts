@@ -102,11 +102,18 @@ export default class VKLoader implements BaseLoader {
     return error
   }
 
-  private getTrackUrl(url: string, ownerId: number, id: number, accessKey?: string): string {
+  private getTrackUrl(
+    url: string,
+    ownerId: number,
+    id: number,
+    duration: number,
+    accessKey?: string
+  ): string {
     const params = new URLSearchParams({
       url,
       ownerId: ownerId.toString(),
-      id: id.toString()
+      id: id.toString(),
+      duration: duration.toString()
     })
 
     if (accessKey) params.append('accessKey', accessKey)
@@ -128,7 +135,7 @@ export default class VKLoader implements BaseLoader {
         const unresolvedTrack = new BotTrack(
           this.name,
           undefined,
-          this.getTrackUrl(e.url, e.owner_id, e.id, e.access_key),
+          this.getTrackUrl(e.url, e.owner_id, e.id, e.duration, e.access_key),
           {
             author: e.artist,
             title: e.title,
