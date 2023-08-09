@@ -1,6 +1,5 @@
 import { GatewayIntentBits, Options, Partials } from 'discord.js'
 import { Indomitable, IndomitableOptions } from 'indomitable'
-import { IndomitableStrategy } from 'kearsarge'
 import { VkMusicBotClient } from '../client.js'
 import logger from '../logger.js'
 import cluster from 'cluster'
@@ -20,9 +19,6 @@ const options: IndomitableOptions = {
   // Discord.JS options
   clientOptions: {
     allowedMentions: { parse: ['roles', 'users'] },
-    ws: {
-      buildStrategy: (manager) => new IndomitableStrategy(manager)
-    },
     makeCache: Options.cacheWithLimits({
       ...Options.DefaultMakeCacheSettings,
       MessageManager: 0,
@@ -80,7 +76,11 @@ const options: IndomitableOptions = {
   autoRestart: true,
   spawnTimeout: 120_000,
   client: VkMusicBotClient as any,
-  handleConcurrency: true,
+
+  // will not work correctly without max_concurrency
+  handleConcurrency: ENV.NODE_ENV === 'production',
+  waitForReady: ENV.NODE_ENV !== 'production',
+
   token: ENV.DISCORD_TOKEN
 }
 
