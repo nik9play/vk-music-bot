@@ -67,7 +67,7 @@ export async function playCommandHandler(
       const wrongTracksEmbed = new EmbedBuilder()
         .setColor(loader.color)
         .setAuthor({
-          name: 'Следующие треки не могут быть добавлены из-за решения автора или представителя, либо они длиннее 30 минут.'
+          name: 'Следующие треки не могут быть добавлены из-за решения автора или представителя, либо они длиннее 1 часа 30 минут.'
         })
         .setDescription(desc)
 

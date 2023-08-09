@@ -124,7 +124,7 @@ export default class VKLoader implements BaseLoader {
   private convertToBotTracks(tracks: VKTrack[], wrongTrackNames: string[]) {
     return tracks
       .filter((e) => {
-        if (!e.url || e.duration > 1800) {
+        if (!e.url || e.duration > 1.5 * 60 * 60) {
           wrongTrackNames.push(`${e.artist} – ${e.title}`)
           return false
         } else {
