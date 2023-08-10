@@ -172,15 +172,7 @@ async function sendBotStatistics() {
 
   if (!lastLavalinkInfo) return
 
-  Influx?.writePoints([
-    ...lastLavalinkInfo.map((el) =>
-      new Point('lavalink')
-        // .timestamp(new Date())
-        .tag('name', el.name)
-        .intField('penalties', el.penalties)
-        .intField('players', el.stats?.players)
-        .intField('playingPlayers', el.stats?.playingPlayers)
-    ),
+  const points = [
     ...lastClustersInfo.map((el) =>
       new Point('clusters')
         // .timestamp(new Date())
@@ -201,7 +193,21 @@ async function sendBotStatistics() {
       .intField('memory', botMemory)
       .intField('shards', manager.shardCount)
       .intField('clusters', manager.clusterCount)
-  ])
+  ]
+
+  for (const lavalinkNode of lastLavalinkInfo) {
+    if (lavalinkNode.stats)
+      points.push(
+        new Point('lavalink')
+          // .timestamp(new Date())
+          .tag('name', lavalinkNode.name)
+          .intField('penalties', lavalinkNode.penalties)
+          .intField('players', lavalinkNode.stats?.players)
+          .intField('playingPlayers', lavalinkNode.stats?.playingPlayers)
+      )
+  }
+
+  Influx?.writePoints(points)
 }
 
 async function sendBotStatisticsBotList() {
