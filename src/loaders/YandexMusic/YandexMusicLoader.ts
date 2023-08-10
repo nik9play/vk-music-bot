@@ -113,9 +113,8 @@ export default class YandexMusicLoader implements BaseLoader {
     if (!this.checkQuery(query)) query = `ymsearch:${query}`
 
     const resolvedTracks = await node?.rest.resolve(query)
-    logger.debug({ resolvedTracks })
-    if (!resolvedTracks) throw new LoaderError('Не удалось ничего найти по запросу.')
-    if (resolvedTracks.tracks.length === 0)
+
+    if (!resolvedTracks || resolvedTracks.tracks.length === 0)
       throw new LoaderError('Не удалось ничего найти по запросу.')
 
     return this.convertToBotTracks(resolvedTracks.tracks, count, 0)

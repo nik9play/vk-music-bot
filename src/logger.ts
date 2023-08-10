@@ -16,7 +16,7 @@ if (ENV.NODE_ENV === 'development') {
       labels: { application: 'vkmusicbot' },
       batching: true,
       interval: 5,
-      propsToLabels: ['msg', 'cluster_id', 'guild_id', 'shard_id'],
+      propsToLabels: ['msg', 'cluster_id', 'guild_id', 'shard_id', 'error_id'],
       host: ENV.LOKI_URL
     }
   })

@@ -30,8 +30,6 @@ export interface PlayerTrackErrorTracker {
 }
 
 export class VkMusicBotClient extends Client {
-  private exiting = false
-
   public captcha = new Collection<string, CaptchaInfo>()
   public timers = new Collection<string, NodeJS.Timeout>()
   public latestMenus = new Collection<string, Message>()
@@ -72,10 +70,6 @@ export class VkMusicBotClient extends Client {
     this.loaderNames = [...this.loaders.keys()]
 
     this.once(Events.ClientReady, async () => {
-      //this.manager.init(this.user?.id)
-      //await this.initDb()
-      // const slashCommandManager = new SlashCommandManager(this)
-      // await slashCommandManager.init()
       logger.info(`Logged in as ${this.user?.tag} successfully`)
 
       await Promise.all([
@@ -88,44 +82,9 @@ export class VkMusicBotClient extends Client {
       logger.info(`Loaded ${this.commandInteractionManager.interactions.size} commands.`)
       logger.info(`Loaded ${this.buttonInteractionManager.interactions.size} button interactions.`)
     })
-      // .on('guildDelete', (guild) => {
-      //   logger.info({ guild_id: guild.id }, 'Bot leaves')
-      //   this.queue.get(guild.id)?.destroy()
-
-      //   Utils.clearExitTimeout(guild.id, this)
-      // })
-      // .on('messageDelete', (message) => {
-      //   logger.debug({ message }, 'delete')
-      //   if (!message.inGuild()) return
-
-      //   const menuMessage = this.latestMenus.get(message.guildId)
-      //   if (!menuMessage) return
-
-      //   if (message.id === menuMessage.id) {
-      //     this.latestMenus.delete(message.guildId)
-      //     logger.info({ guild: message.guildId }, 'Removed latestMenusMessage')
-      //   }
-      // })
-
-      // .on('raw', (data) => {
-      //   // logger.debug({ data }, 'raw2')
-
-      //   if (!data?.d?.guild_id || data.op !== 0 || data?.t !== 'MESSAGE_DELETE') return
-      //   logger.debug({ data }, 'raw')
-
-      //   const menuMessage = this.latestMenus.get(data.d.guild_id)
-      //   if (!menuMessage) return
-
-      //   if (data?.d?.id === menuMessage.id) {
-      //     this.latestMenus.delete(data.d.guild_id)
-      //     logger.debug({ guildId: data.d.guild_id }, 'Removed latestMenusMessage')
-      //   }
-      // })
-
       .on(Events.Raw, () => {
         this._gatewayEventCount++
       })
-
       .on(Events.MessageDelete, (message) => {
         logger.debug({ message })
 
@@ -230,9 +189,5 @@ export class VkMusicBotClient extends Client {
     await this.ipcManager.load()
 
     return this.constructor.name
-  }
-
-  async exit() {
-    //
   }
 }

@@ -55,7 +55,9 @@ export default class PlayerManager extends Map<string, BotPlayer> {
           },
           'Bot voice info'
         )
+
         player = await this.client.shoukaku.joinVoiceChannel(playerOptions)
+
         logger.info(
           {
             botVoiceStateVoiceId: guild.members.me?.voice.channelId,
@@ -79,13 +81,15 @@ export default class PlayerManager extends Map<string, BotPlayer> {
       }
 
       logger.debug(`New connection @ guild "${guild.id}"`)
-      const dispatcher = new BotPlayer(this.client, guild.id, textChannelId, player)
-      dispatcher.queue.push(...tracks)
-      this.set(guild.id, dispatcher)
+      const botPlayer = new BotPlayer(this.client, guild.id, textChannelId, player)
+      botPlayer.queue.push(...tracks)
+      this.set(guild.id, botPlayer)
       logger.debug(`New player dispatcher @ guild "${guild.id}"`)
-      return dispatcher
+
+      return botPlayer
     }
     existing.queue.push(...tracks)
+
     if (!existing.current) await existing.play()
     return null
   }
