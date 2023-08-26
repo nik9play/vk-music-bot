@@ -8,7 +8,10 @@ export const interaction: ButtonCustomInteraction = {
   execute: async ({ interaction, client, guild, customAction }) => {
     const player = client.playerManager.get(guild.id)
 
-    if (!player) return
+    if (!player) {
+      if (interaction.message.deletable) await interaction.message.delete().catch(() => {})
+      return
+    }
 
     const offset = player.volume > 150 ? 50 : 10
     let newVolume =

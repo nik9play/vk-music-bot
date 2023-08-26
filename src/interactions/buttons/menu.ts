@@ -1,10 +1,6 @@
 import { InteractionReplyOptions, PermissionsBitField } from 'discord.js'
 import { getConfig } from '../../db.js'
-import {
-  deletePreviousTrackStartMessage,
-  generatePlayerStartMessage,
-  MenuButtonType
-} from '../../helpers/playerStartHelper.js'
+import { generatePlayerStartMessage, MenuButtonType } from '../../helpers/playerStartHelper.js'
 import { generateQueueResponse } from '../../helpers/queueCommandHelper.js'
 import Utils from '../../utils.js'
 import { ButtonCustomInteraction } from '../buttonInteractions.js'
@@ -15,8 +11,14 @@ export const interaction: ButtonCustomInteraction = {
   execute: async ({ interaction, respond, client, guild, customAction, voice }) => {
     const player = client.playerManager.get(guild.id)
 
-    if (!player) {
-      await deletePreviousTrackStartMessage(client, guild.id)
+    if (
+      !player ||
+      !Utils.checkPlayer(respond, player) ||
+      !Utils.checkPlaying(respond, player.current) ||
+      !Utils.checkNodeState(respond, player) ||
+      !Utils.checkSameVoiceChannel(respond, voice)
+    ) {
+      if (interaction.message.deletable) await interaction.message.delete().catch(() => {})
       return
     }
 
@@ -45,11 +47,6 @@ export const interaction: ButtonCustomInteraction = {
         return
       }
     }
-
-    if (!Utils.checkPlayer(respond, player)) return
-    if (!Utils.checkPlaying(respond, player.current)) return
-    if (!Utils.checkNodeState(respond, player)) return
-    if (!Utils.checkSameVoiceChannel(respond, voice)) return
 
     let action: 'update' | 'delete' = 'delete'
 
