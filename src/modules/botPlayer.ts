@@ -1,6 +1,6 @@
 import { Constants, Player, UpdatePlayerOptions } from 'shoukaku'
 import { VkMusicBotClient } from '../client.js'
-import { getConfig } from '../db.js'
+import { getConfig, updateConfig } from '../db.js'
 import {
   deletePreviousTrackStartMessage,
   generatePlayerStartMessage
@@ -71,7 +71,7 @@ export default class BotPlayer {
 
             const message = await Utils.sendMessageToChannel(
               channel,
-              generatePlayerStartMessage(this, this.current)
+              await generatePlayerStartMessage(this, this.current)
             )
             if (message) client.latestMenus.set(this.guildId, message)
           } catch (err) {
@@ -94,46 +94,36 @@ export default class BotPlayer {
         }
       })
       .on('stuck', async (data) => {
-        logger.debug({ guildId: data.guildId }, 'Stuck event')
-        if (this.repeat === 'track' && this.current) this.queue.unshift(this.current)
-        if (this.repeat === 'queue' && this.current) this.queue.push(this.current)
-        await this.play()
-        if (
-          this.queue.length === 0 &&
-          !this.current &&
-          !(await getConfig(this.guildId)).enable247
-        ) {
-          Utils.setExitTimeout(this, this.client)
-        }
+        logger.error({ guildId: data.guildId }, 'Stuck event')
+        this.player.emit('end')
       })
       .on('exception', (data) => this.errorHandler(data))
       .on('closed', (data) => this.errorHandler(data))
-      .on('update', (data) => {
-        if (data.state.position !== undefined && data.state.position < 10_000) return
+      .on('update', async (data) => {
+        const config = await getConfig(data.guildId)
+        if ((data.state.position !== undefined && data.state.position < 10_000) || !config.premium)
+          return
 
         if (this.current) {
           const message = this.client.latestMenus.get(this.guildId)
-          if (!message) return
+          if (!message || !message.editable) return
 
-          if (message.editable)
-            message.edit(generatePlayerStartMessage(this, this.current)).catch((err) => {
-              if (err instanceof DiscordAPIError) {
-                if (err.code === 10008) {
-                  this.client.latestMenus.delete(this.guildId)
-                  logger.warn(
-                    { err: err.message, guildId: message.guildId },
-                    "Can't edit player start message:, message is not found"
-                  )
-
-                  return
-                }
-              }
-
-              logger.error(
+          await message.edit(await generatePlayerStartMessage(this, this.current)).catch((err) => {
+            if (err instanceof DiscordAPIError && err.code === 10008) {
+              this.client.latestMenus.delete(this.guildId)
+              logger.warn(
                 { err: err.message, guildId: message.guildId },
-                "Can't edit player start message"
+                "Can't edit player start message:, message is not found"
               )
-            })
+
+              return
+            }
+
+            logger.error(
+              { err: err.message, guildId: message.guildId },
+              "Can't edit player start message"
+            )
+          })
         }
       })
       .on('resumed', async () => {
@@ -196,19 +186,31 @@ export default class BotPlayer {
   }
 
   async errorHandler(data: any) {
-    logger.debug(data, 'BotPlayer closed')
-    if (data instanceof Error || data instanceof Object) logger.debug(data, 'BotPlayer closed')
+    logger.error({ data }, 'BotPlayer closed')
+    if (data instanceof Error || data instanceof Object) logger.error({ data }, 'BotPlayer closed')
     // this.queue.length = 0
     // await this.destroy()
+  }
+
+  get volume() {
+    return this.player.volume
+  }
+
+  public async setVolume(volume: number) {
+    if (volume > 1000) volume = 1000
+    if (volume < 1) volume = 1
+
+    await Promise.all([this.player.setGlobalVolume(volume), updateConfig(this.guildId, { volume })])
   }
 
   get exists() {
     return this.client.playerManager.has(this.guildId)
   }
 
-  private async playTrackFromIdentifier(identifier: string) {
+  private async playTrackFromIdentifier(identifier: string, volume: number) {
     const playerOptions: UpdatePlayerOptions = {
-      identifier: identifier
+      identifier,
+      volume
     }
 
     const playerData = await this.player.node.rest.updatePlayer({
@@ -221,12 +223,19 @@ export default class BotPlayer {
 
   async play() {
     if (!this.exists) return await this.destroy()
+
+    const volume = (await getConfig(this.guildId)).volume
+
     Utils.clearExitTimeout(this.guildId, this.client)
     this.current = this.queue.shift()
     try {
       if (this.current?.loadedTrack)
-        await this.player.playTrack({ track: this.current.loadedTrack.encoded })
-      if (this.current?.identifier) await this.playTrackFromIdentifier(this.current?.identifier)
+        await this.player.playTrack({
+          track: this.current.loadedTrack.encoded,
+          options: { volume }
+        })
+      if (this.current?.identifier)
+        await this.playTrackFromIdentifier(this.current?.identifier, volume)
     } catch {
       await this.play()
     }

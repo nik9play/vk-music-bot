@@ -14,6 +14,7 @@ import logger from '../logger.js'
 import BotPlayer from '../modules/botPlayer.js'
 import BotTrack from '../structures/botTrack.js'
 import BaseLoader from '../loaders/baseLoader.js'
+import { getConfig } from '../db.js'
 
 export enum MenuButtonType {
   Skip = 'skip',
@@ -21,7 +22,9 @@ export enum MenuButtonType {
   Queue = 'queue',
   Repeat = 'repeat',
   Pause = 'pause',
-  Leave = 'leave'
+  Leave = 'leave',
+  VolumeUp = 'volume_up',
+  VolumeDown = 'volume_down'
 }
 
 const repeatEmojis = {
@@ -40,10 +43,10 @@ const progressEmojis = {
   startEmpty: '<:progress_start_empty:1084261098783506472>'
 } as const
 
-export function generatePlayerStartMessage(
+export async function generatePlayerStartMessage(
   player: BotPlayer,
   track: BotTrack
-): InteractionReplyOptions & InteractionUpdateOptions {
+): Promise<InteractionReplyOptions & InteractionUpdateOptions> {
   const row = new ActionRowBuilder<ButtonBuilder>().addComponents([
     new ButtonBuilder()
       .setCustomId(`menu,${MenuButtonType.Pause}`)
@@ -83,35 +86,50 @@ export function generatePlayerStartMessage(
       .setStyle(ButtonStyle.Secondary)
       .setLabel('\u2800'),
     new ButtonBuilder()
-      .setDisabled(true)
-      .setCustomId('empty_btn2')
+      .setDisabled(player.volume === 1)
+      .setCustomId(`volume,-`)
       .setStyle(ButtonStyle.Secondary)
-      .setLabel('\u2800'),
+      .setEmoji('<:volume_down:1139310052742803476>'),
     new ButtonBuilder()
-      .setDisabled(true)
-      .setCustomId('empty_btn3')
+      .setDisabled(player.volume === 1000)
+      .setCustomId(`volume,+`)
       .setStyle(ButtonStyle.Secondary)
-      .setLabel('\u2800'),
+      .setEmoji('<:volume_up:1139310054152097894>'),
     new ButtonBuilder()
       .setCustomId(`menu,${MenuButtonType.Leave}`)
       .setEmoji(Emojis.Leave)
       .setStyle(ButtonStyle.Danger)
   ])
 
+  let description = `${Utils.escapeFormat(track.author).slice(0, 100)}`
+
+  const config = await getConfig(player.guildId)
+
   const duration = track.duration ?? player.player.position
   const fixedDuration = duration < player.player.position ? player.player.position : duration
-  const progress = player.player.position / fixedDuration
-  const filledCount = Math.floor(progress * 10)
-  const halfCount = Math.round((0.4 % 0.1) * 10)
-  const emptyCount = 10 - filledCount - halfCount
 
-  const progressBarText = `${
-    filledCount || halfCount ? progressEmojis.startFilled : progressEmojis.startEmpty
-  }${progressEmojis.mid1.repeat(filledCount)}${progressEmojis.mid05.repeat(
-    halfCount
-  )}${progressEmojis.mid0.repeat(emptyCount)}${
-    filledCount === 10 ? progressEmojis.endFilled : progressEmojis.endEmpty
-  }`
+  if (config.premium) {
+    // Show progress bar only for premium servers
+
+    const progress = player.player.position / fixedDuration
+    const filledCount = Math.floor(progress * 10)
+    const halfCount = Math.round((0.4 % 0.1) * 10)
+    const emptyCount = 10 - filledCount - halfCount
+
+    const progressBarText = `${
+      filledCount || halfCount ? progressEmojis.startFilled : progressEmojis.startEmpty
+    }${progressEmojis.mid1.repeat(filledCount)}${progressEmojis.mid05.repeat(
+      halfCount
+    )}${progressEmojis.mid0.repeat(emptyCount)}${
+      filledCount === 10 ? progressEmojis.endFilled : progressEmojis.endEmpty
+    }`
+
+    description += `\n\n${Utils.formatTime(
+      player.player.position
+    )} ${progressBarText} ${Utils.formatTime(fixedDuration)}`
+  } else {
+    description += `\n\n${Utils.formatTime(fixedDuration)}`
+  }
 
   const loader = player.client.loaders.get(track.sourceNameCode) as BaseLoader
 
@@ -130,18 +148,25 @@ export function generatePlayerStartMessage(
         //   iconURL: track.thumb
         // })
         .setThumbnail(track.thumb ?? null)
-        .setDescription(
-          `${Utils.escapeFormat(track.author).slice(0, 100)}\n\n` +
-            `${Utils.formatTime(player.player.position)} ${progressBarText} ${Utils.formatTime(
-              fixedDuration
-            )}`
-        )
+        .setDescription(description)
 
         .setFooter({
           text: loader.displayName,
           iconURL: loader.iconURL
         })
         .setURL(track.uri ?? null)
+        .addFields([
+          {
+            name: 'Треков в очереди',
+            value: player.queue.length.toString(),
+            inline: true
+          },
+          {
+            name: 'Громкость',
+            value: `${player.volume}%`,
+            inline: true
+          }
+        ])
     ],
     components: [row, row2]
   }

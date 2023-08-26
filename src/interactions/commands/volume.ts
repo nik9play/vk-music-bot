@@ -12,11 +12,11 @@ export const interaction: CommandCustomInteraction = {
     .setDescription('Установить громкость бота (в процентах)')
     .addIntegerOption((option) =>
       option
-        .setName('громкость')
-        .setDescription('Громкость в процентах')
+        .setName('уровень')
+        .setDescription('Громкость в процентах (0-1000)')
         .setRequired(true)
         .setMinValue(1)
-        .setMaxValue(100)
+        .setMaxValue(1000)
     )
     .setDMPermission(false),
   cooldown: 1,
@@ -28,12 +28,9 @@ export const interaction: CommandCustomInteraction = {
     if (!Utils.checkNodeState(respond, player)) return
     if (!Utils.checkSameVoiceChannel(respond, voice)) return
 
-    let volume = interaction.options.getInteger('уровень', true)
+    const volume = interaction.options.getInteger('уровень', true)
 
-    if (volume > 100) volume = 100
-    if (volume < 1) volume = 1
-
-    await player.player.setGlobalVolume(volume * 10)
+    await player.setVolume(volume)
 
     await respond(
       {

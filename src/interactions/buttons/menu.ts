@@ -88,14 +88,14 @@ export const interaction: ButtonCustomInteraction = {
         action = 'update'
         break
       case MenuButtonType.Leave:
-        player.safeDestroy()
+        await player.safeDestroy()
         break
     }
     //await respond({ embeds: [Utils.generateErrorMessage(msg)], ephemeral: true })
 
     if (action === 'update') {
       if (player.current) {
-        await interaction.update(generatePlayerStartMessage(player, player.current))
+        await interaction.update(await generatePlayerStartMessage(player, player.current))
         return
       }
 
