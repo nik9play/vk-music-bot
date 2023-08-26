@@ -111,6 +111,18 @@ export class ButtonInteractionManager implements BaseInteractionManager {
       }
     }
 
+    if (buttonInteraction?.premium && !config.premium) {
+      await respond({
+        embeds: [
+          Utils.generateErrorMessage(
+            'Для использования этой кнопки требуется **Премиум**! Подробности: </donate:906533685979918396>.'
+          )
+        ],
+        ephemeral: true
+      })
+      return
+    }
+
     await buttonInteraction
       ?.execute({
         guild,
