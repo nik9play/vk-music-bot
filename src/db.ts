@@ -59,11 +59,14 @@ export async function getConfig(guildId: string): Promise<ServerConfigStrong> {
     } catch {
       await redis.del(`config/${guildId}`)
 
-      config = await ServerConfigModel.findOne<ServerConfig>({ guildId })
+      const document = await ServerConfigModel.findOne({ guildId })
+      if (document) config = document.toJSON<ServerConfig>()
+
       logger.debug({ guildId }, 'Config mongo get')
     }
   } else {
-    config = await ServerConfigModel.findOne<ServerConfig>({ guildId })
+    const document = await ServerConfigModel.findOne({ guildId })
+    if (document) config = document.toJSON<ServerConfig>()
     logger.debug({ guildId }, 'Config mongo get')
 
     await redis.set(`config/${guildId}`, JSON.stringify(config), 'EX', 24 * 60 * 60)
@@ -80,7 +83,7 @@ export async function updateConfig(
   guildId: string,
   data: Partial<ServerConfig>
 ): Promise<ServerConfigStrong> {
-  const config = await ServerConfigModel.findOneAndUpdate<ServerConfig>(
+  const config = await ServerConfigModel.findOneAndUpdate(
     { guildId },
     { $set: data },
     { upsert: true, new: true }
@@ -90,6 +93,6 @@ export async function updateConfig(
 
   return {
     ...defaultConfig,
-    ...config
+    ...config.toJSON<ServerConfig>()
   } as const
 }
