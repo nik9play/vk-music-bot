@@ -127,47 +127,49 @@ export async function generatePlayerStartMessage(
     description += `\n\n${Utils.formatTime(
       player.player.position
     )} ${progressBarText} ${Utils.formatTime(fixedDuration)}`
-  } else {
-    description += `\n\n${Utils.formatTime(fixedDuration)}`
   }
 
   const loader = player.client.loaders.get(track.sourceNameCode) as BaseLoader
+  const embed = new EmbedBuilder()
+    .setColor(loader?.color)
+    .setAuthor({
+      name: 'Сейчас играет'
+    })
+    .setTitle(Utils.escapeFormat(track.title).slice(0, 100))
+    // .setAuthor({
+    //   name: `Сейчас играет ${Utils.escapeFormat(track.author).slice(0, 100)} — ${Utils.escapeFormat(
+    //     track.title
+    //   ).slice(0, 100)}.`,
+    //   iconURL: track.thumb
+    // })
+    .setThumbnail(track.thumb ?? null)
+    .setDescription(description)
+
+    .setFooter({
+      text: loader.displayName,
+      iconURL: loader.iconURL
+    })
+    .setURL(track.uri ?? null)
+    .addFields([
+      {
+        name: 'Треков в очереди',
+        value: player.queue.length.toString(),
+        inline: true
+      },
+      {
+        name: 'Громкость',
+        value: `${player.volume}%`,
+        inline: true
+      }
+    ])
+
+  if (!config.premium)
+    embed.addFields([
+      { name: 'Длительность', value: Utils.formatTime(fixedDuration), inline: true }
+    ])
 
   return {
-    embeds: [
-      new EmbedBuilder()
-        .setColor(loader?.color)
-        .setAuthor({
-          name: 'Сейчас играет'
-        })
-        .setTitle(Utils.escapeFormat(track.title).slice(0, 100))
-        // .setAuthor({
-        //   name: `Сейчас играет ${Utils.escapeFormat(track.author).slice(0, 100)} — ${Utils.escapeFormat(
-        //     track.title
-        //   ).slice(0, 100)}.`,
-        //   iconURL: track.thumb
-        // })
-        .setThumbnail(track.thumb ?? null)
-        .setDescription(description)
-
-        .setFooter({
-          text: loader.displayName,
-          iconURL: loader.iconURL
-        })
-        .setURL(track.uri ?? null)
-        .addFields([
-          {
-            name: 'Треков в очереди',
-            value: player.queue.length.toString(),
-            inline: true
-          },
-          {
-            name: 'Громкость',
-            value: `${player.volume}%`,
-            inline: true
-          }
-        ])
-    ],
+    embeds: [embed],
     components: [row, row2]
   }
 }
