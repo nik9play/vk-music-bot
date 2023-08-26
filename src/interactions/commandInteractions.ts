@@ -231,7 +231,9 @@ export class CommandInteractionManager implements BaseInteractionManager {
               .setFooter({ text: `ID ошибки: ${errorId}` })
               .setColor(0xed4245)
           ]
-        }).catch((err) => logger.error({ err }, 'Error while sending error message'))
+        }).catch((err) =>
+          logger.error({ err, error_id: errorId }, 'Error while sending error message')
+        )
       })
   }
 }

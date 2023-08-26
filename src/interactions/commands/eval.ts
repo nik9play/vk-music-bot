@@ -5,7 +5,16 @@ export const interaction: CommandCustomInteraction = {
   name: 'eval',
   adminOnly: true,
   dev: true,
-  data: new SlashCommandBuilder().setName('eval').setDescription('EVAL'),
+  data: new SlashCommandBuilder()
+    .setName('eval')
+    .setDescription('EVAL')
+    .addStringOption((option) =>
+      option.setName('скрипт').setDescription('скрипт').setRequired(true)
+    )
+    .addBooleanOption((option) =>
+      option.setName('async').setDescription('async').setRequired(false)
+    )
+    .setDMPermission(false),
   execute: async function (params) {
     if (params.user.id !== '241175583709593600') return
 

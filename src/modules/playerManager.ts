@@ -42,10 +42,10 @@ export default class PlayerManager extends Map<string, BotPlayer> {
       try {
         // force disconnect from channel if player is not existing
 
-        if (guild.members.me?.voice.channelId) {
-          Utils.forceLeave(guild)
-          await Utils.delay(1000)
-        }
+        // if (guild.members.me?.voice.channelId) {
+        //   Utils.forceLeave(guild)
+        //   await Utils.delay(1000)
+        // }
 
         logger.info(
           {

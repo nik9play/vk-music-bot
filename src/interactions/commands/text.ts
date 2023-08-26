@@ -43,7 +43,6 @@ export const interaction: CommandCustomInteraction = {
       }
 
       if (channel.guild.id === guild.id) {
-        channel.isThread
         textChannelId = channel.id
       } else {
         await respond({
