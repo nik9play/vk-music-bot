@@ -18,11 +18,13 @@ export default class BotTrack {
   sourceNameCode: string
 
   get author() {
-    return this.vkTrackInfo ? this.vkTrackInfo.author : this.loadedTrack?.info.author ?? ''
+    return this.vkTrackInfo
+      ? this.vkTrackInfo.author
+      : this.loadedTrack?.info.author ?? 'Без автора'
   }
 
   get title() {
-    return this.vkTrackInfo ? this.vkTrackInfo.title : this.loadedTrack?.info.title ?? ''
+    return this.vkTrackInfo ? this.vkTrackInfo.title : this.loadedTrack?.info.title ?? 'Без имени'
   }
 
   get duration() {
@@ -41,11 +43,18 @@ export default class BotTrack {
 
   get uri() {
     if (this.vkTrackInfo)
-      return `https://vk.com/audio${this.vkFullId}${this.vkTrackInfo.accessKey ? '_' + this.vkTrackInfo.accessKey : ''}`
+      return `https://vk.com/audio${this.vkFullId}${
+        this.vkTrackInfo.accessKey ? '_' + this.vkTrackInfo.accessKey : ''
+      }`
     else return this.loadedTrack?.info.uri
   }
 
-  constructor(sourceNameCode: string, loadedTrack?: Track, identifier?: string, vkTrackInfo?: VkTrackInfo) {
+  constructor(
+    sourceNameCode: string,
+    loadedTrack?: Track,
+    identifier?: string,
+    vkTrackInfo?: VkTrackInfo
+  ) {
     this.sourceNameCode = sourceNameCode
 
     if (loadedTrack) {
