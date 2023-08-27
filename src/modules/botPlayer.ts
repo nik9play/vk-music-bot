@@ -94,7 +94,7 @@ export default class BotPlayer {
       })
       .on('stuck', async (data) => {
         logger.error({ guildId: data.guildId }, 'Stuck event')
-        this.player.emit('end')
+        this.player.emit('end', data)
       })
       .on('exception', (data) => this.errorHandler(data))
       .on('closed', (data) => this.errorHandler(data))
