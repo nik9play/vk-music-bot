@@ -79,8 +79,7 @@ export default class BotPlayer {
           }
         }
       })
-      .on('end', async (data) => {
-        logger.debug({ guildId: data.guildId }, 'End event')
+      .on('end', async () => {
         if (this.repeat === 'track' && this.current) this.queue.unshift(this.current)
         if (this.repeat === 'queue' && this.current) this.queue.push(this.current)
         await deletePreviousTrackStartMessage(client, this.guildId)
