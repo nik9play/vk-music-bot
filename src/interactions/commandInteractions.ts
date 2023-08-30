@@ -197,7 +197,7 @@ export class CommandInteractionManager implements BaseInteractionManager {
               `Если картинки не видно, перейдите по [ссылке](${captcha?.url})` +
               '\nЕсли хотите видеть капчу реже, приобретите **Премиум**. Подробности: </donate:906533685979918396>'
           )
-          .setColor(0x0ea5e9)
+          .setColor(0x235dff)
           .setImage(captcha.url + Utils.generateRandomCaptchaString())
 
         await respond({ embeds: [embed], ephemeral: true })

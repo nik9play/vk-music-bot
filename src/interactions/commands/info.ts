@@ -39,7 +39,7 @@ export const interaction: CommandCustomInteraction = {
       author: {
         name: 'Информация о боте'
       },
-      color: 0x0ea5e9,
+      color: 0x235dff,
       fields: [
         {
           name: 'Cluster RAM',

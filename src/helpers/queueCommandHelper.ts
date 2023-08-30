@@ -14,7 +14,7 @@ export function generateQueueResponse(
   player: BotPlayer
 ): InteractionReplyOptions & InteractionUpdateOptions {
   const queue = player.queue
-  const embed = new EmbedBuilder().setAuthor({ name: 'Треки в очереди' }).setColor(0x0ea5e9)
+  const embed = new EmbedBuilder().setAuthor({ name: 'Треки в очереди' }).setColor(0x235dff)
 
   const multiple = 10
   page = page < 0 ? 1 : page

@@ -31,7 +31,7 @@ export async function generateSettingsShowResponse(
 
   const embed = new EmbedBuilder()
     .setTitle('⚙ Настройки')
-    .setColor(0x0ea5e9)
+    .setColor(0x235dff)
     .addFields([
       // {
       //   name: `prefix: ${Utils.escapeFormat(await client.db.getPrefix(guild.id))}`,

@@ -137,7 +137,7 @@ export default class Utils {
               `Если картинки не видно, перейдите по [ссылке](${captcha?.url}).` +
               '\nЕсли хотите видеть капчу реже, приобретите **Премиум**. Подробности: </donate:906533685979918396>'
           )
-          .setColor(0x0ea5e9)
+          .setColor(0x235dff)
           .setImage(captcha.url + this.generateRandomCaptchaString())
       ]
     }
@@ -166,7 +166,7 @@ export default class Utils {
         break
       case ErrorMessageType.NoTitle:
         title = ''
-        color = 0x0ea5e9
+        color = 0x235dff
     }
 
     if (escapeFormatting) {

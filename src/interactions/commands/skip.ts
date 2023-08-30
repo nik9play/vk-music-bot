@@ -51,7 +51,7 @@ export const interaction: CommandCustomInteraction = {
         embeds: [
           {
             description: description,
-            color: 0x0ea5e9
+            color: 0x235dff
           }
         ]
       },
