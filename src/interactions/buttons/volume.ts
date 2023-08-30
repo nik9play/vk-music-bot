@@ -13,7 +13,7 @@ export const interaction: ButtonCustomInteraction = {
       return
     }
 
-    const offset = player.volume > 150 ? 50 : 10
+    const offset = player.volume >= 150 ? 50 : 10
     let newVolume =
       Math.round((player.volume + offset * (customAction === '+' ? 1 : -1)) / offset) * offset
     if (newVolume <= 0) newVolume = 1
