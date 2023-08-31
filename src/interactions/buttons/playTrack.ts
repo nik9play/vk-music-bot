@@ -33,6 +33,12 @@ export const interaction: ButtonCustomInteraction = {
       meta
     }
 
+    client.userActionsManager.addAction(guild.id, {
+      type: 'button',
+      memberId: interaction.member.id,
+      name: `Добавление трека`
+    })
+
     if (!interaction.deferred) await interaction.deferReply()
     await playCommandHandler(partialParams, id)
   }

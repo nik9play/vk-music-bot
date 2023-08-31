@@ -1,6 +1,10 @@
 import { InteractionReplyOptions, PermissionsBitField } from 'discord.js'
 import { getConfig } from '../../db.js'
-import { generatePlayerStartMessage, MenuButtonType } from '../../helpers/playerStartHelper.js'
+import {
+  generatePlayerStartMessage,
+  MenuButtonIds,
+  menuButtonNames
+} from '../../helpers/playerStartHelper.js'
 import { generateQueueResponse } from '../../helpers/queueCommandHelper.js'
 import Utils from '../../utils.js'
 import { ButtonCustomInteraction } from '../buttonInteractions.js'
@@ -11,14 +15,16 @@ export const interaction: ButtonCustomInteraction = {
   execute: async ({ interaction, respond, client, guild, customAction, voice }) => {
     const player = client.playerManager.get(guild.id)
 
+    if (!player || !Utils.checkPlayer(respond, player)) {
+      if (interaction.message.deletable) await interaction.message.delete().catch(() => {})
+      return
+    }
+
     if (
-      !player ||
-      !Utils.checkPlayer(respond, player) ||
       !Utils.checkPlaying(respond, player.current) ||
       !Utils.checkNodeState(respond, player) ||
       !Utils.checkSameVoiceChannel(respond, voice)
     ) {
-      if (interaction.message.deletable) await interaction.message.delete().catch(() => {})
       return
     }
 
@@ -51,16 +57,16 @@ export const interaction: ButtonCustomInteraction = {
     let action: 'update' | 'delete' = 'delete'
 
     switch (customAction) {
-      case MenuButtonType.Stop:
+      case MenuButtonIds.Stop:
         await player.stop()
         break
-      case MenuButtonType.Queue:
+      case MenuButtonIds.Queue:
         await respond(generateQueueResponse(1, player) as InteractionReplyOptions)
         return
-      case MenuButtonType.Skip:
+      case MenuButtonIds.Skip:
         await player.skip()
         break
-      case MenuButtonType.Repeat:
+      case MenuButtonIds.Repeat:
         if (player.repeat === 'none') {
           player.repeat = 'track'
         } else if (player.repeat === 'track') {
@@ -70,7 +76,7 @@ export const interaction: ButtonCustomInteraction = {
         }
         action = 'update'
         break
-      case MenuButtonType.Pause:
+      case MenuButtonIds.Pause:
         if (player.player.paused) {
           Utils.clearExitTimeout(guild.id, client)
 
@@ -84,10 +90,17 @@ export const interaction: ButtonCustomInteraction = {
 
         action = 'update'
         break
-      case MenuButtonType.Leave:
+      case MenuButtonIds.Leave:
         await player.safeDestroy()
         break
     }
+
+    client.userActionsManager.addAction(guild.id, {
+      type: 'button',
+      memberId: interaction.member.id,
+      name: `Меню, ${menuButtonNames[customAction as MenuButtonIds]}`
+    })
+
     //await respond({ embeds: [Utils.generateErrorMessage(msg)], ephemeral: true })
 
     if (action === 'update') {

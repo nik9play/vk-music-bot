@@ -89,6 +89,12 @@ export class ModalInteractionManager implements BaseInteractionManager {
         meta
       }
 
+      this.client.userActionsManager.addAction(guild.id, {
+        type: 'modal',
+        memberId: interaction.member.id,
+        name: `Добавление трека`
+      })
+
       await playCommandHandler(
         partialParams as CommandExecuteParams,
         requestText,

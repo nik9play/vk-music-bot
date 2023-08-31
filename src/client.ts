@@ -12,6 +12,7 @@ import { IPCManager } from './events/ipcManager.js'
 import BaseLoader, { CaptchaInfo } from './loaders/baseLoader.js'
 import VKLoader from './loaders/VK/VKLoader.js'
 import YandexMusicLoader from './loaders/YandexMusic/YandexMusicLoader.js'
+import UserActionsManager from './modules/userActionsManager.js'
 
 // export interface CaptchaInfo {
 //   type: 'play' | 'search'
@@ -40,6 +41,7 @@ export class VkMusicBotClient extends Client {
 
   public playerManager: PlayerManager
   public shoukaku: ShoukakuManager
+  public userActionsManager: UserActionsManager = new UserActionsManager()
 
   private _gatewayEventCount = 0
 

@@ -16,7 +16,7 @@ import BotTrack from '../structures/botTrack.js'
 import BaseLoader from '../loaders/baseLoader.js'
 import { getConfig } from '../db.js'
 
-export enum MenuButtonType {
+export enum MenuButtonIds {
   Skip = 'skip',
   Stop = 'stop',
   Queue = 'queue',
@@ -25,6 +25,17 @@ export enum MenuButtonType {
   Leave = 'leave',
   VolumeUp = 'volume_up',
   VolumeDown = 'volume_down'
+}
+
+export const menuButtonNames: Record<MenuButtonIds, string> = {
+  [MenuButtonIds.Skip]: 'Пропустить трек',
+  [MenuButtonIds.Stop]: 'Остановить воспроизведение',
+  [MenuButtonIds.Queue]: 'Очередь',
+  [MenuButtonIds.Repeat]: 'Повтор',
+  [MenuButtonIds.Pause]: 'Пауза',
+  [MenuButtonIds.Leave]: 'Выйти из канала',
+  [MenuButtonIds.VolumeUp]: 'Громкость вверх',
+  [MenuButtonIds.VolumeDown]: 'Громкость вниз'
 }
 
 const repeatEmojis = {
@@ -49,28 +60,28 @@ export async function generatePlayerStartMessage(
 ): Promise<InteractionReplyOptions & InteractionUpdateOptions> {
   const row = new ActionRowBuilder<ButtonBuilder>().addComponents([
     new ButtonBuilder()
-      .setCustomId(`menu,${MenuButtonType.Pause}`)
+      .setCustomId(`menu,${MenuButtonIds.Pause}`)
       .setEmoji(player.player.paused ? Emojis.Play : Emojis.Pause)
       .setStyle(player.player.paused ? ButtonStyle.Primary : ButtonStyle.Secondary)
       .setDisabled(!player.current),
     new ButtonBuilder()
-      .setCustomId(`menu,${MenuButtonType.Skip}`)
+      .setCustomId(`menu,${MenuButtonIds.Skip}`)
       .setEmoji(Emojis.Skip)
       .setStyle(ButtonStyle.Secondary)
       .setDisabled(!player.current),
     new ButtonBuilder()
-      .setCustomId(`menu,${MenuButtonType.Stop}`)
+      .setCustomId(`menu,${MenuButtonIds.Stop}`)
       .setEmoji(Emojis.Stop)
       .setStyle(ButtonStyle.Secondary)
       .setDisabled(!player.current),
     new ButtonBuilder()
-      .setCustomId(`menu,${MenuButtonType.Queue}`)
+      .setCustomId(`menu,${MenuButtonIds.Queue}`)
       .setEmoji(Emojis.Queue)
       .setStyle(ButtonStyle.Secondary),
     //.setDisabled(!player.queue),
     //new MessageButton().setCustomId('menu_update').setEmoji('🔃').setStyle(ButtonStyle.Primary),
     new ButtonBuilder()
-      .setCustomId(`menu,${MenuButtonType.Repeat}`)
+      .setCustomId(`menu,${MenuButtonIds.Repeat}`)
       .setEmoji(repeatEmojis[player.repeat ?? 'none'])
       .setStyle(player.repeat === 'none' ? ButtonStyle.Secondary : ButtonStyle.Primary)
   ])
@@ -96,7 +107,7 @@ export async function generatePlayerStartMessage(
       .setStyle(ButtonStyle.Secondary)
       .setEmoji('<:volume_up:1139310054152097894>'),
     new ButtonBuilder()
-      .setCustomId(`menu,${MenuButtonType.Leave}`)
+      .setCustomId(`menu,${MenuButtonIds.Leave}`)
       .setEmoji(Emojis.Leave)
       .setStyle(ButtonStyle.Danger)
   ])

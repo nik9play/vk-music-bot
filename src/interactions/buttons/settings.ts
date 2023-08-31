@@ -34,6 +34,12 @@ export const interaction: ButtonCustomInteraction = {
         break
     }
 
+    client.userActionsManager.addAction(guild.id, {
+      type: 'button',
+      memberId: interaction.member.id,
+      name: `Настройки, ${customAction}`
+    })
+
     await interaction.update(await generateSettingsShowResponse(guild.id, client))
   }
 }

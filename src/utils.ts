@@ -401,4 +401,12 @@ export default class Utils {
       .toString(36)
       .substring(2, 8 + 2)
   }
+
+  public static relativeTime(date: Date): string {
+    return `<t:${Math.floor(date.getTime() / 1000)}:R>`
+  }
+
+  public static longTime(date: Date): string {
+    return `<t:${Math.floor(date.getTime() / 1000)}:T>`
+  }
 }

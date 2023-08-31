@@ -205,6 +205,12 @@ export class CommandInteractionManager implements BaseInteractionManager {
       }
     }
 
+    this.client.userActionsManager.addAction(guild.id, {
+      type: 'command',
+      memberId: interaction.member.id,
+      name: command.name
+    })
+
     await command
       .execute({
         guild,

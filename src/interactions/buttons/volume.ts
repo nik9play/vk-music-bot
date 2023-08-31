@@ -1,15 +1,20 @@
 import { generatePlayerStartMessage } from '../../helpers/playerStartHelper.js'
+import Utils from '../../utils.js'
 import { ButtonCustomInteraction } from '../buttonInteractions.js'
 
 export const interaction: ButtonCustomInteraction = {
   name: 'volume',
   djOnly: true,
   premium: true,
-  execute: async ({ interaction, client, guild, customAction }) => {
+  execute: async ({ interaction, client, guild, customAction, respond, voice }) => {
     const player = client.playerManager.get(guild.id)
 
-    if (!player) {
+    if (!player || !Utils.checkPlayer(respond, player)) {
       if (interaction.message.deletable) await interaction.message.delete().catch(() => {})
+      return
+    }
+
+    if (!Utils.checkNodeState(respond, player) || !Utils.checkSameVoiceChannel(respond, voice)) {
       return
     }
 
@@ -22,7 +27,12 @@ export const interaction: ButtonCustomInteraction = {
 
     if (player.current) {
       await interaction.update(await generatePlayerStartMessage(player, player.current))
-      return
     }
+
+    client.userActionsManager.addAction(guild.id, {
+      type: 'button',
+      memberId: interaction.member.id,
+      name: `Громкость ${customAction === '+' ? 'вверх' : 'вниз'}`
+    })
   }
 }
