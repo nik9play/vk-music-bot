@@ -5,7 +5,7 @@ import { ENV } from '../../modules/env.js'
 
 export const interaction: CommandCustomInteraction = {
   name: 'info',
-  adminOnly: true,
+  adminOnly: false,
   cooldown: 10,
   data: new SlashCommandBuilder()
     .setName('info')
