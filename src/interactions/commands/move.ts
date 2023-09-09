@@ -21,15 +21,15 @@ export const interaction: CommandCustomInteraction = {
     .setDMPermission(false)
     .addIntegerOption((option) =>
       option
-        .setName('номер')
-        .setDescription('Номер трека для перемещения')
+        .setName('старая-позиция')
+        .setDescription('Старая позиция трека')
         .setMinValue(1)
         .setMaxValue(20_000)
     )
     .addIntegerOption((option) =>
       option
-        .setName('позиция')
-        .setDescription('Новая позиция для трека')
+        .setName('новая-позиция')
+        .setDescription('Новая позиция трека')
         .setMinValue(1)
         .setMaxValue(20_000)
     )
@@ -40,11 +40,13 @@ export const interaction: CommandCustomInteraction = {
     if (!Utils.checkPlayer(respond, player)) return
     if (!Utils.checkQueue(respond, player)) return
 
-    const oldIndex = interaction.options.getInteger('номер', true) - 1
-    const newIndex = interaction.options.getInteger('позиция', true) - 1
+    const oldIndex = interaction.options.getInteger('старая-позиция', true) - 1
+    const newIndex = interaction.options.getInteger('новая-позиция', true) - 1
 
     if (oldIndex + 1 > player.queue.length || newIndex + 1 > player.queue.length) {
-      await respond({ embeds: [Utils.generateErrorMessage('Неверные значения.')] })
+      await respond({
+        embeds: [Utils.generateErrorMessage('Какое-то из значений больше размера очереди.')]
+      })
       return
     }
 
