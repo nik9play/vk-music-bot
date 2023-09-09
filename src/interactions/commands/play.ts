@@ -13,14 +13,14 @@ export const interaction: CommandCustomInteraction = {
     .addStringOption((option) =>
       option
         .setName('запрос')
-        .setDescription('Название трека или ссылка на плейлист/пользователя')
+        .setDescription('Название трека или ссылка на плейлист/пользователя/трек')
         .setRequired(true)
         .setMaxLength(2000)
     )
     .addIntegerOption((option) =>
       option
         .setName('количество')
-        .setDescription('Количество треков, которые добавить (по умолчанию 50)')
+        .setDescription('Количество треков, которые добавить в очередь (по умолчанию 50)')
         .setMinValue(1)
         .setMaxValue(20_000)
     )
