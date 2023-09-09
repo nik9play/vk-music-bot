@@ -29,9 +29,16 @@ export const interaction: CommandCustomInteraction = {
         ephemeral: true
       })
       const player = client.playerManager.get(guild.id)
-      if (player)
-        if (player.player.paused || (player.queue.length === 0 && !player.current))
-          Utils.setExitTimeout(player, client)
+
+      const botVoice = guild.voiceStates.cache.get(client.user!.id)
+      if (botVoice?.channel?.members.filter((m) => !m.user.bot).size === 0) {
+        await player?.safeDestroy()
+        return
+      }
+
+      if (player?.player.paused || (player?.queue.length === 0 && !player.current)) {
+        Utils.setExitTimeout(player, client)
+      }
     }
   }
 }
