@@ -10,15 +10,22 @@ if (ENV.NODE_ENV === 'development') {
     target: 'pino-pretty'
   })
 } else {
-  transport = pino.transport<LokiOptions>({
-    target: 'pino-loki',
-    options: {
-      labels: { application: 'vkmusicbot' },
-      batching: true,
-      interval: 5,
-      propsToLabels: ['msg', 'cluster_id', 'guild_id', 'shard_id', 'error_id'],
-      host: ENV.LOKI_URL
-    }
+  transport = pino.transport({
+    targets: [
+      pino.transport<LokiOptions>({
+        target: 'pino-loki',
+        options: {
+          labels: { application: 'vkmusicbot' },
+          batching: true,
+          interval: 5,
+          propsToLabels: ['msg', 'cluster_id', 'guild_id', 'shard_id', 'error_id'],
+          host: ENV.LOKI_URL
+        }
+      }),
+      pino.transport({
+        target: 'pino-pretty'
+      })
+    ]
   })
 }
 
