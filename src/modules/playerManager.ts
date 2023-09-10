@@ -1,5 +1,5 @@
 import { Guild, VoiceBasedChannel } from 'discord.js'
-import { Player } from 'shoukaku'
+import { Player, VoiceChannelOptions } from 'shoukaku'
 import { VkMusicBotClient } from '../client.js'
 import logger from '../logger.js'
 import BotTrack from '../structures/botTrack.js'
@@ -26,16 +26,20 @@ export default class PlayerManager extends Map<string, BotPlayer> {
         | VoiceBasedChannel
         | undefined
 
-      const playerOptions = {
+      const node = this.client.shoukaku.getIdealNode()
+
+      const playerOptions: VoiceChannelOptions = {
         guildId: guild.id,
         shardId: guild.shardId,
         channelId: voiceChannelId,
+        getNode: () => node,
         deaf: true
       }
 
       const loggerInfo = {
         guildId: guild.id,
         shardId: guild.shardId,
+        nodeName: node?.name,
         region: channel?.rtcRegion ?? 'auto'
       }
 
