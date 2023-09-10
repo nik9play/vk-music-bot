@@ -218,7 +218,7 @@ export default class VKLoader implements BaseLoader {
       if (response.response.audios.length === 0) {
         throw new LoaderError('Плейлист пуст.')
       }
-      logger.info(response)
+
       let description: string | null = Utils.escapeFormat(response.response.playlist.description)
       description = description.length === 0 ? null : description
 
