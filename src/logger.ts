@@ -1,18 +1,36 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import pino from 'pino'
 import cluster from 'cluster'
-import type { LokiOptions } from 'pino-loki'
+// import type { LokiOptions } from 'pino-loki'
 import { ENV } from './modules/env.js'
 
 let transport
 
 if (ENV.NODE_ENV === 'development') {
   transport = pino.transport({
-    target: 'pino-pretty'
+    targets: [
+      //@ts-ignore
+      {
+        target: 'pino-loki',
+        options: {
+          labels: { application: 'vkmusicbot-dev' },
+          batching: true,
+          interval: 5,
+          propsToLabels: ['msg', 'cluster_id', 'guild_id', 'shard_id', 'error_id'],
+          host: ENV.LOKI_URL
+        }
+      },
+      //@ts-ignore
+      {
+        target: 'pino-pretty'
+      }
+    ]
   })
 } else {
   transport = pino.transport({
     targets: [
-      pino.transport<LokiOptions>({
+      //@ts-ignore
+      {
         target: 'pino-loki',
         options: {
           labels: { application: 'vkmusicbot' },
@@ -21,10 +39,11 @@ if (ENV.NODE_ENV === 'development') {
           propsToLabels: ['msg', 'cluster_id', 'guild_id', 'shard_id', 'error_id'],
           host: ENV.LOKI_URL
         }
-      }),
-      pino.transport({
+      },
+      //@ts-ignore
+      {
         target: 'pino-pretty'
-      })
+      }
     ]
   })
 }
