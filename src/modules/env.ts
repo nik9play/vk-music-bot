@@ -9,7 +9,7 @@ const envSchema = z.object({
   CAPTCHA_SOLVER_URL: z.string(),
   DISCORD_PROXY_URL: z.string().optional(),
   API_TOKEN: z.string(),
-  DATMUSIC_URL: z.string(),
+  //DATMUSIC_URL: z.string(),
   SDC_TOKEN: z.string().optional(),
   BOTICORD_TOKEN: z.string().optional(),
   PORT: z
