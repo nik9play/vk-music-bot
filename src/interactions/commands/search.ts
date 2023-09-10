@@ -17,7 +17,7 @@ export const interaction: CommandCustomInteraction = {
       option
         .setName('источник')
         .setDescription('Источник для поиска треков')
-        .addChoices({ name: 'ВК', value: 'vk' }, { name: 'ЯМузыка', value: 'ya' })
+        .addChoices({ name: 'ВКонтакте', value: 'vk' }, { name: 'Яндекс Музыка', value: 'ya' })
     )
     .setDMPermission(false),
   execute: async function (params) {
