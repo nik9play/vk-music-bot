@@ -93,9 +93,9 @@ export class VkMusicBotClient extends Client {
         ]
       })
     })
-      .on(Events.Raw, () => {
-        this._gatewayEventCount++
-      })
+      // .on(Events.Raw, () => {
+      //   this._gatewayEventCount++
+      // })
       .on(Events.MessageDelete, (message) => {
         logger.debug({ message })
 
