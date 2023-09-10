@@ -87,7 +87,7 @@ export interface VKErrorResponse {
   code: number
   message: string
   captchaSid?: number
-  captchaUrl?: string
+  captchaImg?: string
   captchaIndex: number
 }
 
