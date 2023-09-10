@@ -83,6 +83,15 @@ export class VkMusicBotClient extends Client {
 
       logger.info(`Loaded ${this.commandInteractionManager.interactions.size} commands.`)
       logger.info(`Loaded ${this.buttonInteractionManager.interactions.size} button interactions.`)
+
+      this.user?.setPresence({
+        activities: [
+          {
+            name: '/help',
+            type: 2
+          }
+        ]
+      })
     })
       .on(Events.Raw, () => {
         this._gatewayEventCount++
