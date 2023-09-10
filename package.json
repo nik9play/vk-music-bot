@@ -29,6 +29,7 @@
     "mongoose": "^7.4.5",
     "pino": "^8.15.0",
     "pino-loki": "^2.1.3",
+    "pino-pretty": "^10.2.0",
     "shoukaku": "github:Deivu/Shoukaku#6689545e37a668429507c3a92f4c017b4a51f96b",
     "undici": "^5.23.0",
     "utf-8-validate": "^6.0.3",
@@ -44,7 +45,6 @@
     "eslint-config-prettier": "^9.0.0",
     "husky": "^8.0.3",
     "lint-staged": "^14.0.1",
-    "pino-pretty": "^10.2.0",
     "prettier": "3.0.2",
     "typescript": "^5.2.2"
   },
