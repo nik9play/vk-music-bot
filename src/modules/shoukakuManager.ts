@@ -57,6 +57,8 @@ export default class ShoukakuManager extends Shoukaku {
     this.on('debug', (name, info) => {
       if (info.toLowerCase().includes('server load')) return
       logger.debug(`Shoukaku Lavalink Node: ${name} ${info}`)
+    }).on('raw', (name, json) => {
+      if ((json as any)?.op === 'ready') logger.info({ json }, 'raw lavalink ' + name)
     })
   }
 }
