@@ -48,6 +48,28 @@ app.get('/api/lavalink-nodes', async (c) => {
   return c.json(list)
 })
 
+// app.get(
+//   '/api/lavalink-nodes/re-init/:name',
+//   zValidator(
+//     'param',
+//     z.object({
+//       name: z.string()
+//     })
+//   ),
+//   async (c) => {
+//     const params = c.req.valid('param')
+
+//     const reply: boolean[] = (await manager
+//       .broadcast({ content: { op: 'reInitLavalinkNode', data: params.name }, repliable: true })
+//       .catch((err) => {
+//         logger.error({ err }, "Can't reinit node with api.")
+//         return c.json({ success: false, error: err.message })
+//       })) as boolean[]
+
+//     return c.json({ success: reply[0] })
+//   }
+// )
+
 app.post(
   '/api/lavalink-nodes',
   zValidator(
@@ -113,7 +135,7 @@ app.get(
 
 await connectDb()
 
-app.post(
+app.patch(
   '/api/config/:guildId',
   zValidator(
     'param',
