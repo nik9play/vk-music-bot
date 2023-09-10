@@ -94,7 +94,7 @@ export default class VKLoader implements BaseLoader {
     if (error.code === VKErrorCode.CAPTCHA) {
       throw new CaptchaLoaderError(
         error.captchaSid as number,
-        error.captchaUrl as string,
+        error.captchaImg as string,
         error.captchaIndex
       )
     }
