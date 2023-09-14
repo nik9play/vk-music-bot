@@ -209,7 +209,10 @@ export default class Utils {
 
     const permissions = channel.permissionsFor(channel.guild.members.me)
 
-    return permissions?.has([PermissionsBitField.Flags.SendMessages])
+    return permissions?.has([
+      PermissionsBitField.Flags.SendMessages,
+      PermissionsBitField.Flags.ViewChannel
+    ])
   }
 
   public static async sendMessageToChannel(
