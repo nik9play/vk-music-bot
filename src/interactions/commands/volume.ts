@@ -6,7 +6,7 @@ export const interaction: CommandCustomInteraction = {
   name: 'volume',
   djOnly: true,
   premium: true,
-  dev: true,
+  dev: false,
   data: new SlashCommandBuilder()
     .setName('volume')
     .setDescription('Установить громкость бота (в процентах)')
