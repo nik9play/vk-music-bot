@@ -30,7 +30,7 @@
     "pino": "^8.15.0",
     "pino-loki": "^2.1.3",
     "pino-pretty": "^10.2.0",
-    "shoukaku": "github:Deivu/Shoukaku#6689545e37a668429507c3a92f4c017b4a51f96b",
+    "shoukaku": "github:nik9play/Shoukaku",
     "undici": "^5.23.0",
     "utf-8-validate": "^6.0.3",
     "zlib-sync": "^0.1.8",
