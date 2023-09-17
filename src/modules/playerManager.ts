@@ -37,9 +37,9 @@ export default class PlayerManager extends Map<string, BotPlayer> {
       }
 
       const loggerInfo = {
-        guildId: guild.id,
-        shardId: guild.shardId,
-        nodeName: node?.name,
+        guild_id: guild.id,
+        shard_id: guild.shardId,
+        node_name: node?.name,
         region: channel?.rtcRegion ?? 'auto'
       }
 

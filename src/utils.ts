@@ -182,7 +182,7 @@ export default class Utils {
 
   public static setExitTimeout(player: BotPlayer, client: VkMusicBotClient) {
     this.clearExitTimeout(player.guildId, client)
-    logger.debug({ guildId: player.guildId }, `Exit timeout set`)
+    logger.debug({ guild_id: player.guildId }, `Exit timeout set`)
 
     client.timers.set(
       player.guildId,
@@ -193,7 +193,7 @@ export default class Utils {
   }
 
   public static clearExitTimeout(guildId: string, client: VkMusicBotClient) {
-    logger.debug({ guildId }, `Exit timeout clear`)
+    logger.debug({ guild_id: guildId }, `Exit timeout clear`)
 
     const timer = client.timers.get(guildId)
     if (timer) {
@@ -240,7 +240,7 @@ export default class Utils {
   }
 
   public static forceLeave(guild: Guild) {
-    logger.info({ guildId: guild.id, shardId: guild.shardId }, 'Force leaving channel...')
+    logger.info({ guild_id: guild.id, shard_id: guild.shardId }, 'Force leaving channel...')
     guild.shard.send(
       { op: 4, d: { guild_id: guild.id, channel_id: null, self_mute: false, self_deaf: false } },
       false

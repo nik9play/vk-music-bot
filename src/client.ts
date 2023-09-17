@@ -105,7 +105,7 @@ export class VkMusicBotClient extends Client {
 
           if (message.id === menuMessage.id) {
             this.latestMenus.delete(message.guildId)
-            logger.debug({ guildId: message.guildId }, 'Removed latestMenusMessage')
+            logger.debug({ guild_id: message.guildId }, 'Removed latestMenusMessage')
           }
         }
       })
@@ -138,13 +138,13 @@ export class VkMusicBotClient extends Client {
           if (state === 'UNKNOWN') return
 
           if (state === 'LEFT') {
-            logger.debug({ guildId }, 'Player left')
+            logger.debug({ guild_id: guildId }, 'Player left')
             await player.safeDestroy()
             return
           }
 
           if (state === 'MOVED' && !config.enable247) {
-            logger.debug({ guildId }, 'Player moved')
+            logger.debug({ guild_id: guildId }, 'Player moved')
             voiceChannel = newState.channel
             const members = voiceChannel?.members.filter((m) => !m.user.bot)
 
@@ -186,7 +186,7 @@ export class VkMusicBotClient extends Client {
             30_000
           )
 
-          logger.debug({ guildId: voiceChannel.guildId }, 'Player leaved empty channel')
+          logger.debug({ guild_id: voiceChannel.guildId }, 'Player leaved empty channel')
         }
       })
   }

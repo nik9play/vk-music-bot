@@ -35,7 +35,7 @@ export default class BotPlayer {
     let notifiedOnce = false
 
     this.player.on('start', (data) => {
-      logger.debug({ guildId: data.guildId }, 'Start repeat event')
+      logger.debug({ guild_id: data.guildId }, 'Start repeat event')
 
       if (this.repeat === 'track') {
         if (notifiedOnce) return
@@ -46,7 +46,7 @@ export default class BotPlayer {
     })
     this.player
       .on('start', async (data) => {
-        logger.debug({ guildId: data.guildId }, 'Start event')
+        logger.debug({ guild_id: data.guildId }, 'Start event')
 
         const config = await getConfig(this.guildId)
 
@@ -79,7 +79,9 @@ export default class BotPlayer {
           }
         }
       })
-      .on('end', async () => {
+      .on('end', async (data) => {
+        logger.debug({ guild_id: data.guildId }, 'End event')
+
         if (this.repeat === 'track' && this.current) this.queue.unshift(this.current)
         if (this.repeat === 'queue' && this.current) this.queue.push(this.current)
         await deletePreviousTrackStartMessage(client, this.guildId)
@@ -93,7 +95,7 @@ export default class BotPlayer {
         }
       })
       .on('stuck', async (data) => {
-        logger.error({ guildId: data.guildId }, 'Stuck event')
+        logger.error({ guild_id: data.guildId }, 'Stuck event')
         this.player.emit('end', data)
       })
       .on('exception', (data) => this.errorHandler(data))
@@ -264,7 +266,7 @@ export default class BotPlayer {
     Utils.clearExitTimeout(this.guildId, this.client)
 
     logger.debug(
-      { guildId: this.guildId },
+      { guild_id: this.guildId },
       `Destroyed the player & connection \nReason: ${reason || 'No Reason Provided'}`
     )
     if (this.stopped) return

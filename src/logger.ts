@@ -10,19 +10,20 @@ if (ENV.NODE_ENV === 'development') {
   transport = pino.transport({
     targets: [
       //@ts-ignore
-      {
-        target: 'pino-loki',
-        options: {
-          labels: { application: 'vkmusicbot-dev' },
-          batching: true,
-          interval: 5,
-          propsToLabels: ['msg', 'cluster_id', 'guild_id', 'shard_id', 'error_id'],
-          host: ENV.LOKI_URL
-        }
-      },
+      // {
+      //   target: 'pino-loki',
+      //   options: {
+      //     labels: { application: 'vkmusicbot-dev' },
+      //     batching: true,
+      //     interval: 5,
+      //     propsToLabels: ['msg', 'cluster_id', 'guild_id', 'shard_id', 'error_id'],
+      //     host: ENV.LOKI_URL
+      //   }
+      // },
       //@ts-ignore
       {
-        target: 'pino-pretty'
+        target: 'pino-pretty',
+        level: 'debug'
       }
     ]
   })

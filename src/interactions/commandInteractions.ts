@@ -225,13 +225,13 @@ export class CommandInteractionManager implements BaseInteractionManager {
       })
       .catch(async (err) => {
         const errorId = Utils.generateErrorId()
-        logger.error({ err, ...meta, errorId }, 'Error executing command')
+        logger.error({ err, ...meta, error_id: errorId }, 'Error executing command')
 
         await respond({
           embeds: [
             new EmbedBuilder()
               .setDescription(
-                'Произошла непредвиденная ошибка. Обратитесь за поддержкой в' +
+                'Произошла непредвиденная ошибка. Попробуйте команду /fix, если не поможет, то обратитесь за поддержкой в' +
                   ' [группу ВК](https://vk.com/vkmusicbotds) или на [сервер Discord](https://discord.com/invite/3ts2znePu7).'
               )
               .setFooter({ text: `ID ошибки: ${errorId}` })

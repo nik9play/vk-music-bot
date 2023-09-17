@@ -55,19 +55,19 @@ export async function getConfig(guildId: string): Promise<ServerConfigStrong> {
   if (configCache) {
     try {
       config = JSON.parse(configCache)
-      logger.debug({ guildId }, 'Config cache get')
+      logger.debug({ guild_id: guildId }, 'Config cache get')
     } catch {
       await redis.del(`config/${guildId}`)
 
       const document = await ServerConfigModel.findOne({ guildId })
       if (document) config = document.toJSON<ServerConfig>()
 
-      logger.debug({ guildId }, 'Config mongo get')
+      logger.debug({ guild_id: guildId }, 'Config mongo get')
     }
   } else {
     const document = await ServerConfigModel.findOne({ guildId })
     if (document) config = document.toJSON<ServerConfig>()
-    logger.debug({ guildId }, 'Config mongo get')
+    logger.debug({ guild_id: guildId }, 'Config mongo get')
 
     await redis.set(`config/${guildId}`, JSON.stringify(config), 'EX', 24 * 60 * 60)
   }
