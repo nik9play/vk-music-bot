@@ -57,7 +57,7 @@ export default class VKLoader implements BaseLoader {
     /(?:^|^https?:\/\/.*\/audio)(?<owner_id>-?\d+)_(?<id>\d+)(?:_(?<access_key>[a-zA-Z0-9]+))?$/
 
   private userGroupRegex =
-    /^>(?:(?<group_id>-[0-9]+)|(?<user_id>[0-9]+)|(?<screen_name>[A-Za-z0-9.]+))$/
+    /^>(?:(?<group_id>-[0-9]+)|(?<user_id>[0-9]+)|(?<screen_name>[A-Za-z0-9._]+))$/
 
   private userGroupNumberUrlRegex = /^https:\/\/vk\.com\/(audios(?<owner_id>-?\d+))$/
 
