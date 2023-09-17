@@ -235,7 +235,7 @@ export default class Utils {
 
       return message
     } catch (err) {
-      logger.error({ err }, "Can't send message")
+      logger.error({ err, guild_id: channel.guildId }, "Can't send message")
     }
   }
 
