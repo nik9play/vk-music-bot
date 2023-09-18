@@ -82,8 +82,10 @@ export default class BotPlayer {
       .on('end', async (data) => {
         logger.debug({ guild_id: data.guildId }, 'End event')
 
-        if (this.repeat === 'track' && this.current) this.queue.unshift(this.current)
-        if (this.repeat === 'queue' && this.current) this.queue.push(this.current)
+        if (this.repeat === 'track' && this.current && !this.current.isErrored)
+          this.queue.unshift(this.current)
+        if (this.repeat === 'queue' && this.current && !this.current.isErrored)
+          this.queue.push(this.current)
         await deletePreviousTrackStartMessage(client, this.guildId)
         await this.play()
         if (
@@ -98,8 +100,14 @@ export default class BotPlayer {
         logger.error({ guild_id: data.guildId }, 'Stuck event')
         this.player.emit('end', data)
       })
-      .on('exception', (data) => this.errorHandler(data))
-      .on('closed', (data) => this.errorHandler(data))
+      .on('exception', (data) => {
+        logger.error({ data }, 'Track exception')
+
+        if (this.current) this.current.isErrored = true
+      })
+      .on('closed', (data) => {
+        logger.error({ data }, 'BotPlayer closed')
+      })
       .on('update', async (data) => {
         const config = await getConfig(data.guildId)
         if ((data.state.position !== undefined && data.state.position < 10_000) || !config.premium)
@@ -184,13 +192,6 @@ export default class BotPlayer {
         this.destroy(false)
       ])
     }
-  }
-
-  async errorHandler(data: any) {
-    logger.error({ data }, 'BotPlayer closed')
-    if (data instanceof Error || data instanceof Object) logger.error({ data }, 'BotPlayer closed')
-    // this.queue.length = 0
-    // await this.destroy()
   }
 
   get volume() {

@@ -14,8 +14,8 @@ export default class BotTrack {
   loadedTrack?: Track
   identifier?: string
   vkTrackInfo?: VkTrackInfo
-
   sourceNameCode: string
+  isErrored: boolean = false
 
   get author() {
     return this.vkTrackInfo
