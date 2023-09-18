@@ -97,7 +97,7 @@ export default class YandexMusicLoader implements BaseLoader {
             { name: 'Добавлено треков', value: tracks.length.toString(), inline: true },
             { name: 'Всего треков', value: resolvedTracks.tracks.length.toString(), inline: true }
           ])
-          .setURL(query)
+          .setURL(new URL(query).toString())
           .setTitle(Utils.escapeFormat(resolvedTracks.playlistInfo.name) ?? 'Без имени')
         break
     }
