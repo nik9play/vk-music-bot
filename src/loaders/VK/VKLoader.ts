@@ -529,6 +529,10 @@ export default class VKLoader implements BaseLoader {
 
     const tracks = response.items
 
+    if (tracks.length === 0) {
+      throw new LoaderError('Ничего не найдено по запросу.')
+    }
+
     return this.convertToBotTracks(tracks, [])
   }
 }
