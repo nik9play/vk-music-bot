@@ -46,7 +46,7 @@ export default class BotPlayer {
     })
     this.player
       .on('start', async (data) => {
-        logger.debug({ guild_id: data.guildId }, 'Start event')
+        logger.info({ guild_id: data.guildId }, 'Start event')
 
         const config = await getConfig(this.guildId)
 
@@ -80,7 +80,7 @@ export default class BotPlayer {
         }
       })
       .on('end', async (data) => {
-        logger.debug({ guild_id: data.guildId }, 'End event')
+        logger.info({ guild_id: data.guildId }, 'End event')
 
         if (this.repeat === 'track' && this.current && !this.current.isErrored)
           this.queue.unshift(this.current)
