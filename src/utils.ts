@@ -374,7 +374,7 @@ export default class Utils {
   }
 
   public static checkQueue(respond: RespondFunction, player: BotPlayer): boolean {
-    if (player.queue.length === 0) {
+    if (player.queue.isEmpty()) {
       this.sendNoQueueMessage(respond)
       return false
     }

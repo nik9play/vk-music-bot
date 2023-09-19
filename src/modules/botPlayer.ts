@@ -72,18 +72,12 @@ export default class BotPlayer {
 
         const config = await getConfig(this.guildId)
 
-        if (config.announcements) {
-          const channel = client.channels.cache.get(this.textChannelId)
-          logger.debug({ channel: channel?.id, current: this.current })
-
-          if (!channel?.isTextBased()) return
-          if (channel.isDMBased()) return
-
+        if (config.announcements && this.textChannel) {
           try {
             if (!this.current) return
 
             const message = await Utils.sendMessageToChannel(
-              channel,
+              this.textChannel,
               await generatePlayerStartMessage(this, this.current)
             )
             if (message) client.latestMenus.set(this.guildId, message)
@@ -101,17 +95,9 @@ export default class BotPlayer {
           if (track && !track.isErrored && this.repeat === Repeat.Queue) this.queue.push(track)
         }
 
-        // if (this.repeat === 'track' && this.current && !this.current.isErrored)
-        //   this.queue.unshift(this.current)
-        // if (this.repeat === 'queue' && this.current && !this.current.isErrored)
-        //   this.queue.push(this.current)
-        await deletePreviousTrackStartMessage(client, this.guildId)
-        await this.play()
-        if (
-          this.queue.length === 0 &&
-          !this.current &&
-          !(await getConfig(this.guildId)).enable247
-        ) {
+        await Promise.all([deletePreviousTrackStartMessage(client, this.guildId), this.play()])
+
+        if (this.queue.isEmpty() && !(await getConfig(this.guildId)).enable247) {
           Utils.setExitTimeout(this, this.client)
           this.stopped = true
         }
@@ -302,7 +288,7 @@ export default class BotPlayer {
   }
 
   async stop() {
-    await this.player.setPaused(false)
+    // await this.player.setPaused(false)
     this.repeat = Repeat.Off
     this.queue.clear()
     this.stopped = true
@@ -320,7 +306,7 @@ export default class BotPlayer {
 
     await this.player.setPaused(false)
     await this.player.stopTrack()
-    if (this.queue.length === 0 && !this.current && !(await getConfig(this.guildId)).enable247) {
+    if (this.queue.isEmpty() && !(await getConfig(this.guildId)).enable247) {
       Utils.setExitTimeout(this, this.client)
       this.stopped = true
     }

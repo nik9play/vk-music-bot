@@ -36,7 +36,7 @@ export const interaction: CommandCustomInteraction = {
         return
       }
 
-      if (player?.player.paused || (player?.queue.length === 0 && !player.current)) {
+      if (player?.player.paused || (player?.queue.isEmpty() && !player.current)) {
         Utils.setExitTimeout(player, client)
       }
     }
