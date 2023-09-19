@@ -41,7 +41,7 @@ export async function playCommandHandler(
 
     const player = await client.playerManager.handle(guild, voice.id, text.id, tracks)
     if (player instanceof BotPlayer) {
-      player.play()
+      await player.play()
     }
 
     const embeds = [embed]

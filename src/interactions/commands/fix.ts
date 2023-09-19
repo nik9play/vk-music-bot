@@ -16,6 +16,8 @@ export const interaction: CommandCustomInteraction = {
     Utils.clearExitTimeout(guild.id, client)
 
     await player?.safeDestroy()
+    await client.shoukaku.leaveVoiceChannel(guild.id)
+    // client.shoukaku.connections.get(guild.id)?.disconnect()
 
     Utils.forceLeave(guild)
 
