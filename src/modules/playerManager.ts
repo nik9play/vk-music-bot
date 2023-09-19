@@ -19,7 +19,11 @@ export default class PlayerManager extends Map<string, BotPlayer> {
 
     const existing = this.get(guild.id)
     if (!existing) {
-      if (this.client.shoukaku.players.has(guild.id)) return 'Busy'
+      if (
+        this.client.shoukaku.players.has(guild.id) ||
+        this.client.shoukaku.connections.has(guild.id)
+      )
+        return 'Busy'
       let player: Player | null = null
 
       const channel = guild.client.channels.cache.get(voiceChannelId) as
