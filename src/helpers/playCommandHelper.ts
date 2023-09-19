@@ -79,7 +79,10 @@ export async function playCommandHandler(
     }
 
     if (!config.premium && player instanceof BotPlayer && player.queue.length > 200) {
-      player.queue.length = 200
+      // player.queue.length = 200
+
+      player.queue.remove(199, player.queue.length - 200)
+
       const premiumEmbed = Utils.generateErrorMessage(
         'В очереди было больше 200 треков, поэтому лишние треки были удалены. ' +
           'Хотите больше треков? Приобретите Премиум, подробности: </donate:906533685979918396>.',
