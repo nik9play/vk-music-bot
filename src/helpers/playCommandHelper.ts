@@ -4,6 +4,7 @@ import { getConfig } from '../db.js'
 import BotPlayer from '../modules/botPlayer.js'
 import { CommandExecuteParams } from '../interactions/commandInteractions.js'
 import { CaptchaLoaderError, LoaderError } from '../loaders/baseLoader.js'
+import logger from '../logger.js'
 
 export async function playCommandHandler(
   params: Omit<CommandExecuteParams, 'interaction'>,
@@ -41,7 +42,12 @@ export async function playCommandHandler(
 
     const player = await client.playerManager.handle(guild, voice.id, text.id, tracks)
     if (player instanceof BotPlayer) {
-      player.play()
+      logger.info({ stopped: player.stopped })
+
+      if (player.stopped) {
+        player.stopped = false
+        await player.play()
+      }
     }
 
     const embeds = [embed]

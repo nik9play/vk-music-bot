@@ -1,4 +1,4 @@
-import { Constants, Player, UpdatePlayerOptions } from 'shoukaku'
+import { Constants, Player, UpdatePlayerOptions, Node } from 'shoukaku'
 import { VkMusicBotClient } from '../client.js'
 import { getConfig, updateConfig } from '../db.js'
 import {
@@ -8,42 +8,64 @@ import {
 import logger from '../logger.js'
 import BotTrack from '../structures/botTrack.js'
 import Utils, { ErrorMessageType } from '../utils.js'
-import { DiscordAPIError } from 'discord.js'
+import { DiscordAPIError, Guild, TextChannel, VoiceChannel } from 'discord.js'
+import Denque from 'denque'
+
+export enum Repeat {
+  Off,
+  Track,
+  Queue
+}
 
 export default class BotPlayer {
   public client: VkMusicBotClient
   public guildId: string
   public textChannelId: string
   public player: Player
-  public queue: BotTrack[]
-  public current?: BotTrack | null
-  public repeat: 'none' | 'track' | 'queue'
+  public queue: Denque<BotTrack>
+  // public current?: BotTrack | null
+  public repeat: Repeat
   public stopped: boolean
   public reconnecting: boolean
+
+  get guild(): Guild | undefined {
+    return this.client.guilds.cache.get(this.guildId)
+  }
+
+  get textChannel(): TextChannel | VoiceChannel | undefined {
+    return this.client.channels.cache.get(this.textChannelId) as TextChannel | VoiceChannel
+  }
+
+  get idealNodeDefault(): Node | undefined {
+    return this.client.shoukaku.getIdealNode()
+  }
+
+  get current(): BotTrack | undefined {
+    return this.queue.peekAt(0)
+  }
 
   constructor(client: VkMusicBotClient, guildId: string, textChannelId: string, player: Player) {
     this.client = client
     this.guildId = guildId
     this.textChannelId = textChannelId
     this.player = player
-    this.repeat = 'none'
-    this.current = null
-    this.queue = []
-    this.stopped = false
+    this.repeat = Repeat.Off
+    // this.current = null
+    this.queue = new Denque()
+    this.stopped = true
     this.reconnecting = false
 
-    let notifiedOnce = false
+    this.player
+    // .on('start', (data) => {
+    //   logger.debug({ guild_id: data.guildId }, 'Start repeat event')
 
-    this.player.on('start', (data) => {
-      logger.debug({ guild_id: data.guildId }, 'Start repeat event')
-
-      if (this.repeat === 'track') {
-        if (notifiedOnce) return
-        else notifiedOnce = true
-      } else if (this.repeat === 'queue' || this.repeat === 'none') {
-        notifiedOnce = false
-      }
-    })
+    //   if (this.repeat === 'track') {
+    //     if (notifiedOnce) return
+    //     else notifiedOnce = true
+    //   } else if (this.repeat === 'queue' || this.repeat === 'none') {
+    //     notifiedOnce = false
+    //   }
+    // })
     this.player
       .on('start', async (data) => {
         logger.debug({ guild_id: data.guildId }, 'Start event')
@@ -58,16 +80,7 @@ export default class BotPlayer {
           if (channel.isDMBased()) return
 
           try {
-            //clearTimeout(client.latestMenusTimeouts.get(player.guildId))
-
             if (!this.current) return
-
-            // const permissions = channel.permissionsFor(client.user as User)
-            // if (!permissions?.has([PermissionsBitField.Flags.SendMessages])) {
-            //   return
-            // }
-
-            // const message = await channel.send(generatePlayerStartMessage(this, this.current))
 
             const message = await Utils.sendMessageToChannel(
               channel,
@@ -80,12 +93,18 @@ export default class BotPlayer {
         }
       })
       .on('end', async (data) => {
-        logger.debug({ guild_id: data.guildId }, 'End event')
+        logger.info({ guild_id: data.guildId }, 'End event')
 
-        if (this.repeat === 'track' && this.current && !this.current.isErrored)
-          this.queue.unshift(this.current)
-        if (this.repeat === 'queue' && this.current && !this.current.isErrored)
-          this.queue.push(this.current)
+        if (this.stopped) return
+        if (this.repeat !== Repeat.Track) {
+          const track = this.queue.removeOne(0)
+          if (track && !track.isErrored && this.repeat === Repeat.Queue) this.queue.push(track)
+        }
+
+        // if (this.repeat === 'track' && this.current && !this.current.isErrored)
+        //   this.queue.unshift(this.current)
+        // if (this.repeat === 'queue' && this.current && !this.current.isErrored)
+        //   this.queue.push(this.current)
         await deletePreviousTrackStartMessage(client, this.guildId)
         await this.play()
         if (
@@ -94,6 +113,7 @@ export default class BotPlayer {
           !(await getConfig(this.guildId)).enable247
         ) {
           Utils.setExitTimeout(this, this.client)
+          this.stopped = true
         }
       })
       .on('stuck', async (data) => {
@@ -229,7 +249,7 @@ export default class BotPlayer {
     const volume = (await getConfig(this.guildId)).volume
 
     Utils.clearExitTimeout(this.guildId, this.client)
-    this.current = this.queue.shift()
+
     try {
       if (this.current?.loadedTrack)
         await this.player.playTrack({
@@ -247,7 +267,7 @@ export default class BotPlayer {
     this.client.shoukaku.off('close', this.closeHandlerEvent)
     this.client.shoukaku.off('disconnect', this.disconnectHandlerEvent)
 
-    this.queue.length = 0
+    this.queue.clear()
     try {
       await this.client.shoukaku.leaveVoiceChannel(this.guildId)
     } catch (err) {
@@ -274,6 +294,7 @@ export default class BotPlayer {
   }
 
   async safeDestroy() {
+    this.stopped = true
     await Promise.all([
       deletePreviousTrackStartMessage(this.client, this.guildId),
       this.destroy(this.player.node.state === Constants.State.CONNECTED)
@@ -282,27 +303,40 @@ export default class BotPlayer {
 
   async stop() {
     await this.player.setPaused(false)
-    this.repeat = 'none'
-    this.queue.length = 0
+    this.repeat = Repeat.Off
+    this.queue.clear()
     this.stopped = true
-    await this.player.stopTrack()
+
+    await Promise.all([
+      this.player.stopTrack(),
+      deletePreviousTrackStartMessage(this.client, this.guildId)
+    ])
+
     if (!(await getConfig(this.guildId)).enable247) Utils.setExitTimeout(this, this.client)
   }
 
   async skip(count = 1) {
-    this.queue.splice(0, count - 1)
+    console.log(this.queue.remove(1, count - 1))
 
     await this.player.setPaused(false)
     await this.player.stopTrack()
     if (this.queue.length === 0 && !this.current && !(await getConfig(this.guildId)).enable247) {
       Utils.setExitTimeout(this, this.client)
+      this.stopped = true
     }
   }
 
-  shuffle() {
-    for (let i = this.queue.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1))
-      ;[this.queue[i], this.queue[j]] = [this.queue[j], this.queue[i]]
+  // shuffle() {
+  //   for (let i = this.queue.length - 1; i > 0; i--) {
+  //     const j = Math.floor(Math.random() * (i + 1))
+  //     ;[this.queue[i], this.queue[j]] = [this.queue[j], this.queue[i]]
+  //   }
+  // }
+
+  shuffleQueue() {
+    if (this.queue.length > 2) {
+      const tracks = Utils.shuffleArray(this.queue.remove(1, this.queue.length))
+      for (const track of tracks) this.queue.push(track)
     }
   }
 }

@@ -32,13 +32,15 @@ export const interaction: CommandCustomInteraction = {
       const first = parseInt(arg.split('-')[0])
       const last = parseInt(arg.split('-')[1])
 
-      queue.splice(first - 1, last - first + 1)
+      const index = first - 1 === 0 ? 1 : first - 1
+
+      queue.remove(index, last - first + 1)
 
       const afterRemove = player.queue.length
       if (last && first && last > first) removedTracks = beforeRemove - afterRemove
     } else {
       const intArg = parseInt(arg)
-      queue.splice(intArg - 1, 1)
+      queue.removeOne(intArg - 1)
       const afterRemove = player.queue.length
 
       if (intArg >= 1) removedTracks = beforeRemove - afterRemove

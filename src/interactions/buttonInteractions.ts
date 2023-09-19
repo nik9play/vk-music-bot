@@ -77,6 +77,8 @@ export class ButtonInteractionManager implements BaseInteractionManager {
 
     const buttonInteraction = this.interactions.get(name)
 
+    logger.info({ ...meta }, `Executed button ${buttonInteraction?.name}`)
+
     if (
       buttonInteraction?.adminOnly &&
       !member.permissions.has(PermissionsBitField.Flags.ManageGuild)

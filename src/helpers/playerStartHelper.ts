@@ -38,11 +38,17 @@ export const menuButtonNames: Record<MenuButtonIds, string> = {
   [MenuButtonIds.VolumeDown]: 'Громкость вниз'
 }
 
+enum Repeat {
+  Off,
+  Track,
+  Queue
+}
+
 const repeatEmojis = {
-  none: '<:repeat_no:1052960708641431642>',
-  queue: '<:repeat_queue:1052960645907226704>',
-  track: '<:repeat_one_btn:1052960682666102815>'
-} as const
+  [Repeat.Off]: '<:repeat_no:1052960708641431642>',
+  [Repeat.Queue]: '<:repeat_queue:1052960645907226704>',
+  [Repeat.Track]: '<:repeat_one_btn:1052960682666102815>'
+}
 
 const progressEmojis = {
   mid0: '<:progress_mid_0:1084166897790103695>',
@@ -82,8 +88,8 @@ export async function generatePlayerStartMessage(
     //new MessageButton().setCustomId('menu_update').setEmoji('🔃').setStyle(ButtonStyle.Primary),
     new ButtonBuilder()
       .setCustomId(`menu,${MenuButtonIds.Repeat}`)
-      .setEmoji(repeatEmojis[player.repeat ?? 'none'])
-      .setStyle(player.repeat === 'none' ? ButtonStyle.Secondary : ButtonStyle.Primary)
+      .setEmoji(repeatEmojis[player.repeat ?? Repeat.Off])
+      .setStyle(player.repeat === Repeat.Off ? ButtonStyle.Secondary : ButtonStyle.Primary)
   ])
 
   const row2 = new ActionRowBuilder<ButtonBuilder>().addComponents([

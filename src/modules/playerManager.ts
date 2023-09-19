@@ -19,7 +19,11 @@ export default class PlayerManager extends Map<string, BotPlayer> {
 
     const existing = this.get(guild.id)
     if (!existing) {
-      if (this.client.shoukaku.players.has(guild.id)) return 'Busy'
+      if (
+        this.client.shoukaku.players.has(guild.id) ||
+        this.client.shoukaku.connections.has(guild.id)
+      )
+        return 'Busy'
       let player: Player | null = null
 
       const channel = guild.client.channels.cache.get(voiceChannelId) as
@@ -86,15 +90,19 @@ export default class PlayerManager extends Map<string, BotPlayer> {
 
       logger.debug(`New connection @ guild "${guild.id}"`)
       const botPlayer = new BotPlayer(this.client, guild.id, textChannelId, player)
-      botPlayer.queue.push(...tracks)
+      for (const track of tracks) {
+        botPlayer.queue.push(track)
+      }
       this.set(guild.id, botPlayer)
       logger.debug(`New player dispatcher @ guild "${guild.id}"`)
 
       return botPlayer
     }
-    existing.queue.push(...tracks)
+    for (const track of tracks) {
+      existing.queue.push(track)
+    }
 
-    if (!existing.current) await existing.play()
-    return null
+    // if (!existing.current) await existing.play()
+    return existing
   }
 }

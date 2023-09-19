@@ -1,11 +1,12 @@
 import { SlashCommandBuilder } from 'discord.js'
 import { CommandCustomInteraction } from '../commandInteractions.js'
 import Utils, { ErrorMessageType } from '../../utils.js'
+import Denque from 'denque'
 
-function moveElement(arr: any[], oldIndex: number, newIndex: number) {
+function moveElement(arr: Denque, oldIndex: number, newIndex: number) {
   let numberOfDeletedElm = 1
 
-  const elm = arr.splice(oldIndex, numberOfDeletedElm)[0]
+  const elm = arr.splice(oldIndex, numberOfDeletedElm)![0]
 
   numberOfDeletedElm = 0
 
@@ -55,8 +56,8 @@ export const interaction: CommandCustomInteraction = {
     await respond({
       embeds: [
         Utils.generateErrorMessage(
-          `🔀 Трек **${player.queue[newIndex].author} – ${
-            player.queue[newIndex].title
+          `🔀 Трек **${player.queue.peekAt(newIndex)!.author} – ${
+            player.queue.peekAt(newIndex)!.title
           }** был перемещен с позиции **${oldIndex + 1}** на позицию **${newIndex + 1}**.`,
           ErrorMessageType.NoTitle
         )

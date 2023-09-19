@@ -20,7 +20,7 @@ export const interaction: CommandCustomInteraction = {
     if (!Utils.checkNodeState(respond, player)) return
     if (!Utils.checkSameVoiceChannel(respond, voice)) return
 
-    player.shuffle()
+    player.shuffleQueue()
 
     await respond({
       embeds: [Utils.generateErrorMessage('🔀 Очередь перемешана.', ErrorMessageType.NoTitle)]

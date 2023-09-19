@@ -1,6 +1,7 @@
 import { SlashCommandBuilder } from 'discord.js'
 import Utils, { ErrorMessageType } from '../../utils.js'
 import { CommandCustomInteraction } from '../commandInteractions.js'
+import { Repeat } from '../../modules/botPlayer.js'
 
 export const interaction: CommandCustomInteraction = {
   name: 'repeat',
@@ -36,7 +37,7 @@ export const interaction: CommandCustomInteraction = {
 
     if (repeatParam) {
       if (repeatParam === 'очередь') {
-        player.repeat = 'queue'
+        player.repeat = Repeat.Queue
         await respond({
           embeds: [
             Utils.generateErrorMessage('🔁 Включен повтор очереди.', ErrorMessageType.NoTitle)
@@ -45,14 +46,14 @@ export const interaction: CommandCustomInteraction = {
         return
       }
       if (repeatParam === 'трек') {
-        player.repeat = 'track'
+        player.repeat = Repeat.Track
         await respond({
           embeds: [Utils.generateErrorMessage('🔁 Включен повтор трека.', ErrorMessageType.NoTitle)]
         })
         return
       }
       if (repeatParam === 'выкл') {
-        player.repeat = 'none'
+        player.repeat = Repeat.Off
         await respond({
           embeds: [Utils.generateErrorMessage('🔁 Повтор выключен.', ErrorMessageType.NoTitle)]
         })
@@ -61,8 +62,8 @@ export const interaction: CommandCustomInteraction = {
     }
 
     let msg
-    if (player.repeat === 'track') msg = 'Повтор текущего трека'
-    if (player.repeat === 'queue') msg = 'Повтор очереди'
+    if (player.repeat === Repeat.Track) msg = 'Повтор текущего трека'
+    if (player.repeat === Repeat.Queue) msg = 'Повтор очереди'
 
     if (msg)
       await respond({

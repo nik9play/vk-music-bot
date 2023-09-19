@@ -412,4 +412,13 @@ export default class Utils {
   public static longTime(date: Date): string {
     return `<t:${Math.floor(date.getTime() / 1000)}:T>`
   }
+
+  public static shuffleArray<T>(array: T[]): T[] {
+    const duplicate = array.slice()
+    for (let length = duplicate.length - 1; length > 0; length--) {
+      const random = Math.floor(Math.random() * (length + 1))
+      ;[duplicate[length], duplicate[random]] = [duplicate[random], duplicate[length]]
+    }
+    return duplicate
+  }
 }

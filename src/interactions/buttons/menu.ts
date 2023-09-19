@@ -8,6 +8,7 @@ import {
 import { generateQueueResponse } from '../../helpers/queueCommandHelper.js'
 import Utils from '../../utils.js'
 import { ButtonCustomInteraction } from '../buttonInteractions.js'
+import { Repeat } from '../../modules/botPlayer.js'
 
 export const interaction: ButtonCustomInteraction = {
   name: 'menu',
@@ -67,12 +68,12 @@ export const interaction: ButtonCustomInteraction = {
         await player.skip()
         break
       case MenuButtonIds.Repeat:
-        if (player.repeat === 'none') {
-          player.repeat = 'track'
-        } else if (player.repeat === 'track') {
-          player.repeat = 'queue'
-        } else if (player.repeat === 'queue') {
-          player.repeat = 'none'
+        if (player.repeat === Repeat.Off) {
+          player.repeat = Repeat.Track
+        } else if (player.repeat === Repeat.Track) {
+          player.repeat = Repeat.Queue
+        } else if (player.repeat === Repeat.Queue) {
+          player.repeat = Repeat.Off
         }
         action = 'update'
         break

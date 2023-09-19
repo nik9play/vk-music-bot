@@ -20,6 +20,7 @@
     "@hono/zod-validator": "^0.1.8",
     "@influxdata/influxdb-client": "^1.33.2",
     "bufferutil": "^4.0.7",
+    "denque": "^2.1.0",
     "discord.js": "^14.13.0",
     "dotenv": "^16.3.1",
     "glob": "^10.3.3",

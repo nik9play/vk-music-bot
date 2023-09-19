@@ -22,7 +22,7 @@ export function generateQueueResponse(
   const end = page * multiple
   const start = end - multiple
 
-  const tracks = queue.slice(start, end)
+  const tracks = queue.toArray().slice(start, end)
 
   if (player.current)
     embed.addFields({
