@@ -28,22 +28,43 @@ export const interaction: CommandCustomInteraction = {
 
     const arg = interaction.options.getString('треки', true)
 
-    if (arg.includes('-')) {
+    if (/\d+-\d+/.test(arg)) {
       const first = parseInt(arg.split('-')[0])
       const last = parseInt(arg.split('-')[1])
 
-      const index = first - 1 === 0 ? 1 : first - 1
+      if (first >= last) {
+        await respond({
+          embeds: [Utils.generateErrorMessage(`Неверный диапазон.`)]
+        })
+        return
+      }
 
-      queue.remove(index, last - first + 1)
+      let index = first - 1
+      let count = last - first + 1
+
+      if (index === 0) {
+        index = 1
+        count--
+      }
+
+      queue.remove(index, count)
 
       const afterRemove = player.queue.length
       if (last && first && last > first) removedTracks = beforeRemove - afterRemove
     } else {
-      const intArg = parseInt(arg)
-      queue.removeOne(intArg - 1)
+      const position = parseInt(arg)
+
+      if (isNaN(position)) {
+        await respond({
+          embeds: [Utils.generateErrorMessage(`Неверный номер.`)]
+        })
+        return
+      }
+
+      queue.removeOne(position - 1)
       const afterRemove = player.queue.length
 
-      if (intArg >= 1) removedTracks = beforeRemove - afterRemove
+      if (position >= 1) removedTracks = beforeRemove - afterRemove
     }
 
     await respond({
