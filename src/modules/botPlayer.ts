@@ -23,10 +23,11 @@ export default class BotPlayer {
   public textChannelId: string
   public player: Player
   public queue: Denque<BotTrack>
-  // public current?: BotTrack | null
   public repeat: Repeat
   public stopped: boolean
   public reconnecting: boolean
+
+  public sendTrackStartMessage: () => void
 
   get guild(): Guild | undefined {
     return this.client.guilds.cache.get(this.guildId)
@@ -55,6 +56,19 @@ export default class BotPlayer {
     this.stopped = true
     this.reconnecting = false
 
+    this.sendTrackStartMessage = Utils.debounce(async () => {
+      const config = await getConfig(this.guildId)
+
+      if (!config.announcements || !this.current || !this.textChannel) return
+
+      const message = await Utils.sendMessageToChannel(
+        this.textChannel,
+        await generatePlayerStartMessage(this, this.current)
+      )
+
+      if (message) this.client.latestMenus.set(this.guildId, message)
+    }, 2000)
+
     this.player
     // .on('start', (data) => {
     //   logger.debug({ guild_id: data.guildId }, 'Start repeat event')
@@ -68,26 +82,12 @@ export default class BotPlayer {
     // })
     this.player
       .on('start', async (data) => {
-        logger.debug({ guild_id: data.guildId }, 'Start event')
+        logger.debug({ guild_id: data.guildId, node_name: this.player.node.name }, 'Start event')
 
-        const config = await getConfig(this.guildId)
-
-        if (config.announcements && this.textChannel) {
-          try {
-            if (!this.current) return
-
-            const message = await Utils.sendMessageToChannel(
-              this.textChannel,
-              await generatePlayerStartMessage(this, this.current)
-            )
-            if (message) client.latestMenus.set(this.guildId, message)
-          } catch (err) {
-            logger.error({ err }, "Can't send player start message")
-          }
-        }
+        this.sendTrackStartMessage()
       })
       .on('end', async (data) => {
-        logger.info({ guild_id: data.guildId }, 'End event')
+        logger.info({ guild_id: data.guildId, node_name: this.player.node.name }, 'End event')
 
         if (this.stopped) return
         if (this.repeat !== Repeat.Track) {
@@ -121,7 +121,12 @@ export default class BotPlayer {
 
         if (this.current) {
           const message = this.client.latestMenus.get(this.guildId)
-          if (!message || !message.editable) return
+          if (!message) {
+            this.sendTrackStartMessage()
+            return
+          }
+
+          if (!message.editable) return
 
           await message.edit(await generatePlayerStartMessage(this, this.current)).catch((err) => {
             if (err instanceof DiscordAPIError && err.code === 10008) {
