@@ -307,7 +307,7 @@ export default class BotPlayer {
   }
 
   async skip(count = 1) {
-    console.log(this.queue.remove(1, count - 1))
+    this.queue.remove(1, count - 1)
 
     await this.player.setPaused(false)
     await this.player.stopTrack()
