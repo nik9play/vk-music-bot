@@ -46,7 +46,15 @@ export default class BotPlayer {
     })
     this.player
       .on('start', async (data) => {
-        logger.info({ guild_id: data.guildId }, 'Start event')
+        logger.info(
+          {
+            guild_id: data.guildId,
+            track: this.current?.identifier,
+            repeat: this.repeat,
+            node_name: this.player.node.name
+          },
+          'Start event'
+        )
 
         const config = await getConfig(this.guildId)
 
@@ -80,7 +88,10 @@ export default class BotPlayer {
         }
       })
       .on('end', async (data) => {
-        logger.info({ guild_id: data.guildId }, 'End event')
+        logger.info(
+          { guild_id: data.guildId, track: this.current?.identifier, repeat: this.repeat },
+          'End event'
+        )
 
         if (this.repeat === 'track' && this.current && !this.current.isErrored)
           this.queue.unshift(this.current)
