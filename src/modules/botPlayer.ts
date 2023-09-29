@@ -57,9 +57,10 @@ export default class BotPlayer {
     this.reconnecting = false
 
     this.sendTrackStartMessage = Utils.debounce(async () => {
-      const config = await getConfig(this.guildId)
+      if (!this.current || !this.textChannel) return
 
-      if (!config.announcements || !this.current || !this.textChannel) return
+      const config = await getConfig(this.guildId)
+      if (!config.announcements) return
 
       const message = await Utils.sendMessageToChannel(
         this.textChannel,
@@ -115,9 +116,10 @@ export default class BotPlayer {
         logger.error({ data }, 'BotPlayer closed')
       })
       .on('update', async (data) => {
+        if (data.state.position !== undefined && data.state.position < 10_000) return
+
         const config = await getConfig(data.guildId)
-        if ((data.state.position !== undefined && data.state.position < 10_000) || !config.premium)
-          return
+        if (!config.premium) return
 
         if (this.current) {
           const message = this.client.latestMenus.get(this.guildId)
