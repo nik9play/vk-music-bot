@@ -17,6 +17,7 @@ export async function playCommandHandler(
 
   if (!Utils.checkSameVoiceChannel(respond, voice)) return
   if (!Utils.checkVoicePermissions(respond, voice)) return
+  if (!Utils.checkVoiceChannelUserLimit(respond, voice)) return
 
   Utils.clearExitTimeout(guild.id, client)
 

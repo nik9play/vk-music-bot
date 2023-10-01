@@ -350,6 +350,21 @@ export default class Utils {
     return true
   }
 
+  public static checkVoiceChannelUserLimit(respond: RespondFunction, voice: VoiceBasedChannel) {
+    if (
+      voice.members.size >= voice.userLimit &&
+      !voice.guild.members.me?.permissions.has(PermissionsBitField.All)
+    ) {
+      respond({
+        embeds: [Utils.generateErrorMessage('В голосовом канале нет мест.')],
+        ephemeral: true
+      })
+      return false
+    }
+
+    return true
+  }
+
   public static checkPlayer(
     respond: RespondFunction,
     player: BotPlayer | undefined | null
