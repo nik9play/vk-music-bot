@@ -70,7 +70,7 @@ export default class BotPlayer {
       if (message) this.client.latestMenus.set(this.guildId, message)
     }, 2000)
 
-    this.player
+    // this.player
     // .on('start', (data) => {
     //   logger.debug({ guild_id: data.guildId }, 'Start repeat event')
 
@@ -87,13 +87,13 @@ export default class BotPlayer {
 
         this.sendTrackStartMessage()
       })
-      .on('end', async (data) => {
-        logger.info({ guild_id: data.guildId, node_name: this.player.node.name }, 'End event')
+      .on('end', async () => {
+        logger.info({ guild_id: this.guildId, node_name: this.player.node.name }, 'End event')
 
         if (this.stopped) return
         if (this.repeat !== Repeat.Track) {
           const track = this.queue.removeOne(0)
-          if (track && !track.isErrored && this.repeat === Repeat.Queue) this.queue.push(track)
+          if (track && !track.hasErrored && this.repeat === Repeat.Queue) this.queue.push(track)
         }
 
         await Promise.all([deletePreviousTrackStartMessage(client, this.guildId), this.play()])
@@ -110,7 +110,7 @@ export default class BotPlayer {
       .on('exception', (data) => {
         logger.error({ data }, 'Track exception')
 
-        if (this.current) this.current.isErrored = true
+        if (this.current) this.current.hasErrored = true
       })
       .on('closed', (data) => {
         logger.error({ data }, 'BotPlayer closed')
@@ -251,8 +251,13 @@ export default class BotPlayer {
         })
       if (this.current?.identifier)
         await this.playTrackFromIdentifier(this.current?.identifier, volume)
-    } catch {
-      await this.play()
+    } catch (err) {
+      if (this.current) this.current.hasErrored = true
+
+      logger.error({ err }, 'Play track error')
+      // await this.play()
+
+      this.player.emit('end', { guildId: this.guildId })
     }
   }
 
