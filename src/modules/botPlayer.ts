@@ -27,6 +27,10 @@ export default class BotPlayer {
   public stopped: boolean
   public reconnecting: boolean
 
+  private latestEndEvent: Date | null = null
+
+  private fastEndEventsCount = 0
+
   public sendTrackStartMessage: () => void
 
   get guild(): Guild | undefined {
@@ -89,6 +93,52 @@ export default class BotPlayer {
       })
       .on('end', async () => {
         logger.info({ guild_id: this.guildId, node_name: this.player.node.name }, 'End event')
+
+        // temp workaround for end/start event spam
+        // TODO: fix this shit
+        const eventDate = new Date()
+
+        if (this.latestEndEvent && eventDate.getTime() - this.latestEndEvent.getTime() <= 1000) {
+          this.fastEndEventsCount++
+        } else {
+          this.fastEndEventsCount = 0
+        }
+
+        this.latestEndEvent = eventDate
+
+        if (this.fastEndEventsCount >= 5) {
+          this.fastEndEventsCount = 0
+          await this.safeDestroy()
+          logger.warn(
+            {
+              guild_id: this.guildId,
+              track: this.current?.identifier,
+              repeat: this.repeat,
+              node_name: this.player.node.name
+            },
+            'Crazy player destroyed'
+          )
+
+          const channel = this.client.channels.cache.get(this.textChannelId)
+          if (!channel?.isTextBased()) return
+
+          await Utils.sendMessageToChannel(
+            channel,
+            {
+              embeds: [
+                Utils.generateErrorMessage(
+                  'Бот столкнулся с проблемой и был вынужден выйти из канала. Пожалуйста, запустите бота заново. ' +
+                    'Разработчики уже знают об этой проблеме. ' +
+                    'Если бот все ещё не работает, напишите в [группу ВК](https://vk.com/vkmusicbotds) или на [сервер Discord](https://discord.com/invite/3ts2znePu7).',
+                  ErrorMessageType.Warning
+                )
+              ]
+            },
+            30_000
+          )
+
+          return
+        }
 
         if (this.stopped) return
         if (this.repeat !== Repeat.Track) {
