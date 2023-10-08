@@ -21,6 +21,11 @@ export default class BotPlayer {
   public stopped: boolean
   public reconnecting: boolean
 
+  private latestStartEvent: Date | null = null
+  private latestEndEvent: Date | null = null
+
+  private fastEndEventsCount = 0
+
   constructor(client: VkMusicBotClient, guildId: string, textChannelId: string, player: Player) {
     this.client = client
     this.guildId = guildId
@@ -46,6 +51,8 @@ export default class BotPlayer {
     })
     this.player
       .on('start', async (data) => {
+        this.latestStartEvent = new Date()
+
         logger.info(
           {
             guild_id: data.guildId,
@@ -92,6 +99,34 @@ export default class BotPlayer {
           { guild_id: data.guildId, track: this.current?.identifier, repeat: this.repeat },
           'End event'
         )
+
+        // temp workaround for end/start event spam
+        // TODO: fix this shit
+        this.latestEndEvent = new Date()
+
+        if (
+          this.latestStartEvent &&
+          this.latestEndEvent.getTime() - this.latestStartEvent.getTime() <= 200
+        ) {
+          this.fastEndEventsCount++
+        } else {
+          this.fastEndEventsCount = 0
+        }
+
+        if (this.fastEndEventsCount >= 5) {
+          this.fastEndEventsCount = 0
+          await this.safeDestroy()
+          logger.warn(
+            {
+              guild_id: this.guildId,
+              track: this.current?.identifier,
+              repeat: this.repeat,
+              node_name: this.player.node.name
+            },
+            'Crazy player destroyed'
+          )
+          return
+        }
 
         if (this.repeat === 'track' && this.current && !this.current.isErrored)
           this.queue.unshift(this.current)
@@ -249,7 +284,11 @@ export default class BotPlayer {
         })
       if (this.current?.identifier)
         await this.playTrackFromIdentifier(this.current?.identifier, volume)
-    } catch {
+    } catch (err) {
+      logger.error({ err }, 'Play error')
+
+      if (this.current) this.current.isErrored = true
+
       await this.play()
     }
   }
