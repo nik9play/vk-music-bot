@@ -22,16 +22,29 @@ export default class BotPlayer {
   public guildId: string
   public textChannelId: string
   public player: Player
-  public queue: Denque<BotTrack>
-  public repeat: Repeat
-  public stopped: boolean
-  public reconnecting: boolean
+
+  public queue: Denque<BotTrack> = new Denque()
+  public repeat: Repeat = Repeat.Off
+  public stopped: boolean = true
+  public reconnecting: boolean = false
 
   private latestEndEvent: Date | null = null
 
   private fastEndEventsCount = 0
 
-  public sendTrackStartMessage: () => void
+  public sendTrackStartMessage = Utils.debounce(async () => {
+    if (!this.current || !this.textChannel) return
+
+    const config = await getConfig(this.guildId)
+    if (!config.announcements) return
+
+    const message = await Utils.sendMessageToChannel(
+      this.textChannel,
+      await generatePlayerStartMessage(this, this.current)
+    )
+
+    if (message) this.client.latestMenus.set(this.guildId, message)
+  }, 2000)
 
   get guild(): Guild | undefined {
     return this.client.guilds.cache.get(this.guildId)
@@ -54,25 +67,6 @@ export default class BotPlayer {
     this.guildId = guildId
     this.textChannelId = textChannelId
     this.player = player
-    this.repeat = Repeat.Off
-    // this.current = null
-    this.queue = new Denque()
-    this.stopped = true
-    this.reconnecting = false
-
-    this.sendTrackStartMessage = Utils.debounce(async () => {
-      if (!this.current || !this.textChannel) return
-
-      const config = await getConfig(this.guildId)
-      if (!config.announcements) return
-
-      const message = await Utils.sendMessageToChannel(
-        this.textChannel,
-        await generatePlayerStartMessage(this, this.current)
-      )
-
-      if (message) this.client.latestMenus.set(this.guildId, message)
-    }, 2000)
 
     // this.player
     // .on('start', (data) => {
