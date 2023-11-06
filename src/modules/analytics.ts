@@ -11,9 +11,9 @@ export const influxDB =
   influxURL && influxToken ? new InfluxDB({ url: influxURL, token: influxToken }) : undefined
 export const Influx = influxDB?.getWriteApi(influxOrg, influxBucket)
 
-let savingAnalyticsId: NodeJS.Timer | undefined = undefined
-if (!savingAnalyticsId) {
-  savingAnalyticsId = setInterval(() => {
+let savingAnalyticsTimer: NodeJS.Timer | undefined = undefined
+if (!savingAnalyticsTimer && ENV.NODE_ENV === 'production') {
+  savingAnalyticsTimer = setInterval(() => {
     // logger.debug(`[Influx - REST] Saving events...`)
     Influx?.flush()
       .then(() => {
