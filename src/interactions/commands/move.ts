@@ -51,6 +51,17 @@ export const interaction: CommandCustomInteraction = {
       return
     }
 
+    if (newIndex === 0) {
+      await respond({
+        embeds: [
+          Utils.generateErrorMessage(
+            'Вы не можете переместить трек на первое место. Переместите трек на второе место, а затем пропустите текущий трек.'
+          )
+        ]
+      })
+      return
+    }
+
     moveElement(player.queue, oldIndex, newIndex)
 
     await respond({
