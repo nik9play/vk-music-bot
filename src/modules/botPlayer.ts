@@ -44,7 +44,7 @@ export default class BotPlayer {
     )
 
     if (message) this.client.latestMenus.set(this.guildId, message)
-  }, 2000)
+  }, 1000)
 
   get guild(): Guild | undefined {
     return this.client.guilds.cache.get(this.guildId)
@@ -142,8 +142,8 @@ export default class BotPlayer {
 
         await Promise.all([deletePreviousTrackStartMessage(client, this.guildId), this.play()])
 
-        if (this.queue.isEmpty() && !(await getConfig(this.guildId)).enable247) {
-          Utils.setExitTimeout(this, this.client)
+        if (this.queue.isEmpty()) {
+          if (!(await getConfig(this.guildId)).enable247) Utils.setExitTimeout(this, this.client)
           this.stopped = true
         }
       })
@@ -157,7 +157,7 @@ export default class BotPlayer {
         if (this.current) this.current.hasErrored = true
       })
       .on('closed', (data) => {
-        logger.error({ data }, 'BotPlayer closed')
+        logger.info({ data }, 'BotPlayer closed')
       })
       .on('update', async (data) => {
         if (data.state.position !== undefined && data.state.position < 10_000) return
@@ -362,8 +362,9 @@ export default class BotPlayer {
 
     await this.player.setPaused(false)
     await this.player.stopTrack()
-    if (this.queue.isEmpty() && !(await getConfig(this.guildId)).enable247) {
-      Utils.setExitTimeout(this, this.client)
+
+    if (this.queue.isEmpty()) {
+      if (!(await getConfig(this.guildId)).enable247) Utils.setExitTimeout(this, this.client)
       this.stopped = true
     }
   }
