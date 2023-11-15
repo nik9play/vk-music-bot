@@ -39,9 +39,11 @@ export function generateQueueResponse(
       tracks
         .map(
           (track, i) =>
-            `${start + ++i}. ${
-              player.client.loaders.get(track.sourceNameCode)?.emoji ?? ''
-            } ${Utils.escapeFormat(track.author)} — ${Utils.escapeFormat(track.title)}`
+            `${start + ++i}. ${player.client.loaders.get(track.sourceNameCode)?.emoji ?? ''} ${
+              start + i === 1 ? '**' : ''
+            }${Utils.escapeFormat(track.author)} — ${Utils.escapeFormat(track.title)}${
+              start + i === 1 ? '**' : ''
+            }`
         )
         .join('\n')
     )
