@@ -351,7 +351,9 @@ export default class Utils {
   }
 
   public static checkVoiceChannelUserLimit(respond: RespondFunction, voice: VoiceBasedChannel) {
+    logger.debug({ s: voice.members.size, li: voice.userLimit }, '????')
     if (
+      voice.userLimit !== 0 &&
       voice.members.size >= voice.userLimit &&
       !voice.guild.members.me?.permissions.has(PermissionsBitField.All)
     ) {
